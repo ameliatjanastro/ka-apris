@@ -112,7 +112,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     #filtered_df = final_results_df[final_results_df['wh_id'] == selected_wh]
     
     # Filter based on selected Hub ID
-    filtered_df = filtered_df[filtered_df['hub_id'] == selected_hub]
+    filtered_df = final_results_df[final_results_df['hub_id'] == selected_hub]
 
     # Dropdown for selecting Hub ID based on selected WH ID
     hub_options = filtered_df['hub_id'].unique()
