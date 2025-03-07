@@ -125,7 +125,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                                   value_name='SO Quantity')
     
     # Create a line chart with markers
-    fig = px.line(
+    fig = px.bar(
         melted_df,
         x='Date', 
         y='SO Quantity', 
