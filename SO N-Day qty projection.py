@@ -31,6 +31,11 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     dry_demand = dry_forecast_df["Forecast Step 3"].sum()
     fresh_cbn_demand = fresh_cbn_forecast_df["Forecast Step 3"].sum()
     fresh_pgs_demand = fresh_pgs_forecast_df["Forecast Step 3"].sum()
+
+    st.write("Dry Forecast Data for Tomorrow:", dry_forecast_df)
+    st.write("Fresh CBN Forecast Data for Tomorrow:", fresh_cbn_forecast_df)
+    st.write("Fresh PGS Forecast Data for Tomorrow:", fresh_pgs_forecast_df)
+
     
     # Allocate Demand Forecast to WHs
     # Allocate Demand Forecast to WHs (convert to int)
