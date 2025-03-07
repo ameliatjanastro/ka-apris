@@ -82,18 +82,9 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     final_results_df = results[0]
     for df in results[1:]:
         final_results_df = final_results_df.merge(df, on=["wh_id", "hub_id"], how="left")
-    
-    # Display Results
-    st.header("W+1 to D+6 SO Prediction")
-    def highlight_triggered(val):
-        color = 'background-color: lightgreen' if val == "Triggered" else 'background-color: lightcoral'
-        return color
-    
-    styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
-    st.dataframe(styled_df)
 
 
-    st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final"]])
+     st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final"]])
 
     # Create a WH-level aggregated DataFrame
     wh_summary_df = final_so_df.groupby('wh_id').agg({
@@ -106,6 +97,18 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                                   'forecast_based_so': 'Total_forecast_based_so'}, inplace=True)
 
     st.dataframe(wh_summary_df)
+    
+    # Display Results
+    st.header("W+1 to D+6 SO Prediction")
+    def highlight_triggered(val):
+        color = 'background-color: lightgreen' if val == "Triggered" else 'background-color: lightcoral'
+        return color
+    
+    styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
+    st.dataframe(styled_df)
+
+
+   
     
     # Provide a download button for results
     csv = final_results_df.to_csv(index=False).encode('utf-8')
