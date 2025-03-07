@@ -36,6 +36,10 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     dry_demand_allocation = {772: dry_demand * (1/3), 40: dry_demand * (2/3)}
     fresh_demand_allocation = {661: fresh_cbn_demand, 160: fresh_pgs_demand}
 
+    # Convert IDs to string type
+    final_so_df['wh_id'] = final_so_df['wh_id'].astype(int)
+    final_so_df['hub_id'] = final_so_df['hub_id'].astype(int)
+
     st.write("Column Data Types:", final_so_df.dtypes)
 
     
