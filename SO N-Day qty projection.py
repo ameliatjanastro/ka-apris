@@ -7,14 +7,14 @@ st.title("SO Quantity Estimation")
 
 # File Upload Section
 st.header("Upload Data Files")
-so_file = st.file_uploader("Upload SQL-estimated SO CSV", type=["csv"])
+so_file = st.file_uploader("Upload SQL-estimated SO CSV", type=["xlsx"])
 dry_forecast_file = st.file_uploader("Upload Dry Demand Forecast CSV", type=["csv"])
 fresh_cbn_forecast_file = st.file_uploader("Upload Fresh CBN Demand Forecast CSV", type=["csv"])
 fresh_pgs_forecast_file = st.file_uploader("Upload Fresh PGS Demand Forecast CSV", type=["csv"])
 
 if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forecast_file:
     # Load Data
-    final_so_df = pd.read_csv(so_file)
+    final_so_df = pd.read_excel(so_file)
     dry_forecast_df = pd.read_csv(dry_forecast_file)
     fresh_cbn_forecast_df = pd.read_csv(fresh_cbn_forecast_file)
     fresh_pgs_forecast_df = pd.read_csv(fresh_pgs_forecast_file)
