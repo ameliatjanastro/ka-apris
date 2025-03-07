@@ -70,7 +70,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
 
     # Calculate deviation percentage
     final_so_df["Deviation (%)"] = (
-        (final_so_df["forecast_based_so"] - final_so_df["Sum of qty_so_final"]) / final_so_df["Sum of qty_so_final"]
+        (final_so_df["Sum of qty_so_final"] - final_so_df["forecast_based_so"]) / final_so_df["forecast_based_so"]
     ) * 100
 
     # Display Results
