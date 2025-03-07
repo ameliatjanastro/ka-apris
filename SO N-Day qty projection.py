@@ -127,7 +127,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                          value_name='SO Quantity'),
         x='Day', 
         y='SO Quantity', 
-        title=f'Predicted SO Quantity for WH {selected_wh}, Hub {selected_hub}'
+        title=f'Predicted SO Quantity for Hub {selected_hub}'
     )
     
     st.plotly_chart(fig)
