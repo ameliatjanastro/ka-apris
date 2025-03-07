@@ -70,10 +70,10 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                         total_sql_so_final_wh_hub / total_sql_so_final_wh * wh_demand
                     )
 
-    # Calculate deviation percentage
-    final_so_df["Deviation (%)"] = (
-        (final_so_df["Sum of qty_so_final"] - final_so_df["forecast_based_so"]) / final_so_df["forecast_based_so"]
-    ) * 100
+        # Calculate deviation percentage
+        final_so_df["Deviation (%)"] = (
+            (final_so_df["Sum of qty_so_final"] - final_so_df["forecast_based_so"]) / final_so_df["forecast_based_so"]
+        ) * 100
 
     # Display Results
     st.header("SO Bias Analysis")
