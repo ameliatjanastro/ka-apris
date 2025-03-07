@@ -79,7 +79,32 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     # Display Results
     st.header("SO Bias Analysis")
     st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final", "forecast_based_so", "Deviation Qty"]])
-    st.dataframe(final_so_df[["wh_id", "Sum of qty_so", "Sum of qty_so_final", "forecast_based_so", "Deviation Qty"]])
+
+    # Create a WH-level aggregated DataFrame
+    wh_summary_df = final_so_df.groupby('wh_id').agg({
+        'Sum of qty_so_final': 'sum',
+        'forecast_based_so': 'sum'
+    }).reset_index()
+    
+    # Rename columns for clarity
+    wh_summary_df.rename(columns={'Sum of qty_so_final': 'Total_qty_so_final', 
+                                  'forecast_based_so': 'Total_forecast_based_so'}, inplace=True)
+    
+    # Calculate WH-level deviation percentage
+    wh_summary_df['Deviation (%)'] = ((wh_summary_df['Total_qty_so_final'] - wh_summary_df['Total_forecast_based_so']) / 
+                                      wh_summary_df['Total_forecast_based_so']) * 100
+    
+    # Fill NaN deviations with 0
+    wh_summary_df['Deviation (%)'] = wh_summary_df['Deviation (%)'].fillna(0)
+    
+    # Display in Streamlit
+    st.header("WH-Level SO Summary")
+    st.dataframe(wh_summary_df)
+
+    # Provide a download button for WH summary
+    wh_csv = wh_summary_df.to_csv(index=False).encode('utf-8')
+    st.download_button("Download WH-Level SO Summary", wh_csv, "wh_so_summary.csv", "text/csv")
+
 
     
     # Download Option
