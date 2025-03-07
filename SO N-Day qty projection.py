@@ -125,13 +125,14 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                                   value_name='SO Quantity')
     
     # Create a line chart with markers
+    # Create a bar chart
     fig = px.bar(
         melted_df,
         x='Date', 
         y='SO Quantity', 
-        color='wh_id',  # Different line per WH
-        title=f'Predicted SO Quantity for Hub {selected_hub}',
-        markers=True  # Adds markers to data points
+        color='wh_id',  # Different color per WH
+        barmode='group',  # Groups bars by WH for easy comparison
+        title=f'Predicted SO Quantity for Hub {selected_hub}'
     )
     
     # Ensure each WH has its own correctly labeled values
