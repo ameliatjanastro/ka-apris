@@ -92,9 +92,6 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         'Sum of qty_so_final': 'sum'
     }).reset_index()
     
-    # Rename columns for clarity
-    wh_summary_df.rename(columns={'Sum of qty_so_final': 'Total_qty_so_final'}, inplace=True)
-
     st.dataframe(wh_summary_df)
     
     # Display Results
