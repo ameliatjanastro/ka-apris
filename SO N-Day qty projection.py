@@ -33,8 +33,10 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     fresh_pgs_demand = fresh_pgs_forecast_df["Forecast Step 3"].sum()
     
     # Allocate Demand Forecast to WHs
-    dry_demand_allocation = {772: dry_demand * (1/3), 40: dry_demand * (2/3)}
-    fresh_demand_allocation = {661: fresh_cbn_demand, 160: fresh_pgs_demand}
+    # Allocate Demand Forecast to WHs (convert to int)
+    dry_demand_allocation = {772: int(dry_demand * (1/3)), 40: int(dry_demand * (2/3))}
+    fresh_demand_allocation = {661: int(fresh_cbn_demand), 160: int(fresh_pgs_demand)}
+
 
     # Convert IDs to string type
     final_so_df['wh_id'] = final_so_df['wh_id'].astype(int)
