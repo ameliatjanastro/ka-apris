@@ -49,25 +49,28 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
 
     st.write("Column Data Types:", final_so_df.dtypes)
 
-    
-    # Allocate demand forecast to each WH x Hub
+    # Allocate demand forecast to each WH x Hub proportionally
     for wh_id, wh_demand in {**dry_demand_allocation, **fresh_demand_allocation}.items():
         for hub_id in final_so_df.loc[final_so_df['wh_id'] == wh_id, 'hub_id'].unique():
             hub_mask = (final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id)
-            
-            # Extract values directly instead of summing
-            total_sql_so_final = final_so_df.loc[hub_mask, 'Sum of qty_so_final'].values[0] if not final_so_df.loc[hub_mask].empty else 0
-            total_sql_so = final_so_df.loc[hub_mask, 'Sum of qty_so'].values[0] if not final_so_df.loc[hub_mask].empty else 0
-            
-            if total_sql_so_final > 0:
+            total_sql_so_final_wh_hub = final_so_df.loc[hub_mask, 'Sum of qty_so_final'].sum()
+
+            if total_sql_so_final_wh_hub > 0:
+                # Distribute forecasted SO based on SQL-estimated SO proportions
                 final_so_df.loc[hub_mask, 'forecast_based_so'] = (
-                    (final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_sql_so_final) * wh_demand
+                    final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_sql_so_final_wh_hub * wh_demand
                 )
             else:
-                final_so_df.loc[hub_mask, 'forecast_based_so'] = 0  # Set to 0 if no SO exists
-    
+                # If no SO values, distribute evenly among hubs
+                num_hubs = final_so_df.loc[final_so_df['wh_id'] == wh_id, 'hub_id'].nunique()
+                if num_hubs > 0:
+                    final_so_df.loc[hub_mask, 'forecast_based_so'] = wh_demand / num_hubs
+                else:
+                    final_so_df.loc[hub_mask, 'forecast_based_so'] = 0  # No hubs exist
+
     # Compare SQL-estimated SO with Forecast-based SO
-    final_so_df['MAX_so_qty'] = final_so_df[['Sum of qty_so_final', 'Sum of qty_so', 'forecast_based_so']].max(axis=1)
+    final_so_df['final_so_qty'] = final_so_df[['Sum of qty_so_final', 'Sum of qty_so', 'forecast_based_so']].max(axis=1)
+
     
     # Display Results
     st.header("Final SO Estimation")
