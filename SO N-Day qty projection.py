@@ -65,11 +65,11 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                 forecast_based_so = (total_sql_so_final_wh_hub / total_sql_so_final_wh) * wh_demand
                 final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'forecast_based_so'] = forecast_based_so
 
-    # Avoid dividing by zero by replacing zero forecast values with NaN (handled later)
+    # Ensure deviation is calculated for each WH × Hub
     final_so_df['Deviation (%)'] = ((final_so_df['Sum of qty_so_final'] - final_so_df['forecast_based_so']) /
                                     final_so_df['forecast_based_so'].replace(0, pd.NA)) * 100
     
-    # Replace NaN with 0 for cases where forecast_based_so was originally 0
+    # Fill NaN values with 0 for cases where forecast_based_so was originally 0
     final_so_df['Deviation (%)'] = final_so_df['Deviation (%)'].fillna(0)
 
 
