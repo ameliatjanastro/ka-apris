@@ -105,23 +105,37 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     st.dataframe(styled_df)
 
     # Dropdown for selecting WH ID
+    # Dropdown for selecting Hub ID
     hub_options = final_results_df['hub_id'].unique()
     selected_hub = st.selectbox("Select Hub ID", hub_options)
     
     # Filter the DataFrame for the selected hub
-    filtered_df = final_results_df[final_results_df['hub_id'] == selected_hub]
+    filtered_df = final_results_df[final_results_df['hub_id'] == selected_hub].copy()
     
-    # Create a line chart where each WH ID is a different line
+    # Rename D+1 to D+6 columns to actual dates
+    forecast_dates_dict = {f"Predicted SO Qty D+{i+1}": (today + datetime.timedelta(days=i+1)).strftime('%Y-%m-%d') for i in range(6)}
+    filtered_df.rename(columns=forecast_dates_dict, inplace=True)
+    
+    # Reshape the data for plotting
+    melted_df = filtered_df.melt(id_vars=['wh_id'], 
+                                  value_vars=list(forecast_dates_dict.values()), 
+                                  var_name='Date', 
+                                  value_name='SO Quantity')
+    
+    # Create a line chart with markers and text labels
     fig = px.line(
-        filtered_df.melt(id_vars=['wh_id'], 
-                         value_vars=[col for col in final_results_df.columns if "Predicted SO Qty" in col], 
-                         var_name='Day', 
-                         value_name='SO Quantity'),
-        x='Day', 
+        melted_df,
+        x='Date', 
         y='SO Quantity', 
         color='wh_id',  # Different line per WH
-        title=f'Predicted SO Quantity for Hub {selected_hub}'
+        title=f'Predicted SO Quantity for Hub {selected_hub}',
+        markers=True  # Adds markers to data points
     )
+    
+    # Add text annotations for each data point
+    fig.update_traces(text=melted_df['SO Quantity'].astype(str),  # Convert to string for display
+                      textposition="top center",  # Position above markers
+                      mode='lines+markers+text')  # Show lines, markers, and text
     
     st.plotly_chart(fig)
     
