@@ -82,6 +82,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
 
     # Create a WH-level aggregated DataFrame
     wh_summary_df = final_so_df.groupby('wh_id').agg({
+        'Sum of qty_so': 'sum',
         'Sum of qty_so_final': 'sum',
         'forecast_based_so': 'sum'
     }).reset_index()
