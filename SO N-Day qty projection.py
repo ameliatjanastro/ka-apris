@@ -65,9 +65,9 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                 forecast_based_so = (total_sql_so_final_wh_hub / total_sql_so_final_wh) * wh_demand
                 final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'forecast_based_so'] = forecast_based_so
 
-    # Calculate deviation per WH x Hub
-    final_so_df["Deviation (%)"] = ((final_so_df["Sum of qty_so_final"] - final_so_df["forecast_based_so"]) / final_so_df["forecast_based_so"]) * 100
-    final_so_df["Deviation (%)"] = final_so_df["Deviation (%)"].fillna(0)  # Replace NaN with 0
+                # Calculate deviation per WH x Hub
+                final_so_df["Deviation (%)"] = ((final_so_df["Sum of qty_so_final"] - final_so_df["forecast_based_so"]) / final_so_df["forecast_based_so"]) * 100
+                final_so_df["Deviation (%)"] = final_so_df["Deviation (%)"].fillna(0)  # Replace NaN with 0
 
     # Display Results
     st.header("SO Bias Analysis")
