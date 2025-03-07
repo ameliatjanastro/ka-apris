@@ -63,9 +63,8 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
             
             if total_sql_so_final > 0:
                 # Distribute forecast proportionally based on SO Final at each Hub
-                final_so_df.loc[hub_mask, 'forecast_based_so'] = (
-                    (final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_sql_so_final) * wh_demand
-                )
+                final_so_df.loc[hub_mask, 'forecast_based_so'] = np.floor(
+                (final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_sql_so_final) * wh_demand).astype(int)
             else:
                 final_so_df.loc[hub_mask, 'forecast_based_so'] = 0  # If no SO, assign 0
     
@@ -79,6 +78,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     # Display Results
     st.header("SO Bias Analysis")
     st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final", "forecast_based_so", "Deviation Qty"]])
+    st.dataframe(final_so_df[["wh_id", "Sum of qty_so", "Sum of qty_so_final", "forecast_based_so", "Deviation Qty"]])
 
     
     # Download Option
