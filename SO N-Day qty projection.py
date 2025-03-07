@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import datetime
 
 # Streamlit App Title
 st.title("SO Quantity Estimation")
@@ -18,10 +19,18 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     fresh_cbn_forecast_df = pd.read_csv(fresh_cbn_forecast_file)
     fresh_pgs_forecast_df = pd.read_csv(fresh_pgs_forecast_file)
     
-    # Aggregate Demand Forecast
-    dry_demand = dry_forecast_df["forecast_qty"].sum()
-    fresh_cbn_demand = fresh_cbn_forecast_df["forecast_qty"].sum()
-    fresh_pgs_demand = fresh_pgs_forecast_df["forecast_qty"].sum()
+    # Get tomorrow's date
+    tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+    
+    # Filter forecast data for tomorrow only
+    dry_forecast_df = dry_forecast_df[dry_forecast_df["date"] == tomorrow]
+    fresh_cbn_forecast_df = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date"] == tomorrow]
+    fresh_pgs_forecast_df = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date"] == tomorrow]
+    
+    # Aggregate Demand Forecast for tomorrow
+    dry_demand = dry_forecast_df["Forecast Step 3"].sum()
+    fresh_cbn_demand = fresh_cbn_forecast_df["Forecast Step 3"].sum()
+    fresh_pgs_demand = fresh_pgs_forecast_df["Forecast Step 3"].sum()
     
     # Allocate Demand Forecast to WHs
     dry_demand_allocation = {772: dry_demand * (1/3), 40: dry_demand * (2/3)}
@@ -47,6 +56,6 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     st.dataframe(final_so_df)
     
     # Download Option
-    #csv = final_so_df.to_csv(index=False).encode('utf-8')
-    #st.download_button("Download Final SO Estimate", csv, "final_so_estimate.csv", "text/csv")
+    csv = final_so_df.to_csv(index=False).encode('utf-8')
+    st.download_button("Download Final SO Estimate", csv, "final_so_estimate.csv", "text/csv")
 
