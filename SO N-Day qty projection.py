@@ -105,11 +105,11 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     st.dataframe(styled_df)
 
     # Dropdown for selecting WH ID
-    wh_options = final_results_df['wh_id'].unique()
-    selected_wh = st.selectbox("Select WH ID", wh_options)
+    #wh_options = final_results_df['wh_id'].unique()
+    #selected_wh = st.selectbox("Select WH ID", wh_options)
     
     # Filter based on selected WH ID
-    filtered_df = final_results_df[final_results_df['wh_id'] == selected_wh]
+    #filtered_df = final_results_df[final_results_df['wh_id'] == selected_wh]
     
     # Dropdown for selecting Hub ID based on selected WH ID
     hub_options = filtered_df['hub_id'].unique()
