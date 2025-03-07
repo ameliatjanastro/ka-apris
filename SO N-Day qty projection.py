@@ -32,46 +32,54 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     # Convert IDs to integer type
     final_so_df[['wh_id', 'hub_id']] = final_so_df[['wh_id', 'hub_id']].apply(pd.to_numeric)
     
-    # Initialize result dataframe
-    results_df = final_so_df[['wh_id', 'hub_id']].copy()
+    # Initialize result DataFrame
+    results = []
     
-    for i, forecast_date in enumerate(forecast_dates):
-        # Get daily forecast
-        daily_dry_demand = dry_forecast_df[dry_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
-        daily_fresh_cbn_demand = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
-        daily_fresh_pgs_demand = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
+    for day, forecast_date in enumerate(forecast_dates, start=1):
+        # Get daily demand forecast
+        daily_dry_forecast = dry_forecast_df[dry_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
+        daily_fresh_cbn_forecast = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
+        daily_fresh_pgs_forecast = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
         
         # Allocate Demand Forecast to WHs
-        dry_demand_allocation = {772: int(daily_dry_demand * (1/3)), 40: int(daily_dry_demand * (2/3))}
-        fresh_demand_allocation = {661: int(daily_fresh_cbn_demand), 160: int(daily_fresh_pgs_demand)}
+        dry_demand_allocation = {772: int(daily_dry_forecast * (1/3)), 40: int(daily_dry_forecast * (2/3))}
+        fresh_demand_allocation = {661: int(daily_fresh_cbn_forecast), 160: int(daily_fresh_pgs_forecast)}
         
-        # Initialize updated hub quantity
-        final_so_df[f'Updated Hub Qty D+{i+1}'] = final_so_df['Sum of hub_qty']
+        daily_result = final_so_df.copy()
+        daily_result[f'Updated Hub Qty D+{day}'] = daily_result['Sum of hub_qty']
         
         for wh_id in final_so_df['wh_id'].unique():
             for hub_id in final_so_df.loc[final_so_df['wh_id'] == wh_id, 'hub_id'].unique():
-                hub_mask = (final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id)
-                demand = dry_demand_allocation.get(wh_id, 0) + fresh_demand_allocation.get(wh_id, 0)
+                hub_mask = (daily_result['wh_id'] == wh_id) & (daily_result['hub_id'] == hub_id)
+                total_so_final = final_so_df.loc[final_so_df['wh_id'] == wh_id, 'Sum of qty_so_final'].sum()
                 
-                final_so_df.loc[hub_mask, f'Updated Hub Qty D+{i+1}'] -= demand
-                final_so_df.loc[hub_mask, f'Updated Hub Qty D+{i+1}'] = final_so_df.loc[hub_mask, f'Updated Hub Qty D+{i+1}'].clip(lower=0)
+                if total_so_final > 0:
+                    hub_forecast = ((final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_so_final) * 
+                                    (dry_demand_allocation.get(wh_id, 0) + fresh_demand_allocation.get(wh_id, 0))).astype(int)
+                else:
+                    hub_forecast = 0
+                
+                daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
+                daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'].clip(lower=0)
         
         # Compute Predicted SO Quantity
-        final_so_df[f'Predicted SO Qty D+{i+1}'] = ((final_so_df['Sum of maxqty'] - final_so_df[f'Updated Hub Qty D+{i+1}']) / 
-                                                    final_so_df['Sum of multiplier']) * final_so_df['Sum of multiplier']
-        final_so_df[f'Predicted SO Qty D+{i+1}'] = final_so_df[f'Predicted SO Qty D+{i+1}'].clip(lower=0).astype(int)
+        daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - daily_result[f'Updated Hub Qty D+{day}']) / 
+                                                    daily_result['Sum of multiplier']) * daily_result['Sum of multiplier']
+        daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
         
         # Compare with Sum of Reorder Point
-        final_so_df[f'SO vs Reorder Point D+{i+1}'] = final_so_df[f'Predicted SO Qty D+{i+1}'] - final_so_df['Sum of reorder_point']
+        daily_result[f'SO vs Reorder Point D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'] - daily_result['Sum of reorder_point']
         
-        # Store in results dataframe
-        results_df[f'Updated Hub Qty D+{i+1}'] = final_so_df[f'Updated Hub Qty D+{i+1}']
-        results_df[f'Predicted SO Qty D+{i+1}'] = final_so_df[f'Predicted SO Qty D+{i+1}']
-        results_df[f'SO vs Reorder Point D+{i+1}'] = final_so_df[f'SO vs Reorder Point D+{i+1}']
+        results.append(daily_result[["wh_id", "hub_id", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]])
+    
+    # Merge results into a single DataFrame
+    final_results_df = results[0]
+    for df in results[1:]:
+        final_results_df = final_results_df.merge(df, on=["wh_id", "hub_id"], how="left")
     
     # Display Results
-    st.header("W+1 to W+6 SO Prediction")
-    st.dataframe(results_df)
+    st.header("W+1 to D+6 SO Prediction")
+    st.dataframe(final_results_df)
 
 
     st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final"]])
@@ -79,8 +87,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     # Create a WH-level aggregated DataFrame
     wh_summary_df = final_so_df.groupby('wh_id').agg({
         'Sum of qty_so': 'sum',
-        'Sum of qty_so_final': 'sum',
-        'forecast_based_so': 'sum'
+        'Sum of qty_so_final': 'sum'
     }).reset_index()
     
     # Rename columns for clarity
