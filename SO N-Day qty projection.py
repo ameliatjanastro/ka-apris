@@ -104,14 +104,32 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
     st.dataframe(styled_df)
 
+    # Dropdown for selecting WH ID
     wh_options = final_results_df['wh_id'].unique()
     selected_wh = st.selectbox("Select WH ID", wh_options)
+    
+    # Filter based on selected WH ID
     filtered_df = final_results_df[final_results_df['wh_id'] == selected_wh]
     
-    fig = px.line(filtered_df.melt(id_vars=['hub_id'], value_vars=[col for col in final_results_df.columns if "Predicted SO Qty" in col], var_name='Day', value_name='SO Quantity'), x='Day', y='SO Quantity', color='hub_id', title=f'Predicted SO Quantity for WH {selected_wh}')
+    # Dropdown for selecting Hub ID based on selected WH ID
+    hub_options = filtered_df['hub_id'].unique()
+    selected_hub = st.selectbox("Select Hub ID", hub_options)
+    
+    # Filter based on selected Hub ID
+    filtered_df = filtered_df[filtered_df['hub_id'] == selected_hub]
+    
+    # Create line chart for the selected WH & Hub
+    fig = px.line(
+        filtered_df.melt(id_vars=['hub_id'], 
+                         value_vars=[col for col in final_results_df.columns if "Predicted SO Qty" in col], 
+                         var_name='Day', 
+                         value_name='SO Quantity'),
+        x='Day', 
+        y='SO Quantity', 
+        title=f'Predicted SO Quantity for WH {selected_wh}, Hub {selected_hub}'
+    )
+    
     st.plotly_chart(fig)
-
-
    
     
     # Provide a download button for results
