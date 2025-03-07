@@ -26,6 +26,8 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     dry_forecast_df = dry_forecast_df[dry_forecast_df["date_key"] == tomorrow]
     fresh_cbn_forecast_df = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == tomorrow]
     fresh_pgs_forecast_df = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == tomorrow]
+
+    final_so_df[['wh_id', 'hub_id']] = final_so_df[['wh_id', 'hub_id']].apply(pd.to_numeric)
     
     # Aggregate Demand Forecast for tomorrow
     dry_demand = dry_forecast_df["Forecast Step 3"].sum()
