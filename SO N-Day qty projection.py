@@ -47,9 +47,6 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         daily_fresh_cbn_forecast = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
         daily_fresh_pgs_forecast = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
 
-        st.write(dry_forecast_df.head(8))
-
-        
         # Allocate Demand Forecast to WHs
         dry_demand_allocation = {772: int(daily_dry_forecast * (1/3)), 40: int(daily_dry_forecast * (2/3))}
         fresh_demand_allocation = {661: int(daily_fresh_cbn_forecast), 160: int(daily_fresh_pgs_forecast)}
@@ -68,7 +65,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                 else:
                     hub_forecast = 0
                 
-                daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast*0.5
+                daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
                 daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'].clip(lower=0)
         
         # Compute Predicted SO Quantity
@@ -76,11 +73,8 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                                                     daily_result['Sum of multiplier']) * daily_result['Sum of multiplier']
         daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
 
-        sample_wh = daily_result[(daily_result["wh_id"] == 160) & (daily_result["hub_id"] == 121)].head()
-        st.dataframe(sample_wh[["Sum of maxqty", "Updated Hub Qty D+1", "Sum of multiplier", "Predicted SO Qty D+1"]])
-
-
-
+        #sample_wh = daily_result[(daily_result["wh_id"] == 160) & (daily_result["hub_id"] == 121)].head()
+        #st.dataframe(sample_wh[["Sum of maxqty", "Updated Hub Qty D+1", "Sum of multiplier", "Predicted SO Qty D+1"]])
         
         def check_triggered(row, day):
             if row[f'Predicted SO Qty D+{day}'] == 0:
