@@ -76,8 +76,9 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                                                     daily_result['Sum of multiplier']) * daily_result['Sum of multiplier']
         daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
 
-        sample_wh = final_so_df[final_so_df["wh_id"] == 40].head()  # Example WH ID
-        st.write(sample_wh[["Sum of maxqty", "Updated Hub Qty D+1", "Sum of multiplier"]])
+        sample_wh = daily_result[daily_result["wh_id"] == 40].head()  # Example WH ID
+        st.write(daily_result[["Sum of maxqty", "Updated Hub Qty D+1", "Sum of multiplier"]])
+
 
         
         def check_triggered(row, day):
