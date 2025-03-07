@@ -47,9 +47,9 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         daily_fresh_cbn_forecast = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
         daily_fresh_pgs_forecast = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
 
-    print(dry_forecast_df.head())
-    print(fresh_cbn_forecast_df.head())
-    print(fresh_pgs_forecast_df.head())
+        st.write(dry_forecast_df.head())
+        st.write(fresh_cbn_forecast_df.head())
+        st.write(fresh_pgs_forecast_df.head())
 
         
         # Allocate Demand Forecast to WHs
@@ -77,6 +77,10 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - daily_result[f'Updated Hub Qty D+{day}']) / 
                                                     daily_result['Sum of multiplier']) * daily_result['Sum of multiplier']
         daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
+
+        sample_wh = final_so_df[final_so_df["wh_id"] == 40].head()  # Example WH ID
+        st.write(sample_wh[["Sum of maxqty", "Updated Hub Qty D+1", "Sum of multiplier"]])
+
         
         def check_triggered(row, day):
             if row[f'Predicted SO Qty D+{day}'] == 0:
