@@ -46,6 +46,11 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         daily_dry_forecast = dry_forecast_df[dry_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
         daily_fresh_cbn_forecast = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
         daily_fresh_pgs_forecast = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
+
+        print(dry_forecast_df.head())
+        print(fresh_cbn_forecast_df.head())
+        print(fresh_pgs_forecast_df.head())
+
         
         # Allocate Demand Forecast to WHs
         dry_demand_allocation = {772: int(daily_dry_forecast * (1/3)), 40: int(daily_dry_forecast * (2/3))}
