@@ -57,7 +57,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     for wh_id, wh_demand in {**dry_demand_allocation, **fresh_demand_allocation}.items():
         for hub_id in final_so_df.loc[final_so_df['wh_id'] == wh_id, 'hub_id'].unique():
             hub_mask = (final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id)  # ✅ Now filtering by WH × Hub
-            total_sql_so_final = final_so_df.loc[hub_mask, 'Sum of qty_so_final'].sum()  # ✅ WH × Hub total SO
+            total_sql_so_final = final_so_df.loc[hub_mask, 'Sum of qty_so_final']  # ✅ WH × Hub total SO
             
             if total_sql_so_final > 0:
                 # Distribute forecast proportionally based on SO Final at each Hub
