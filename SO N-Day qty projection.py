@@ -70,7 +70,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                 final_so_df.loc[hub_mask, 'forecast_based_so'] = 0  # If no SO, assign 0
     
             # Ensure deviation is calculated for each WH × Hub
-            final_so_df['Deviation Qty'] = (final_so_df['Sum of qty_so_final'] - final_so_df['forecast_based_so'])
+            final_so_df['Deviation Qty'] = ((final_so_df['Sum of qty_so_final'] - final_so_df['forecast_based_so'])/(final_so_df['Sum of qty_so_final']))*100
                 
             # Fill NaN values with 0 for cases where forecast_based_so was originally 0
             final_so_df['Deviation Qty'] = final_so_df['Deviation Qty'].fillna(0)
