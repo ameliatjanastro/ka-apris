@@ -66,7 +66,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                 final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'forecast_based_so'] = forecast_based_so
 
                 # Calculate deviation per WH x Hub
-                deviation = ((final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'Sum of qty_so_final'] - ((final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'forecast_based_so'] / ((final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'forecast_based_so'] * 100
+                deviation = ((final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'Sum of qty_so_final']) - (final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'forecast_based_so'])) / (final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'forecast_based_so']) * 100
                 final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'Deviation (%)'] = deviation
                 final_so_df['Deviation (%)'] = final_so_df['Deviation (%)'].fillna(0)  # Replace NaN with 0
 
