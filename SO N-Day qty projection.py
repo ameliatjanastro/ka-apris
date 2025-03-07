@@ -35,6 +35,9 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     # Allocate Demand Forecast to WHs
     dry_demand_allocation = {772: dry_demand * (1/3), 40: dry_demand * (2/3)}
     fresh_demand_allocation = {661: fresh_cbn_demand, 160: fresh_pgs_demand}
+
+    st.write("Column Data Types:", final_so_df.dtypes)
+
     
     # Allocate demand forecast to each WH x Hub
     for wh_id, wh_demand in {**dry_demand_allocation, **fresh_demand_allocation}.items():
