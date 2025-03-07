@@ -68,7 +68,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                 else:
                     hub_forecast = 0
                 
-                daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
+                daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast*0.7
                 daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'].clip(lower=0)
         
         # Compute Predicted SO Quantity
