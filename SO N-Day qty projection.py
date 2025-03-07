@@ -23,9 +23,9 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
     
     # Filter forecast data for tomorrow only
-    dry_forecast_df = dry_forecast_df[dry_forecast_df["date"] == tomorrow]
-    fresh_cbn_forecast_df = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date"] == tomorrow]
-    fresh_pgs_forecast_df = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date"] == tomorrow]
+    dry_forecast_df = dry_forecast_df[dry_forecast_df["date_key"] == tomorrow]
+    fresh_cbn_forecast_df = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == tomorrow]
+    fresh_pgs_forecast_df = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == tomorrow]
     
     # Aggregate Demand Forecast for tomorrow
     dry_demand = dry_forecast_df["Forecast Step 3"].sum()
