@@ -87,10 +87,57 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         final_results_df = final_results_df.merge(df, on=["wh_id", "hub_id"], how="left")
 
 
-    st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final"]])
+    # Hub ID to Hub Name mapping
+    hub_name_mapping = {
+        98: "MTG - Menteng",
+        121: "BS9 - Bintaro Sektor 9",
+        125: "PPN - Pos Pengumben",
+        152: "LBB - Lebak Bulus",
+        189: "SRP - Serpong Utara",
+        201: "MSB - Medan Satria Bekasi",
+        206: "JTB - Jatibening",
+        207: "GWB - Grand Wisata Bekasi",
+        223: "CT2 - Citra 2",
+        261: "CNR - Cinere",
+        288: "MRG - Margonda",
+        517: "FTW - Fatmawati",
+        523: "JLB - Jelambar",
+        529: "BSX - New BSD",
+        538: "KJT - Kramat Jati",  # Excluded
+        591: "MRY - Meruya",
+        615: "GPL - Gudang Peluru",
+        619: "TSY - Transyogi",
+        626: "DST - Duren Sawit",
+        634: "PPL - Panglima Polim",
+        648: "DNS - Danau Sunter",
+        654: "TGX - New TGC",
+        657: "APR - Ampera",
+        669: "BRY - Buncit Raya",
+        672: "KPM - Kapuk Muara",
+        759: "CWG - Cawang",  # Excluded
+        763: "PSG - Pisangan",
+        767: "PKC - Pondok Kacang",
+        773: "PGD - Pulo Gadung",
+        776: "BGS - Boulevard Gading Serpong"
+    }
+
+    # WH ID to WH Name mapping
+    wh_name_mapping = {
+        40: "KOS - WH Kosambi",
+        772: "STL - Sentul",
+        160: "PGS - Pegangsaan",
+        661: "CBN - WH Cibinong"
+    }
+
+    final_results_df["Hub Name"] = final_results_df["hub_id"].map(hub_name_mapping)
+    # Map WH names
+    final_results_df["WH Name"] = final_results_df["wh_id"].map(wh_name_mapping)
+
+    
+    st.dataframe(final_so_df[["WH Name", "Hub Name", "Sum of qty_so", "Sum of qty_so_final"]])
 
     # Create a WH-level aggregated DataFrame
-    wh_summary_df = final_so_df.groupby('wh_id').agg({
+    wh_summary_df = final_so_df.groupby("WH Name").agg({
     'Sum of qty_so': 'sum',
     'Sum of qty_so_final': 'sum'
     }).reset_index()
@@ -112,7 +159,11 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     # Dropdown for selecting Hub ID
    # Dropdown for selecting Hub ID
     hub_options = final_results_df['hub_id'].unique()
-    selected_hub = st.selectbox("Select Hub ID", hub_options)
+    # Combine Hub ID and Name for display
+    final_results_df["Hub Display"] = final_results_df["hub_id"].astype(str) + " - " + final_results_df["Hub Name"]
+
+    selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
+
     
     # Filter the DataFrame for the selected hub
     filtered_df = final_results_df[final_results_df['hub_id'] == selected_hub].copy()
