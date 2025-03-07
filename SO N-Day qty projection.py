@@ -105,6 +105,8 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     st.dataframe(styled_df)
 
     # Dropdown for selecting WH ID
+
+
     # Dropdown for selecting Hub ID
     hub_options = final_results_df['hub_id'].unique()
     selected_hub = st.selectbox("Select Hub ID", hub_options)
@@ -122,7 +124,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                                   var_name='Date', 
                                   value_name='SO Quantity')
     
-    # Create a line chart with markers and text labels
+    # Create a line chart with markers
     fig = px.line(
         melted_df,
         x='Date', 
@@ -132,12 +134,20 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         markers=True  # Adds markers to data points
     )
     
-    # Add text annotations for each data point
-    fig.update_traces(text=melted_df['SO Quantity'].astype(str),  # Convert to string for display
-                      textposition="top center",  # Position above markers
-                      mode='lines+markers+text')  # Show lines, markers, and text
+    # Ensure each WH has its own correctly labeled values
+    for wh in melted_df['wh_id'].unique():
+        wh_data = melted_df[melted_df['wh_id'] == wh]
+        fig.add_scatter(
+            x=wh_data['Date'], 
+            y=wh_data['SO Quantity'], 
+            mode='text', 
+            text=wh_data['SO Quantity'].astype(str), 
+            textposition="top center",
+            showlegend=False  # Avoid duplicate legends
+        )
     
     st.plotly_chart(fig)
+
     
     # Provide a download button for results
     csv = final_results_df.to_csv(index=False).encode('utf-8')
