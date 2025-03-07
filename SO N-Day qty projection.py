@@ -74,7 +74,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         daily_result[f'SO vs Reorder Point D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'] - daily_result['Sum of reorder_point']
 
         # Convert SO vs Reorder Point to "Triggered" or "Not Triggered"
-        daily_result[f'SO vs Reorder Point D+{day}'] = daily_result[f'SO vs Reorder Point D+{day}'].apply(lambda x: "Triggered" if x <= 0 else "Not Triggered")
+        daily_result[f'SO vs Reorder Point D+{day}'] = daily_result[f'SO vs Reorder Point D+{day}'].apply(lambda x: "Triggered" if x < 0 else "Not Triggered")
         
         results.append(daily_result[["wh_id", "hub_id", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]])
     
