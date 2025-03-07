@@ -1,56 +1,43 @@
-import streamlit as st
 import pandas as pd
 
-# Load data
-st.title("Final SO Quantity Estimation Based on Demand Forecast")
+# Load SQL-generated SO data
+sql_so_df = pd.read_csv("estimated so.csv")  # Ensure this file is uploaded
 
-# Upload estimated SO data
-estimated_so_file = st.file_uploader("Upload Estimated SO Data (CSV)", type=["csv"])
-if estimated_so_file:
-    estimated_so = pd.read_csv(estimated_so_file)
-    st.write("### Estimated SO Data:")
-    st.dataframe(estimated_so.head())
+# Load Demand Forecast data
+demand_forecast_df = pd.read_csv("demand_forecast.csv")  # Ensure this file is uploaded
 
-# Upload demand forecast data
-demand_forecast_file = st.file_uploader("Upload Demand Forecast Data (CSV)", type=["csv"])
-if demand_forecast_file:
-    demand_forecast = pd.read_csv(demand_forecast_file)
-    st.write("### Demand Forecast Data:")
-    st.dataframe(demand_forecast.head())
+# Define Warehouse IDs for Dry and Fresh WHs
+dry_whs = {772: 1/3, 40: 2/3}  # Dry demand split
+fresh_whs = {661: "CBN", 160: "PGS"}  # Fresh warehouses
 
-# Process the final SO estimation if both files are uploaded
-if estimated_so_file and demand_forecast_file:
-    # Define warehouse types
-    dry_wh = [772, 40]
-    fresh_cbn = 661
-    fresh_pgs = 160
+# Extract demand forecast per category
+dry_demand = demand_forecast_df[demand_forecast_df['type'] == 'Dry']['demand'].sum()
+cbn_demand = demand_forecast_df[demand_forecast_df['type'] == 'CBN']['demand'].sum()
+pgs_demand = demand_forecast_df[demand_forecast_df['type'] == 'PGS']['demand'].sum()
+
+# Assign demand forecast to WHs
+dry_demand_allocation = {wh: dry_demand * ratio for wh, ratio in dry_whs.items()}
+fresh_demand_allocation = {661: cbn_demand, 160: pgs_demand}
+
+# Merge SQL SO data with demand allocations
+final_so_df = sql_so_df.copy()
+final_so_df['forecast_based_so'] = 0  # Initialize column
+
+# Allocate demand forecast to each WH x Hub
+for wh_id, wh_demand in {**dry_demand_allocation, **fresh_demand_allocation}.items():
+    hub_mask = final_so_df['wh_id'] == wh_id
+    total_sql_so = final_so_df.loc[hub_mask, 'Sum of qty_so_final'].sum()
     
-    # Merge and adjust SO quantities based on demand
-    estimated_so["Final_SO_Qty"] = estimated_so["sum_qty_so_final"]
-    
-    # Adjust based on demand forecast
-    for index, row in estimated_so.iterrows():
-        wh_id = row["wh_id"]
-        if wh_id in dry_wh:
-            demand = demand_forecast[demand_forecast["type"] == "Dry"]["forecast_qty"].sum()
-        elif wh_id == fresh_cbn:
-            demand = demand_forecast[demand_forecast["type"] == "Fresh_CBN"]["forecast_qty"].sum()
-        elif wh_id == fresh_pgs:
-            demand = demand_forecast[demand_forecast["type"] == "Fresh_PGS"]["forecast_qty"].sum()
-        else:
-            demand = 0
-        
-        # Apply adjustment based on demand (you can refine this logic)
-        estimated_so.at[index, "Final_SO_Qty"] = min(row["sum_qty_so_final"], demand)
-    
-    st.write("### Final SO Estimation:")
-    st.dataframe(estimated_so)
+    if total_sql_so > 0:
+        # Distribute forecasted SO based on SQL-estimated SO proportions
+        final_so_df.loc[hub_mask, 'forecast_based_so'] = (
+            final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_sql_so * wh_demand
+        )
 
-    # Download final SO estimation
-    csv = estimated_so.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="Download Final SO Data",
-        data=csv,
-        file_name="final_so_estimation.csv",
-        mime="text/csv"
-    )
+# Compare SQL-estimated SO with Forecast-based SO
+final_so_df['final_so_qty'] = final_so_df[['qty_so_final', 'forecast_based_so']].max(axis=1)
+
+# Save the final SO output
+#final_so_df.to_csv("final_so_estimate.csv", index=False)
+
+#print("Final SO estimation completed. File saved as final_so_estimate.csv.")
