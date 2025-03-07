@@ -57,6 +57,8 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     for wh_id, wh_demand in {**dry_demand_allocation, **fresh_demand_allocation}.items():
         for hub_id in final_so_df.loc[final_so_df['wh_id'] == wh_id, 'hub_id'].unique():
             hub_mask = final_so_df['wh_id'] == wh_id
+            hub_mask2 = (final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id)
+            total_sql_so_final = final_so_df.loc[hub_mask, 'Sum of qty_so_final'].sum()  # ✅ WH × Hub total SO
             total_sql_so_final = final_so_df.loc[hub_mask, 'Sum of qty_so_final'].sum()  # ✅ WH × Hub total SO
             
             if total_sql_so_final > 0:
@@ -68,8 +70,8 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                 final_so_df.loc[hub_mask, 'forecast_based_so'] = 0  # If no SO, assign 0
     
             # Ensure deviation is calculated for each WH × Hub
-            final_so_df['Deviation (%)'] = ((final_so_df['Sum of qty_so_final'] - final_so_df['forecast_based_so']) /
-                                                final_so_df['forecast_based_so'].replace(0, pd.NA)) * 100
+            final_so_df['Deviation (%)'] = ((final_so_df.loc[hub_mask2, 'Sum of qty_so_final'] - final_so_df.loc[hub_mask2, 'forecast_based_so']) /
+                                                final_so_df.loc[hub_mask2, 'forecast_based_so'].replace(0, pd.NA)) * 100
                 
             # Fill NaN values with 0 for cases where forecast_based_so was originally 0
             final_so_df['Deviation (%)'] = final_so_df['Deviation (%)'].fillna(0)
