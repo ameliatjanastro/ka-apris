@@ -167,7 +167,10 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
 
     
     # Filter the DataFrame for the selected hub
-    filtered_df = final_results_df[final_results_df['hub_id'] == selected_hub].copy()
+    selected_hub_id = int(selected_hub.split(" - ")[0])  # Extracts ID
+    filtered_df = final_results_df[final_results_df["hub_id"] == selected_hub_id]
+
+    #filtered_df = final_results_df[final_results_df['hub_id'] == selected_hub].copy()
     
     # Rename D+1 to D+6 columns to actual dates
     forecast_dates_dict = {f"Predicted SO Qty D+{i+1}": (today + datetime.timedelta(days=i+1)).strftime('%Y-%m-%d') for i in range(6)}
