@@ -79,7 +79,12 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     
     # Display Results
     st.header("W+1 to D+6 SO Prediction")
-    st.dataframe(final_results_df)
+    def highlight_triggered(val):
+        color = 'background-color: lightgreen' if val == "Triggered" else 'background-color: lightcoral'
+        return color
+    
+    styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
+    st.dataframe(styled_df)
 
 
     st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final"]])
@@ -97,7 +102,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     st.dataframe(wh_summary_df)
     
     # Provide a download button for results
-    csv = results_df.to_csv(index=False).encode('utf-8')
+    csv = final_results_df.to_csv(index=False).encode('utf-8')
     st.download_button("Download W+1 to W+6 SO Prediction", csv, "w1_w6_so_prediction.csv", "text/csv")
 
 
