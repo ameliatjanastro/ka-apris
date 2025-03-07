@@ -72,11 +72,12 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                                                     daily_result['Sum of multiplier']) * daily_result['Sum of multiplier']
         daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
         
-        # Compare with Sum of Reorder Point
-        daily_result[f'SO vs Reorder Point D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'] - daily_result['Sum of reorder_point']
-
-        # Convert SO vs Reorder Point to "Triggered" or "Not Triggered"
-        daily_result[f'SO vs Reorder Point D+{day}'] = daily_result[f'SO vs Reorder Point D+{day}'].apply(lambda x: "Triggered" if x < 0 else "Not Triggered")
+        def check_triggered(row, day):
+            if row[f'Predicted SO Qty D+{day}'] == 0:
+                return "Not Triggered"
+            return "Triggered" if row[f'Predicted SO Qty D+{day}'] - row['Sum of reorder point'] < 0 else "Not Triggered"
+        
+        daily_result[f'SO vs Reorder Point D+{day}'] = daily_result.apply(lambda row: check_triggered(row, day), axis=1)
         
         results.append(daily_result[["wh_id", "hub_id", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]])
     
