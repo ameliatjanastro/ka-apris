@@ -75,7 +75,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         def check_triggered(row, day):
             if row[f'Predicted SO Qty D+{day}'] == 0:
                 return "Not Triggered"
-            return "Triggered" if row[f'Predicted SO Qty D+{day}'] - row['Sum of reorder point'] < 0 else "Not Triggered"
+            return "Triggered" if row[f'Predicted SO Qty D+{day}'] - row['Sum of reorder_point'] < 0 else "Not Triggered"
         
         daily_result[f'SO vs Reorder Point D+{day}'] = daily_result.apply(lambda row: check_triggered(row, day), axis=1)
         
