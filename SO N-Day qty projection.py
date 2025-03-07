@@ -35,6 +35,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
 
     # Exclude specific hubs
     final_so_df = final_so_df[~final_so_df['hub_id'].isin([537, 758])]
+    final_so_df = final_so_df[~final_so_df['wh_id'].isin([583])]
     
     # Initialize result DataFrame
     results = []
@@ -108,6 +109,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
 
 
     # Dropdown for selecting Hub ID
+   # Dropdown for selecting Hub ID
     hub_options = final_results_df['hub_id'].unique()
     selected_hub = st.selectbox("Select Hub ID", hub_options)
     
@@ -124,30 +126,62 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                                   var_name='Date', 
                                   value_name='SO Quantity')
     
-    # Create a line chart with markers
-    # Create a bar chart
-    fig = px.line(
-    melted_df,
-    x='Date', 
-    y='SO Quantity', 
-    color='wh_id',  # Different line per WH
-    title=f'Predicted SO Quantity for Hub {selected_hub}',
-    markers=True  # Adds markers to data points
+    # Convert Date column to datetime type for proper plotting
+    melted_df['Date'] = pd.to_datetime(melted_df['Date'])
+    
+    # Separate data for Dry WHs (772, 40) and Fresh WHs (160, 661)
+    dry_wh_df = melted_df[melted_df['wh_id'].isin([772, 40])]
+    fresh_wh_df = melted_df[melted_df['wh_id'].isin([160, 661])]
+    
+    # Create Dry WHs line chart
+    st.subheader("Predicted SO Quantity for Dry Warehouses (772, 40)")
+    fig_dry = px.line(
+        dry_wh_df,
+        x='Date', 
+        y='SO Quantity', 
+        color='wh_id',  
+        markers=True,  
+        title=f'Dry Warehouses (772 & 40) - Predicted SO Quantity for Hub {selected_hub}'
     )
     
-    # Ensure each WH has its own correctly labeled values
-    for wh in melted_df['wh_id'].unique():
-        wh_data = melted_df[melted_df['wh_id'] == wh]
-        fig.add_scatter(
+    # Add data labels
+    for wh in dry_wh_df['wh_id'].unique():
+        wh_data = dry_wh_df[dry_wh_df['wh_id'] == wh]
+        fig_dry.add_scatter(
             x=wh_data['Date'], 
             y=wh_data['SO Quantity'], 
             mode='text', 
             text=wh_data['SO Quantity'].astype(str), 
             textposition="top center",
-            showlegend=False  # Avoid duplicate legends
+            showlegend=False
         )
     
-    st.plotly_chart(fig)
+    st.plotly_chart(fig_dry)
+    
+    # Create Fresh WHs line chart
+    st.subheader("Predicted SO Quantity for Fresh Warehouses (160, 661)")
+    fig_fresh = px.line(
+        fresh_wh_df,
+        x='Date', 
+        y='SO Quantity', 
+        color='wh_id',  
+        markers=True,  
+        title=f'Fresh Warehouses (160 & 661) - Predicted SO Quantity for Hub {selected_hub}'
+    )
+    
+    # Add data labels
+    for wh in fresh_wh_df['wh_id'].unique():
+        wh_data = fresh_wh_df[fresh_wh_df['wh_id'] == wh]
+        fig_fresh.add_scatter(
+            x=wh_data['Date'], 
+            y=wh_data['SO Quantity'], 
+            mode='text', 
+            text=wh_data['SO Quantity'].astype(str), 
+            textposition="top center",
+            showlegend=False
+        )
+    
+    st.plotly_chart(fig_fresh)
 
     
     # Provide a download button for results
