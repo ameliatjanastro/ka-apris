@@ -54,35 +54,25 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
    # Initialize forecast column
     final_so_df['forecast_based_so'] = 0  
 
-# Allocate demand forecast to each WH x Hub proportionally
-    for index, row in final_so_df.iterrows():
-        wh_id, hub_id = row['wh_id'], row['hub_id']
-        
+# Allocate demand forecast to each WH x Hub based on `Sum of qty_so_final`
+    for (wh_id, hub_id), hub_data in final_so_df.groupby(["wh_id", "hub_id"]):
         if wh_id in {**dry_demand_allocation, **fresh_demand_allocation}:
             wh_demand = dry_demand_allocation.get(wh_id, fresh_demand_allocation.get(wh_id, 0))
             total_sql_so_final_wh = final_so_df.loc[final_so_df['wh_id'] == wh_id, 'Sum of qty_so_final'].sum()
+            total_sql_so_final_wh_hub = hub_data["Sum of qty_so_final"].sum()
 
-            if total_sql_so_final_wh > 0:
-                total_sql_so_final_wh_hub = row['Sum of qty_so_final']
-                
-                if total_sql_so_final_wh_hub > 0:
-                    forecast_based_so = (total_sql_so_final_wh_hub / total_sql_so_final_wh) * wh_demand
-                    final_so_df.at[index, 'forecast_based_so'] = forecast_based_so
+            if total_sql_so_final_wh > 0 and total_sql_so_final_wh_hub > 0:
+                forecast_based_so = (total_sql_so_final_wh_hub / total_sql_so_final_wh) * wh_demand
+                final_so_df.loc[(final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id), 'forecast_based_so'] = forecast_based_so
 
-    # Calculate deviation row-wise
-    def calculate_deviation(row):
-        forecast = row["forecast_based_so"]
-        actual_so = row["Sum of qty_so_final"]
-        
-        if forecast > 0:
-            return ((actual_so - forecast) / forecast) * 100
-        return 0  # Avoid division by zero
-    
-    final_so_df["Deviation (%)"] = final_so_df.apply(calculate_deviation, axis=1)
+    # Calculate deviation per WH x Hub
+    final_so_df["Deviation (%)"] = ((final_so_df["Sum of qty_so_final"] - final_so_df["forecast_based_so"]) / final_so_df["forecast_based_so"]) * 100
+    final_so_df["Deviation (%)"] = final_so_df["Deviation (%)"].fillna(0)  # Replace NaN with 0
 
     # Display Results
     st.header("SO Bias Analysis")
     st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so_final", "forecast_based_so", "Deviation (%)"]])
+
     
     # Download Option
     csv = final_so_df.to_csv(index=False).encode('utf-8')
