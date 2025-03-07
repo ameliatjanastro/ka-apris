@@ -52,7 +52,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
    # Initialize forecast column
     final_so_df['forecast_based_so'] = 0  
 
-    # Allocate demand forecast to each WH x Hub proportionally
+     # Allocate demand forecast to each WH x Hub proportionally
     for wh_id, wh_demand in {**dry_demand_allocation, **fresh_demand_allocation}.items():
         # Total SO for this warehouse across all hubs
         total_sql_so_final_wh = final_so_df.loc[final_so_df['wh_id'] == wh_id, 'Sum of qty_so_final'].sum()
@@ -68,13 +68,14 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
                         total_sql_so_final_wh_hub / total_sql_so_final_wh * wh_demand
                     )
 
-    # Compare SQL-estimated SO with Forecast-based SO
-    final_so_df['final_so_qty'] = final_so_df[['Sum of qty_so_final', 'Sum of qty_so', 'forecast_based_so']].max(axis=1)
+    # Calculate deviation percentage
+    final_so_df["Deviation (%)"] = (
+        (final_so_df["forecast_based_so"] - final_so_df["Sum of qty_so_final"]) / final_so_df["Sum of qty_so_final"]
+    ) * 100
 
-    
     # Display Results
-    st.header("Final SO Estimation")
-    st.dataframe(final_so_df)
+    st.header("SO Bias Analysis")
+    st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so_final", "forecast_based_so", "Deviation (%)"]])
     
     # Download Option
     csv = final_so_df.to_csv(index=False).encode('utf-8')
