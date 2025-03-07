@@ -84,7 +84,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
         final_results_df = final_results_df.merge(df, on=["wh_id", "hub_id"], how="left")
 
 
-     st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final"]])
+    st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final"]])
 
     # Create a WH-level aggregated DataFrame
     wh_summary_df = final_so_df.groupby('wh_id').agg({
