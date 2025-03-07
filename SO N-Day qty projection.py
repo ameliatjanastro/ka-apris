@@ -40,14 +40,10 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     for wh_id, wh_demand in {**dry_demand_allocation, **fresh_demand_allocation}.items():
         for hub_id in final_so_df.loc[final_so_df['wh_id'] == wh_id, 'hub_id'].unique():
             hub_mask = (final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id)
-            total_sql_so_final = final_so_df.loc[hub_mask, 'Sum of qty_so_final'].sum()
-            total_sql_so = final_so_df.loc[hub_mask, 'Sum of qty_so'].sum()
+            total_sql_so_final = final_so_df.loc[hub_mask, 'Sum of qty_so_final']
+            total_sql_so = final_so_df.loc[hub_mask, 'Sum of qty_so']
             
-            if total_sql_so_final > 0:
-                # Distribute forecasted SO based on SQL-estimated SO proportions
-                final_so_df.loc[hub_mask, 'forecast_based_so'] = (
-                    final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_sql_so_final * wh_demand
-                )
+            final_so_df.loc[hub_mask, 'forecast_based_so'] = (final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_sql_so_final * wh_demand)
     
     # Compare SQL-estimated SO with Forecast-based SO
     final_so_df['final_so_qty'] = final_so_df[['Sum of qty_so_final', 'Sum of qty_so', 'forecast_based_so']].max(axis=1)
