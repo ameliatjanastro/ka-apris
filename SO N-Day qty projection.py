@@ -78,7 +78,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
 
     # Display Results
     st.header("SO Bias Analysis")
-    st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so_final", "forecast_based_so", "Deviation Qty"]])
+    st.dataframe(final_so_df[["wh_id", "hub_id", "'Sum of qty_so_final", "Sum of qty_so_final", "forecast_based_so", "Deviation Qty"]])
 
     
     # Download Option
