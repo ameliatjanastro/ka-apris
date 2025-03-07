@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import datetime
 import numpy as np
@@ -20,65 +20,61 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     fresh_cbn_forecast_df = pd.read_excel(fresh_cbn_forecast_file)
     fresh_pgs_forecast_df = pd.read_excel(fresh_pgs_forecast_file)
     
-    # Get tomorrow's date
-    tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+    # Get forecast dates D+1 to D+6
+    today = datetime.date.today()
+    forecast_dates = [(today + datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(1, 7)]
     
-    # Filter forecast data for tomorrow only
-    dry_forecast_df = dry_forecast_df[dry_forecast_df["date_key"] == tomorrow]
-    fresh_cbn_forecast_df = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == tomorrow]
-    fresh_pgs_forecast_df = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == tomorrow]
+    # Filter forecast data for D+1 to D+6
+    dry_forecast_df = dry_forecast_df[dry_forecast_df["date_key"].isin(forecast_dates)]
+    fresh_cbn_forecast_df = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"].isin(forecast_dates)]
+    fresh_pgs_forecast_df = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"].isin(forecast_dates)]
 
+    # Convert IDs to integer type
     final_so_df[['wh_id', 'hub_id']] = final_so_df[['wh_id', 'hub_id']].apply(pd.to_numeric)
     
-    # Aggregate Demand Forecast for tomorrow
-    dry_demand = dry_forecast_df["Forecast Step 3"].sum()
-    fresh_cbn_demand = fresh_cbn_forecast_df["Forecast Step 3"].sum()
-    fresh_pgs_demand = fresh_pgs_forecast_df["Forecast Step 3"].sum()
-
-    st.write("Dry Forecast Data for Tomorrow:", dry_forecast_df)
-    st.write("Fresh CBN Forecast Data for Tomorrow:", fresh_cbn_forecast_df)
-    st.write("Fresh PGS Forecast Data for Tomorrow:", fresh_pgs_forecast_df)
-
+    # Initialize result dataframe
+    results_df = final_so_df[['wh_id', 'hub_id']].copy()
     
-    # Allocate Demand Forecast to WHs
-    # Allocate Demand Forecast to WHs (convert to int)
-    dry_demand_allocation = {772: int(dry_demand * (1/3)), 40: int(dry_demand * (2/3))}
-    fresh_demand_allocation = {661: int(fresh_cbn_demand), 160: int(fresh_pgs_demand)}
-
-
-    # Convert IDs to string type
-    final_so_df['wh_id'] = final_so_df['wh_id'].astype(int)
-    final_so_df['hub_id'] = final_so_df['hub_id'].astype(int)
-
-    st.write("Column Data Types:", final_so_df.dtypes)
-
-   # Initialize forecast column
-    final_so_df['forecast_based_so'] = 0  
-    
-    for wh_id, wh_demand in {**dry_demand_allocation, **fresh_demand_allocation}.items():
-        for hub_id in final_so_df.loc[final_so_df['wh_id'] == wh_id, 'hub_id'].unique():
-            hub_mask = final_so_df['wh_id'] == wh_id
-            hub_mask2 = (final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id)
-            total_sql_so_final = final_so_df.loc[hub_mask, 'Sum of qty_so_final'].sum()  # ✅ WH × Hub total SO
-            total_sql_so_final = final_so_df.loc[hub_mask, 'Sum of qty_so_final'].sum()  # ✅ WH × Hub total SO
-            
-            if total_sql_so_final > 0:
-                # Distribute forecast proportionally based on SO Final at each Hub
-                final_so_df.loc[hub_mask, 'forecast_based_so'] = np.floor(
-                (final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_sql_so_final) * wh_demand).astype(int)
-            else:
-                final_so_df.loc[hub_mask, 'forecast_based_so'] = 0  # If no SO, assign 0
-    
-            # Ensure deviation is calculated for each WH × Hub
-            final_so_df['Deviation Qty'] = (final_so_df['Sum of qty_so_final'] - final_so_df['forecast_based_so'])
+    for i, forecast_date in enumerate(forecast_dates):
+        # Get daily forecast
+        daily_dry_demand = dry_forecast_df[dry_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
+        daily_fresh_cbn_demand = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
+        daily_fresh_pgs_demand = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
+        
+        # Allocate Demand Forecast to WHs
+        dry_demand_allocation = {772: int(daily_dry_demand * (1/3)), 40: int(daily_dry_demand * (2/3))}
+        fresh_demand_allocation = {661: int(daily_fresh_cbn_demand), 160: int(daily_fresh_pgs_demand)}
+        
+        # Initialize updated hub quantity
+        final_so_df[f'Updated Hub Qty D+{i+1}'] = final_so_df['Sum of hub_qty']
+        
+        for wh_id in final_so_df['wh_id'].unique():
+            for hub_id in final_so_df.loc[final_so_df['wh_id'] == wh_id, 'hub_id'].unique():
+                hub_mask = (final_so_df['wh_id'] == wh_id) & (final_so_df['hub_id'] == hub_id)
+                demand = dry_demand_allocation.get(wh_id, 0) + fresh_demand_allocation.get(wh_id, 0)
                 
-            # Fill NaN values with 0 for cases where forecast_based_so was originally 0
-            final_so_df['Deviation Qty'] = final_so_df['Deviation Qty'].fillna(0)
-
-
+                final_so_df.loc[hub_mask, f'Updated Hub Qty D+{i+1}'] -= demand
+                final_so_df.loc[hub_mask, f'Updated Hub Qty D+{i+1}'] = final_so_df.loc[hub_mask, f'Updated Hub Qty D+{i+1}'].clip(lower=0)
+        
+        # Compute Predicted SO Quantity
+        final_so_df[f'Predicted SO Qty D+{i+1}'] = ((final_so_df['Sum of maxqty'] - final_so_df[f'Updated Hub Qty D+{i+1}']) / 
+                                                    final_so_df['Sum of multiplier']) * final_so_df['Sum of multiplier']
+        final_so_df[f'Predicted SO Qty D+{i+1}'] = final_so_df[f'Predicted SO Qty D+{i+1}'].clip(lower=0).astype(int)
+        
+        # Compare with Sum of Reorder Point
+        final_so_df[f'SO vs Reorder Point D+{i+1}'] = final_so_df[f'Predicted SO Qty D+{i+1}'] - final_so_df['Sum of reorder_point']
+        
+        # Store in results dataframe
+        results_df[f'Updated Hub Qty D+{i+1}'] = final_so_df[f'Updated Hub Qty D+{i+1}']
+        results_df[f'Predicted SO Qty D+{i+1}'] = final_so_df[f'Predicted SO Qty D+{i+1}']
+        results_df[f'SO vs Reorder Point D+{i+1}'] = final_so_df[f'SO vs Reorder Point D+{i+1}']
+    
     # Display Results
-    st.header("SO Bias Analysis")
-    st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final", "forecast_based_so", "Deviation Qty"]])
+    st.header("W+1 to W+6 SO Prediction")
+    st.dataframe(results_df)
+
+
+    st.dataframe(final_so_df[["wh_id", "hub_id", "Sum of qty_so", "Sum of qty_so_final"]])
 
     # Create a WH-level aggregated DataFrame
     wh_summary_df = final_so_df.groupby('wh_id').agg({
@@ -90,26 +86,12 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     # Rename columns for clarity
     wh_summary_df.rename(columns={'Sum of qty_so_final': 'Total_qty_so_final', 
                                   'forecast_based_so': 'Total_forecast_based_so'}, inplace=True)
-    
-    # Calculate WH-level deviation percentage
-    wh_summary_df['Deviation (%)'] = ((wh_summary_df['Total_qty_so_final'] - wh_summary_df['Total_forecast_based_so']) / 
-                                      wh_summary_df['Total_forecast_based_so']) * 100
-    
-    # Fill NaN deviations with 0
-    wh_summary_df['Deviation (%)'] = wh_summary_df['Deviation (%)'].fillna(0)
-    
-    # Display in Streamlit
-    st.header("WH-Level SO Summary")
+
     st.dataframe(wh_summary_df)
-
-    # Provide a download button for WH summary
-    wh_csv = wh_summary_df.to_csv(index=False).encode('utf-8')
-    st.download_button("Download WH-Level SO Summary", wh_csv, "wh_so_summary.csv", "text/csv")
-
-
     
-    # Download Option
-    csv = final_so_df.to_csv(index=False).encode('utf-8')
-    st.download_button("Download Final SO Estimate", csv, "final_so_estimate.csv", "text/csv")
+    # Provide a download button for results
+    csv = results_df.to_csv(index=False).encode('utf-8')
+    st.download_button("Download W+1 to W+6 SO Prediction", csv, "w1_w6_so_prediction.csv", "text/csv")
+
 
 
