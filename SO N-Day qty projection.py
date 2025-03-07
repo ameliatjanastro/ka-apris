@@ -34,6 +34,7 @@ if so_file and dry_forecast_file and fresh_cbn_forecast_file and fresh_pgs_forec
     final_so_df[['wh_id', 'hub_id']] = final_so_df[['wh_id', 'hub_id']].apply(pd.to_numeric)
 
     # Exclude specific hubs
+    final_so_df["hub_id"] = final_so_df["hub_id"].astype(int)
     final_so_df = final_so_df[~final_so_df['hub_id'].isin([537, 758])]
     final_so_df = final_so_df[~final_so_df['wh_id'].isin([583])]
     
