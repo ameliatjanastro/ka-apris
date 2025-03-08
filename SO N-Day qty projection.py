@@ -318,8 +318,8 @@ if so_file:
                 x='Date', 
                 y='SO Quantity', 
                 color='WH ID',  
-                markers=True,  
-                title=f'Dry Warehouses (KOS & STL) - Predicted SO Quantity for Hub {selected_hub}'
+                markers=True  
+                #title=f'Dry Warehouses (KOS & STL) - Predicted SO Quantity for Hub {selected_hub}'
             )
         
             # Add data labels
@@ -331,7 +331,7 @@ if so_file:
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
-                    textfont=dict(color="red", size=12, family="Arial", weight="bold"),  # Bold Red Text
+                    textfont=dict(color="red", size=12, family="Poppins", weight="bold"),  # Bold Red Text
                     showlegend=False
                 )
         
@@ -344,8 +344,8 @@ if so_file:
                 x='Date', 
                 y='SO Quantity', 
                 color='WH ID',  
-                markers=True,  
-                title=f'Fresh Warehouses (PGS & CBN) - Predicted SO Quantity for Hub {selected_hub}'
+                markers=True  
+                #title=f'Fresh Warehouses (PGS & CBN) - Predicted SO Quantity for Hub {selected_hub}'
             )
         
             # Add data labels
@@ -357,7 +357,7 @@ if so_file:
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
-                    textfont=dict(color="red", size=12, family="Arial", weight="bold"),  # Bold Red Text
+                    textfont=dict(color="red", size=12, family="Poppins", weight="bold"),  # Bold Red Text
                     showlegend=False
                 )
         
