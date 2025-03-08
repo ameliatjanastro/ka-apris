@@ -201,9 +201,9 @@ if so_file:
     
     # Filter the DataFrame for the selected hub
     selected_hub_id = int(selected_hub.split(" - ")[0])  # Extracts ID
-    filtered_df = final_results_df[final_results_df["hub_id"] == selected_hub_id]
+    filtered_df = final_results_df[final_results_df["Hub ID"] == selected_hub_id]
 
-    #filtered_df = final_results_df[final_results_df['hub_id'] == selected_hub].copy()
+    #filtered_df = final_results_df[final_results_df['Hub ID'] == selected_hub].copy()
     
     # Rename D+1 to D+6 columns to actual dates
     forecast_dates_dict = {f"Predicted SO Qty D+{i+1}": (today + datetime.timedelta(days=i+1)).strftime('%Y-%m-%d') for i in range(6)}
@@ -219,8 +219,8 @@ if so_file:
     melted_df['Date'] = pd.to_datetime(melted_df['Date'])
     
     # Separate data for Dry WHs (772, 40) and Fresh WHs (160, 661)
-    dry_wh_df = melted_df[melted_df['wh_id'].isin([772, 40])]
-    fresh_wh_df = melted_df[melted_df['wh_id'].isin([160, 661])]
+    dry_wh_df = melted_df[melted_df['WH ID'].isin([772, 40])]
+    fresh_wh_df = melted_df[melted_df['WH ID'].isin([160, 661])]
     
     # Create Dry WHs line chart
     st.subheader("Predicted SO Quantity for Dry Warehouses (772, 40)")
@@ -228,14 +228,14 @@ if so_file:
         dry_wh_df,
         x='Date', 
         y='SO Quantity', 
-        color='wh_id',  
+        color='WH ID',  
         markers=True,  
         title=f'Dry Warehouses (772 & 40) - Predicted SO Quantity for Hub {selected_hub}'
     )
     
     # Add data labels
-    for wh in dry_wh_df['wh_id'].unique():
-        wh_data = dry_wh_df[dry_wh_df['wh_id'] == wh]
+    for wh in dry_wh_df['WH ID'].unique():
+        wh_data = dry_wh_df[dry_wh_df['WH ID'] == wh]
         fig_dry.add_scatter(
             x=wh_data['Date'], 
             y=wh_data['SO Quantity'], 
@@ -253,13 +253,13 @@ if so_file:
         fresh_wh_df,
         x='Date', 
         y='SO Quantity', 
-        color='wh_id',  
+        color='WH ID',  
         markers=True,  
         title=f'Fresh Warehouses (160 & 661) - Predicted SO Quantity for Hub {selected_hub}'
     )
     
     # Add data labels
-    for wh in fresh_wh_df['wh_id'].unique():
+    for wh in fresh_wh_df['WH ID'].unique():
         wh_data = fresh_wh_df[fresh_wh_df['wh_id'] == wh]
         fig_fresh.add_scatter(
             x=wh_data['Date'], 
