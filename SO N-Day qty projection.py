@@ -6,6 +6,12 @@ import plotly.express as px
 
 st.set_page_config(layout="wide") 
 
+# Streamlit App Title
+st.title("SO Quantity Estimation")
+
+# File Upload Section
+so_file = st.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
+
 st.markdown(
     """
     <style>
@@ -17,11 +23,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Streamlit App Title
-st.title("SO Quantity Estimation")
-
-# File Upload Section
-so_file = st.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
 # Sidebar navigation
 tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
