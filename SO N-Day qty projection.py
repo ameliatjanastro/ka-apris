@@ -162,7 +162,7 @@ if so_file:
         color = 'background-color: lightgreen' if val == "Triggered" else 'background-color: lightcoral'
         return color
 
-    styled_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
+    final_result_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
     styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
     st.dataframe(styled_df, use_container_width=True)
 
