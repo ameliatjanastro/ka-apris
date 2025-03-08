@@ -137,7 +137,7 @@ if so_file:
         filtered_so_df = final_so_df[final_so_df["WH Name"] == selected_wh]
     
         # Display Final SO DataFrame
-        st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Sum of qty_so_final", "Predicted SO Qty D+0"]],column_config={col: st.column_config.TextColumn(width="small") for col in df.columns})
+        st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Sum of qty_so_final", "Predicted SO Qty D+0"]],column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns})
 
     with tab2:
             
