@@ -47,7 +47,7 @@ st.sidebar.markdown("""
 
 
 st.markdown("""
-#### 📊 Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** Calculation 😊  
+#### Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊  
 
 | Concept  | qty_so (how much should be ordered) | qty_so_final (final approved SO quantity)|
 |----------|--------|-------------|
@@ -56,7 +56,7 @@ st.markdown("""
 | **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
 | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
 
-✔ **Predicted SO Qty **:red[D + X]** is based on Demand Forecast for **:red[next day]**  
+✔ **Predicted SO Qty **D + X** is based on Demand Forecast for **next day**  
 
 """)
 
