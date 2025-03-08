@@ -17,7 +17,7 @@ st.markdown(
     <style>
         /* Reduce space at the top of the page */
         .block-container {
-            padding-top: 4rem;
+            padding-top: 3rem;
         }
         /* Reduce overall font size */
         html, body, [class*="css"] {
