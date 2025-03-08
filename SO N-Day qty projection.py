@@ -45,6 +45,8 @@ st.sidebar.markdown("""
 2. **The displayed Qty for CBN excludes Xdock** (30% of total SO)  
 """)
 
+
+st.markdown("""
 ## 📊 Understanding qty_so vs. qty_so_final Calculation  
 
 ### 1️⃣ qty_so Calculation (How Much Should Be Ordered)  
