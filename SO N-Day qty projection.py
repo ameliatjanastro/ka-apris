@@ -90,13 +90,13 @@ if so_file:
             return "Triggered" if row[f'Predicted SO Qty D+{day}'] - row['Sum of reorder_point'] < 0 else "Not Triggered"
         
         daily_result[f'SO vs Reorder Point D+{day}'] = daily_result.apply(lambda row: check_triggered(row, day), axis=1)
-        
-        results.append(daily_result[["wh_id", "hub_id", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]])
+        daily_result = daily_result.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
+        results.append(daily_result[["WH ID", "Hub ID", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]])
     
     # Merge results into a single DataFrame
     final_results_df = results[0]
     for df in results[1:]:
-        final_results_df = final_results_df.merge(df, on=["wh_id", "hub_id"], how="left")
+        final_results_df = final_results_df.merge(df, on=["WH ID", "Hub ID"], how="left")
 
 
     # Hub ID to Hub Name mapping
@@ -162,16 +162,13 @@ if so_file:
         color = 'background-color: lightgreen' if val == "Triggered" else 'background-color: lightcoral'
         return color
 
-    final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
+    #final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
     styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
     st.dataframe(styled_df, use_container_width=True)
 
 
     # Dropdown for selecting WH ID
 
-
-    # Dropdown for selecting Hub ID
-   # Dropdown for selecting Hub ID
     hub_options = final_results_df['Hub ID'].unique()
     # Combine Hub ID and Name for display
     final_results_df["Hub Display"] = final_results_df["Hub ID"].astype(str) + " - " + final_results_df["Hub Name"]
