@@ -34,6 +34,17 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+st.sidebar.markdown("""
+- **Total Active Hubs**: 30  
+- **Total WH**: 4  
+
+### ⚠️ Important:
+1. **Daily Demand Forecast assumptions:**  
+   - *Dry*: 2/3 demand for KOS, 1/3 for STL  
+   - *Fresh*: By L2 Category (CBN -> Telur, Roti & Pastry, Sayur, Buah)  
+2. **The displayed Qty for CBN excludes Xdock** (30% of total SO)  
+""")
+
 # Sidebar navigation
 tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
