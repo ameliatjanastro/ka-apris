@@ -9,6 +9,9 @@ st.set_page_config(layout="wide")
 # Streamlit App Title
 #st.title("SO Quantity Estimation")
 
+today = datetime.date.today()
+st.sidebar.markdown(f"📅 Today’s Date: **{today}**")
+
 # File Upload Section
 so_file = st.sidebar.file_uploader("Upload SQL-estimated SO (after 9 PM best :) )", type=["xlsx"])
 
@@ -37,6 +40,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 st.sidebar.markdown("""
 - **Total Active Hubs**: 30  
@@ -87,7 +91,7 @@ if so_file:
 
     
     # Get forecast dates D+1 to D+6
-    today = datetime.date.today()
+
     forecast_dates = [(today + datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(1, 7)]
     
     # Filter forecast data for D+1 to D+6
@@ -374,7 +378,6 @@ if so_file:
     
         #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
-        st.markdown(f"📅 Today’s Date: **{today}**")
         styled_df = styled_df.hide(axis="index")
         st.dataframe(styled_df, use_container_width=True)
         
