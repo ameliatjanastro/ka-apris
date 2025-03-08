@@ -211,7 +211,7 @@ if so_file:
         final_results_df["Hub Name"] = final_results_df["Hub ID"].map(hub_name_mapping)
         final_results_df["Hub Display"] = final_results_df["Hub ID"].astype(str) + " - " + final_results_df["Hub Name"]
     
-        selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
+        
     
         # Filter the DataFrame for the selected hub
         selected_hub_id = int(selected_hub.split(" - ")[0])  # Extracts ID
@@ -239,8 +239,13 @@ if so_file:
         # Create Dry WHs line chart
        
         
-        # Add radio button for product type selection
-        product_type = st.radio("Select Product Type:", ["Dry", "Fresh"], horizontal=True)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
+        
+        with col2:
+            product_type = st.selectbox("Select Product Type:", ["Dry", "Fresh"])
         
         # Show selected chart
         if product_type == "Dry":
