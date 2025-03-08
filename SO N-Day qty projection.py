@@ -167,6 +167,7 @@ if so_file:
         st.dataframe(styled_wh_summary, use_container_width=True)
         
         # Select WH dropdown
+        st.markdown("<h4>Summary by Hub</h4>", unsafe_allow_html=True)
         wh_options = final_so_df["WH Name"].unique().tolist()
         selected_wh = st.selectbox("Select WH", wh_options)
         
@@ -179,7 +180,7 @@ if so_file:
         )
         
         # Display Final SO DataFrame with highlight
-        st.markdown("<h4>Summary by Hub</h4>", unsafe_allow_html=True)
+
         st.dataframe(styled_filtered_so, column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns}, use_container_width=True)
         #st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Predicted SO Qty D+0", "Sum of qty_so_final"]],column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns})
 
@@ -270,8 +271,8 @@ if so_file:
         st.markdown("<h4>Predicted SO Qty for Next Week</h4>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
-            selected_hub = st.select_slider("Select WH", options=final_results_df["Hub Display"].dropna().unique())
-            #selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
+            #selected_hub = st.select_slider("Select WH", options=final_results_df["Hub Display"].dropna().unique())
+            selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique(), label_visibility="collapsed")  # Drop NaN to avoid excluded hubs
             
         with col2:
             product_type = st.selectbox("Select Product Type:", ["Dry", "Fresh"])
