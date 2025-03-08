@@ -94,6 +94,7 @@ if so_file:
     
         final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
         final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
+        final_so_df = final_so_df.rename(columns={"wh_id": "WH ID"})
         
         st.dataframe(final_so_df[["WH ID", "Hub Name", "Sum of qty_so", "Sum of qty_so_final","Predicted SO Qty D+0"]])
     
