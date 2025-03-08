@@ -11,7 +11,7 @@ st.set_page_config(layout="wide")
 st.title("SO Quantity Estimation")
 
 # File Upload Section
-so_file = st.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
+so_file = st.sidebar.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
 # Sidebar navigation
 tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
@@ -181,31 +181,7 @@ if so_file:
             return color
     
         #final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
-        
-        # Create two columns for better layout
-        col1, col2 = st.columns(2)
-        
-        # Place the select boxes in separate columns
-        with col1:
-            selected_day = st.selectbox("Select D+X", [f"D+{i}" for i in range(1, 7)])
-        
-        with col2:
-            wh_options = final_results_df["WH ID"].unique().tolist()
-            selected_wh = st.selectbox("Select WH", wh_options)
-        
-        # Filter the dataframe based on selected WH
-        filtered_df = final_results_df[final_results_df["WH ID"] == selected_wh]
-        
-        # Select relevant columns dynamically based on the chosen day
-        selected_columns = ["Hub ID", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
-        
-        # Apply selection and styling
-        styled_df = filtered_df[selected_columns].style.applymap(highlight_triggered, subset=[f"SO vs Reorder Point {selected_day}"])
-    
-        #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
-    
-       
-    
+
         # Dropdown for selecting WH ID
     
         hub_options = final_results_df['Hub ID'].unique()
@@ -295,6 +271,28 @@ if so_file:
     
         
         # Provide a download button for results
+
+         # Create two columns for better layout
+        col1, col2 = st.columns(2)
+        
+        # Place the select boxes in separate columns
+        with col1:
+            selected_day = st.selectbox("Select D+X", [f"D+{i}" for i in range(1, 7)])
+        
+        with col2:
+            wh_options = final_results_df["WH ID"].unique().tolist()
+            selected_wh = st.selectbox("Select WH", wh_options)
+        
+        # Filter the dataframe based on selected WH
+        filtered_df = final_results_df[final_results_df["WH ID"] == selected_wh]
+        
+        # Select relevant columns dynamically based on the chosen day
+        selected_columns = ["Hub ID", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
+        
+        # Apply selection and styling
+        styled_df = filtered_df[selected_columns].style.applymap(highlight_triggered, subset=[f"SO vs Reorder Point {selected_day}"])
+    
+        #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
         st.dataframe(styled_df, use_container_width=True)
         
