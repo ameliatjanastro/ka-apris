@@ -40,6 +40,11 @@ if so_file:
     final_so_df["hub_id"] = final_so_df["hub_id"].astype(int)
     final_so_df = final_so_df[~final_so_df['hub_id'].isin([537, 758])]
     final_so_df = final_so_df[~final_so_df['wh_id'].isin([583])]
+
+     # Compute Predicted SO Qty D+0
+    final_so_df['Predicted SO Qty D+0'] = ((final_so_df['Sum of maxqty'] - final_so_df['Sum of hub_qty']) / 
+                                           final_so_df['Sum of multiplier']) * final_so_df['Sum of multiplier']
+    final_so_df['Predicted SO Qty D+0'] = final_so_df['Predicted SO Qty D+0'].clip(lower=0).astype(int)
     
     # Initialize result DataFrame
     results = []
@@ -159,7 +164,9 @@ if so_file:
         return color
 
     styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
-    st.dataframe(styled_df, use_container_width = True)
+    selected_columns = ["WH Name", "Hub Name", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}" ]
+    st.dataframe(styled_df[selected_columns], use_container_width=True)
+
 
     # Dropdown for selecting WH ID
 
