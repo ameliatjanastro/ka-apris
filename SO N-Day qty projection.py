@@ -275,7 +275,7 @@ if so_file:
         """)
 
 
-        st.markdown("<h4>Predicted SO Qty for Next Week</h4>", unsafe_allow_html=True)
+        st.markdown("<h4>:maroon[Predicted SO Qty for Next Week]</h4>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
             #selected_hub = st.select_slider("Select WH", options=final_results_df["Hub Display"].dropna().unique())
@@ -397,7 +397,7 @@ if so_file:
         #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
         styled_df = styled_df.hide(axis="index")
-        st.markdown("<h4>Summary by WH by Day</h4>", unsafe_allow_html=True)
+        st.markdown("<h4>:maroon[Summary by WH by Day]</h4>", unsafe_allow_html=True)
         st.dataframe(styled_df, use_container_width=True)
         
         csv = final_results_df.to_csv(index=False).encode('utf-8')
