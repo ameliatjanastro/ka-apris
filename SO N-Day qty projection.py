@@ -60,8 +60,8 @@ st.markdown("""
 | **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
 | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
 
-✔ Predicted **SO Qty D + X** is based on Demand Forecast for **next day, before considering wh_qty** 
-✔ **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
+- Predicted **SO Qty D + X** is based on Demand Forecast for **next day, before considering wh_qty** 
+- **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
 
 """)
 
@@ -160,19 +160,31 @@ if so_file:
         # Create a WH-level aggregated DataFrame
         wh_summary_df = final_so_df.groupby("WH Name").agg({
         'Sum of qty_so': 'sum',
-        'Sum of qty_so_final': 'sum',
-        'Predicted SO Qty D+0': 'sum'
+        'Predicted SO Qty D+0': 'sum',
+        'Sum of qty_so_final': 'sum'
         }).reset_index()
         
-        st.dataframe(wh_summary_df,column_config={col: st.column_config.TextColumn(width="small") for col in wh_summary_df.columns})
+        # Apply styling
+        styled_wh_summary = wh_summary_df.style.apply(highlight_final_so, subset=["Sum of qty_so_final"])
+        
+        # Display WH-level summary with highlight
+        st.dataframe(styled_wh_summary, use_container_width=True)
+        
+        # Select WH dropdown
         wh_options = final_so_df["WH Name"].unique().tolist()
         selected_wh = st.selectbox("Select WH", wh_options)
-    
-        # Filter DataFrame by selected WH ID
+        
+        # Filter DataFrame by selected WH
         filtered_so_df = final_so_df[final_so_df["WH Name"] == selected_wh]
-    
-        # Display Final SO DataFrame
-        st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Sum of qty_so_final", "Predicted SO Qty D+0"]],column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns})
+        
+        # Apply styling to filtered DataFrame
+        styled_filtered_so = filtered_so_df[["Hub Name", "Sum of qty_so", "Predicted SO Qty D+0", "Sum of qty_so_final"]].style.apply(
+            highlight_final_so, subset=["Sum of qty_so_final"]
+        )
+        
+        # Display Final SO DataFrame with highlight
+        st.dataframe(styled_filtered_so, ,column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns}, use_container_width=True)
+        #st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Predicted SO Qty D+0", "Sum of qty_so_final"]],column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns})
 
     with tab2:
             
