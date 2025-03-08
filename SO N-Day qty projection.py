@@ -351,8 +351,7 @@ if so_file:
     
         #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
-        today_date = datetime.today().strftime("%A, %d %B %Y")
-        st.markdown(f"### 📅 Today’s Date: **{today_date}**")
+        st.markdown(f"### 📅 Today’s Date: **{today}**")
         styled_df = styled_df.hide(axis="index")
         st.dataframe(styled_df, use_container_width=True)
         
