@@ -11,7 +11,7 @@ st.set_page_config(layout="wide")
 st.title("SO Quantity Estimation")
 
 # File Upload Section
-so_file = st.sidebar.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
+so_file = st.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
 # Sidebar navigation
 tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
