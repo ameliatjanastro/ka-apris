@@ -327,7 +327,7 @@ if so_file:
                 wh_data = dry_wh_df[dry_wh_df['WH ID'] == wh]
                 fig_dry.add_scatter(
                     x=wh_data['Date'], 
-                    y=wh_data['SO Quantity']+5, 
+                    y=wh_data['SO Quantity'] * 1.05, 
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
@@ -357,7 +357,7 @@ if so_file:
                 wh_data = fresh_wh_df[fresh_wh_df['WH ID'] == wh]
                 fig_fresh.add_scatter(
                     x=wh_data['Date'], 
-                    y=wh_data['SO Quantity']+5, 
+                    y=wh_data['SO Quantity'] + 10, 
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
