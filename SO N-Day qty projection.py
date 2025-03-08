@@ -15,6 +15,10 @@ so_file = st.sidebar.file_uploader("Upload SQL-estimated SO (after 9 PM best :) 
 st.markdown(
     """
     <style>
+        /* Reduce space at the top of the page */
+        .block-container {
+            padding-top: 0.5rem;
+        }
         /* Reduce overall font size */
         html, body, [class*="css"] {
             font-size: 14px !important;
