@@ -183,7 +183,7 @@ if so_file:
         )
         
         # Display Final SO DataFrame with highlight
-        st.dataframe(styled_filtered_so, ,column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns}, use_container_width=True)
+        st.dataframe(styled_filtered_so, column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns}, use_container_width=True)
         #st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Predicted SO Qty D+0", "Sum of qty_so_final"]],column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns})
 
     with tab2:
