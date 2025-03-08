@@ -31,12 +31,12 @@ st.markdown(
 
         /* Reduce dataframe font size */
         div[data-testid="stDataFrame"] * {
-            font-size: 10px !important;
+            font-size: 9px !important;
         }
         
         /* Reduce table font size */
         table {
-            font-size: 10px !important;
+            font-size: 9px !important;
         }
 
         /* EXCLUDE Plotly Charts from Font Size Reduction */
@@ -170,11 +170,11 @@ if so_file:
         styled_wh_summary = wh_summary_df.style.apply(highlight_final_so, subset=["Sum of qty_so_final"])
         
         # Display WH-level summary with highlight
-        st.markdown("<h4>Summary by WH</h4>", unsafe_allow_html=True)
+        st.markdown('<h4 style="color: maroon;">Summary by WH</h4>', unsafe_allow_html=True)
         st.dataframe(styled_wh_summary, use_container_width=True)
         
         # Select WH dropdown
-        st.markdown("<h4>Summary by Hub</h4>", unsafe_allow_html=True)
+        st.markdown('<h4 style="color: maroon;">Summary by Hub</h4>', unsafe_allow_html=True)
         wh_options = final_so_df["WH Name"].unique().tolist()
         selected_wh = st.selectbox("Select WH", wh_options)
         
@@ -331,7 +331,7 @@ if so_file:
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
-                    textfont=dict(color="gray", size=12, weight="bold"),  # Bold Red Text
+                    textfont=dict(color="gray", size=11, weight="bold"),  # Bold Red Text
                     showlegend=False
                 )
 
@@ -361,7 +361,7 @@ if so_file:
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
-                    textfont=dict(color="gray", size=12, weight="bold"),  # Bold Red Text
+                    textfont=dict(color="gray", size=11, weight="bold"),  # Bold Red Text
                     showlegend=False
                 )
 
