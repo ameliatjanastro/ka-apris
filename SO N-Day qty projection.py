@@ -41,7 +41,7 @@ st.markdown(
 
         /* EXCLUDE Plotly Charts from Font Size Reduction */
         .js-plotly-plot .plotly * {
-            font-size: 14px !important;  /* Ensures default or larger font */
+            font-size: 12px !important;  /* Ensures default or larger font */
         }
         
     </style>
