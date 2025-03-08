@@ -141,7 +141,7 @@ if so_file:
         661: "CBN - WH Cibinong"
     }
 
-    final_results_df["Hub Name"] = final_results_df["Hub ID"].map(hub_name_mapping)
+
     #final_results_df["WH Name"] = final_results_df["wh_id"].map(wh_name_mapping)
     final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
     final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
@@ -164,13 +164,14 @@ if so_file:
 
     #final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
     styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
-    st.dataframe(styled_df[["WH ID", "Hub ID", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]], use_container_width=True)
+    st.dataframe(styled_df, use_container_width=True)
 
 
     # Dropdown for selecting WH ID
 
     hub_options = final_results_df['Hub ID'].unique()
     # Combine Hub ID and Name for display
+    final_results_df["Hub Name"] = final_results_df["Hub ID"].map(hub_name_mapping)
     final_results_df["Hub Display"] = final_results_df["Hub ID"].astype(str) + " - " + final_results_df["Hub Name"]
 
     selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
