@@ -7,6 +7,8 @@ import plotly.express as px
 st.set_page_config(layout="wide") 
 
 # Streamlit App Title
+
+st.markdown(f"#### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊)  
 #st.title("SO Quantity Estimation")
 
 today = datetime.date.today()
@@ -43,7 +45,6 @@ st.markdown(
 
 with st.expander("View Description"):
     st.markdown("""
-    #### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊  
     
     | Concept  | qty_so (how much should be ordered) | qty_so_final (final approved SO quantity)|
     |----------|--------|-------------|
