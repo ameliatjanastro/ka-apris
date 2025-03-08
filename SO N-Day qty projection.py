@@ -142,7 +142,7 @@ if so_file:
     }
 
     with tab1:
-        st.header("Next Day SO Prediction")
+        st.subheader("Next Day SO Prediction")
     
          # Compute Predicted SO Qty D+0
         final_so_df['Predicted SO Qty D+0'] = ((final_so_df['Sum of maxqty'] - final_so_df['Sum of hub_qty']) / 
@@ -227,7 +227,7 @@ if so_file:
         #final_results_df["WH Name"] = final_results_df["wh_id"].map(wh_name_mapping)
         
         # Display Results
-        st.header("D+1 to D+6 SO Prediction")
+        st.subheader("D+1 to D+6 SO Prediction")
         
         def highlight_triggered(val):
             color = 'background-color: lightgreen' if val == "Triggered" else 'background-color: lightcoral'
@@ -351,6 +351,7 @@ if so_file:
     
         #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
+        today_date = datetime.today().strftime("%A, %d %B %Y")
         st.markdown(f"### 📅 Today’s Date: **{today_date}**")
         styled_df = styled_df.hide(axis="index")
         st.dataframe(styled_df, use_container_width=True)
