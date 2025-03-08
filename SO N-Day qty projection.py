@@ -39,10 +39,10 @@ st.sidebar.markdown("""
 - **Total WH**: 4  
 
 #### ⚠️ Important:
-1. **Demand Forecast assumptions:**  
+**Demand Forecast assumptions:**  
    - *Dry*: 2/3 demand for KOS, 1/3 for STL  
    - *Fresh*: By L2 Category (CBN -> Telur, Roti & Pastry, Sayur, Buah)  
-2. **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
+
 """)
 
 
@@ -56,7 +56,8 @@ st.markdown("""
 | **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
 | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
 
-✔ **Predicted SO Qty **D + X** is based on Demand Forecast for **next day**  
+✔ Predicted SO Qty **D + X** is based on Demand Forecast for **next day**  
+✔ **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
 
 """)
 
@@ -350,7 +351,7 @@ if so_file:
     
         #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
-        
+        st.markdown(f"### 📅 Today’s Date: **{today_date}**")
         styled_df = styled_df.hide(axis="index")
         st.dataframe(styled_df, use_container_width=True)
         
