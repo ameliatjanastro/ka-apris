@@ -9,7 +9,7 @@ st.title("SO Quantity Estimation")
 
 # File Upload Section
 st.header("Upload Data Files")
-so_file = st.file_uploader("Upload SQL-estimated SO for tomorrow", type=["xlsx"])
+so_file = st.sidebar.file_uploader("Upload SQL-estimated SO for tomorrow", type=["xlsx"])
 #dry_forecast_file = st.file_uploader("Upload Dry Demand Forecast CSV", type=["xlsx"])
 #fresh_cbn_forecast_file = st.file_uploader("Upload Fresh CBN Demand Forecast CSV", type=["xlsx"])
 #fresh_pgs_forecast_file = st.file_uploader("Upload Fresh PGS Demand Forecast CSV", type=["xlsx"])
@@ -210,7 +210,7 @@ if so_file:
     filtered_df.rename(columns=forecast_dates_dict, inplace=True)
     
     # Reshape the data for plotting
-    melted_df = filtered_df.melt(id_vars=['wh_id'], 
+    melted_df = filtered_df.melt(id_vars=['WH ID'], 
                                   value_vars=list(forecast_dates_dict.values()), 
                                   var_name='Date', 
                                   value_name='SO Quantity')
