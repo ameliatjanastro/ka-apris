@@ -186,7 +186,7 @@ if so_file:
         st.dataframe(styled_filtered_so, column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns}, use_container_width=True)
         #st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Predicted SO Qty D+0", "Sum of qty_so_final"]],column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns})
 
-        csv1 = filtered_so_df.to_csv(index=False).encode('utf-8')
+        csv1 = final_so_df.to_csv(index=False).encode('utf-8')
         st.download_button("Download Next Day SO Prediction", csv1, "next_day_so_prediction.csv", "text/csv")
    
     
