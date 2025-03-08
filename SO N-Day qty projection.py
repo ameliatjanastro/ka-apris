@@ -164,14 +164,26 @@ if so_file:
         return color
 
     #final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
-    # Create a selectbox for D+X selection
-    selected_day = st.selectbox("Select D+X", [f"D+{i}" for i in range(1, 7)])
+  # Create two columns for better layout
+    col1, col2 = st.columns(2)
     
-    # Select columns dynamically based on the chosen day
-    selected_columns = ["WH ID", "Hub ID", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
+    # Place the select boxes in separate columns
+    with col1:
+        selected_day = st.selectbox("Select D+X", [f"D+{i}" for i in range(1, 7)])
+    
+    with col2:
+        wh_options = ["All"] + final_results_df["WH Name"].unique().tolist()
+        selected_wh = st.selectbox("Select WH", wh_options)
+    
+    # Filter the dataframe based on selected WH (if "All" is not selected)
+    filtered_df = final_results_df if selected_wh == "All" else final_results_df[final_results_df["WH Name"] == selected_wh]
+    
+    # Select relevant columns dynamically based on the chosen day
+    selected_columns = ["WH ID", "Hub ID", "WH Name", "Hub Name", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
+    
+    # Apply selection and styling
+    styled_df = filtered_df[selected_columns].style.applymap(highlight_triggered, subset=[f"SO vs Reorder Point {selected_day}"])
 
-    # Display the filtered dataframe with styling
-    styled_df = final_results_df[selected_columns].style.applymap(highlight_triggered, subset=[f"SO vs Reorder Point {selected_day}"])
     #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
     st.dataframe(styled_df, use_container_width=False)
