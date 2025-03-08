@@ -327,11 +327,11 @@ if so_file:
                 wh_data = dry_wh_df[dry_wh_df['WH ID'] == wh]
                 fig_dry.add_scatter(
                     x=wh_data['Date'], 
-                    y=wh_data['SO Quantity'], 
+                    y=wh_data['SO Quantity']+5, 
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
-                    textfont=dict(color="gray", size=12, family="Roboto", weight="bold"),  # Bold Red Text
+                    textfont=dict(color="gray", size=12, weight="bold"),  # Bold Red Text
                     showlegend=False
                 )
 
@@ -357,11 +357,11 @@ if so_file:
                 wh_data = fresh_wh_df[fresh_wh_df['WH ID'] == wh]
                 fig_fresh.add_scatter(
                     x=wh_data['Date'], 
-                    y=wh_data['SO Quantity'], 
+                    y=wh_data['SO Quantity']+5, 
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
-                    textfont=dict(color="gray", size=12, family="Roboto", weight="bold"),  # Bold Red Text
+                    textfont=dict(color="gray", size=12, weight="bold"),  # Bold Red Text
                     showlegend=False
                 )
 
