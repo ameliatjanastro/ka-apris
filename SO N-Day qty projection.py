@@ -179,7 +179,7 @@ if so_file:
     filtered_df = final_results_df if selected_wh == "All" else final_results_df[final_results_df["WH ID"] == selected_wh]
     
     # Select relevant columns dynamically based on the chosen day
-    selected_columns = ["Hub ID", "WH Name", "Hub Name", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
+    selected_columns = ["Hub ID", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
     
     # Apply selection and styling
     styled_df = filtered_df[selected_columns].style.applymap(highlight_triggered, subset=[f"SO vs Reorder Point {selected_day}"])
