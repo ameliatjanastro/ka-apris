@@ -164,7 +164,7 @@ if so_file:
         return color
 
     styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
-    selected_columns = ["WH Name", "Hub Name", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}" ]
+    selected_columns = ["WH Name", "Hub Name"]+ [col for col in final_results_df.columns if "SO vs Reorder Point" in col]
     st.dataframe(styled_df[selected_columns], use_container_width=True)
 
 
