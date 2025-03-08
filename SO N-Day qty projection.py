@@ -41,19 +41,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-st.sidebar.markdown("""
-- **Total Active Hubs**: 30  
-- **Total WH**: 4  
-
-#### ⚠️ Important:
-**Demand Forecast assumptions:**  
-   - *Dry*: 2/3 demand for KOS, 1/3 for STL  
-   - *Fresh*: By L2 Category (CBN -> Telur, Roti & Pastry, Sayur, Buah)  
-
-""")
-
-
 st.markdown("""
 #### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊  
 
@@ -63,10 +50,19 @@ st.markdown("""
 | **Based on** | hub_qty, reorder_point, total_allocation, multiplier | wh_qty and cumulative_so_qty |
 | **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
 | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
+""")
 
+st.markdown("----")
+
+st.markdown("""
+- **Total Active Hubs**: 30  
+- **Total WH**: 4  
 - Predicted **SO Qty D + X** is based on Demand Forecast for **next day, before considering wh_qty** 
 - **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
 
+**Demand Forecast assumptions:**  
+   - *Dry*: 2/3 demand for KOS, 1/3 for STL  
+   - *Fresh*: By L2 Category (CBN -> Telur, Roti & Pastry, Sayur, Buah)  
 """)
 
 
