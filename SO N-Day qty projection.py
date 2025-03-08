@@ -172,11 +172,11 @@ if so_file:
         selected_day = st.selectbox("Select D+X", [f"D+{i}" for i in range(1, 7)])
     
     with col2:
-        wh_options = ["All"] + final_results_df["WH ID"].unique().tolist()
+        wh_options = final_results_df["WH ID"].unique().tolist()
         selected_wh = st.selectbox("Select WH", wh_options)
     
-    # Filter the dataframe based on selected WH (if "All" is not selected)
-    filtered_df = final_results_df if selected_wh == "All" else final_results_df[final_results_df["WH ID"] == selected_wh]
+    # Filter the dataframe based on selected WH
+    filtered_df = final_results_df[final_results_df["WH ID"] == selected_wh]
     
     # Select relevant columns dynamically based on the chosen day
     selected_columns = ["Hub ID", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
