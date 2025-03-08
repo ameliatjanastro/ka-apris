@@ -10,7 +10,7 @@ st.set_page_config(layout="wide")
 st.title("SO Quantity Estimation")
 
 # File Upload Section
-so_file = st.sidebar.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
+so_file = st.sidebar.file_uploader("Upload SQL-estimated SO (after 9 PM best :) )", type=["xlsx"])
 
 st.markdown(
     """
@@ -196,7 +196,7 @@ if so_file:
         #final_results_df["WH Name"] = final_results_df["wh_id"].map(wh_name_mapping)
         
         # Display Results
-        st.header("W+1 to D+6 SO Prediction")
+        st.header("D+1 to D+6 SO Prediction")
         
         def highlight_triggered(val):
             color = 'background-color: lightgreen' if val == "Triggered" else 'background-color: lightcoral'
@@ -320,6 +320,8 @@ if so_file:
     
         #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
+        
+        styled_df = styled_df.hide(axis="index")
         st.dataframe(styled_df, use_container_width=True)
         
         csv = final_results_df.to_csv(index=False).encode('utf-8')
