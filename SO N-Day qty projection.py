@@ -164,7 +164,7 @@ if so_file:
 
     #final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
     styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
-    st.dataframe(styled_df["WH ID", "Hub ID", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"], use_container_width=True)
+    st.dataframe(styled_df[["WH ID", "Hub ID", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]], use_container_width=True)
 
 
     # Dropdown for selecting WH ID
