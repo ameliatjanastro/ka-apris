@@ -174,7 +174,7 @@ if so_file:
    # Dropdown for selecting Hub ID
     hub_options = final_results_df['hub_id'].unique()
     # Combine Hub ID and Name for display
-    final_results_df["Hub Display"] = final_results_df["hub_id"].astype(str) + " - " + final_results_df["Hub Name"]
+    final_results_df["Hub Display"] = final_results_df["Hub ID"].astype(str) + " - " + final_results_df["Hub Name"]
 
     selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
 
