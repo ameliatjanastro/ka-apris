@@ -151,7 +151,8 @@ if so_file:
     # Create a WH-level aggregated DataFrame
     wh_summary_df = final_so_df.groupby("WH Name").agg({
     'Sum of qty_so': 'sum',
-    'Sum of qty_so_final': 'sum'
+    'Sum of qty_so_final': 'sum',
+    'Predicted SO Qty D+0': 'sum'
     }).reset_index()
     
     st.dataframe(wh_summary_df)
