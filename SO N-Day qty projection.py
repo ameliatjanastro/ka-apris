@@ -270,7 +270,8 @@ if so_file:
         st.markdown("<h4>Predicted SO Qty for Next Week</h4>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
-            selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
+            selected_hub = st.select_slider("Select WH", options=final_results_df["Hub Display"].dropna().unique())
+            #selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
             
         with col2:
             product_type = st.selectbox("Select Product Type:", ["Dry", "Fresh"])
