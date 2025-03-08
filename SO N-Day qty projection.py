@@ -8,7 +8,6 @@ import plotly.express as px
 st.title("SO Quantity Estimation")
 
 # File Upload Section
-st.header("Upload Data Files")
 so_file = st.sidebar.file_uploader("Upload SQL-estimated SO for tomorrow", type=["xlsx"])
 # Sidebar navigation
 page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
@@ -96,10 +95,10 @@ if so_file:
         final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
         final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
         
-        st.dataframe(final_so_df[["WH Name", "Hub Name", "Sum of qty_so", "Sum of qty_so_final","Predicted SO Qty D+0"]])
+        st.dataframe(final_so_df[["WH ID", "Hub Name", "Sum of qty_so", "Sum of qty_so_final","Predicted SO Qty D+0"]])
     
         # Create a WH-level aggregated DataFrame
-        wh_summary_df = final_so_df.groupby("WH Name").agg({
+        wh_summary_df = final_so_df.groupby("WH ID").agg({
         'Sum of qty_so': 'sum',
         'Sum of qty_so_final': 'sum',
         'Predicted SO Qty D+0': 'sum'
@@ -266,7 +265,7 @@ if so_file:
         
         # Add data labels
         for wh in fresh_wh_df['WH ID'].unique():
-            wh_data = fresh_wh_df[fresh_wh_df['wh_id'] == wh]
+            wh_data = fresh_wh_df[fresh_wh_df['WH ID'] == wh]
             fig_fresh.add_scatter(
                 x=wh_data['Date'], 
                 y=wh_data['SO Quantity'], 
