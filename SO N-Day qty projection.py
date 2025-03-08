@@ -10,7 +10,7 @@ st.markdown(
     """
     <style>
     div.stFileUploader {
-        max-width: 200px !important;  /* Adjust width */
+        max-height: 80px !important;  /* Adjust width */
         margin: auto;
     }
     </style>
