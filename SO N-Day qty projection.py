@@ -60,7 +60,7 @@ st.markdown("""
 | **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
 | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
 
-✔ Predicted **SO Qty D + X** is based on Demand Forecast for **next day** - before considering wh_qty 
+✔ Predicted **SO Qty D + X** is based on Demand Forecast for **next day, before considering wh_qty** 
 ✔ **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
 
 """)
