@@ -70,7 +70,7 @@ st.markdown("""
 
 
 # Sidebar navigation
-tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
+tab1, tab2 = st.tabs(["Next Day SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #dry_forecast_file = st.file_uploader("Upload Dry Demand Forecast CSV", type=["xlsx"])
 #fresh_cbn_forecast_file = st.file_uploader("Upload Fresh CBN Demand Forecast CSV", type=["xlsx"])
