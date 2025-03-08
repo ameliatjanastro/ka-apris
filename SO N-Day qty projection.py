@@ -221,7 +221,7 @@ if so_file:
             
             daily_result[f'SO vs Reorder Point D+{day}'] = daily_result.apply(lambda row: check_triggered(row, day), axis=1)
             daily_result = daily_result.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
-            results.append(daily_result[["WH ID", "Hub ID", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]])
+            results.append(daily_result[["WH ID", "Hub ID", "Sum of maxqty", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]])
         
         # Merge results into a single DataFrame
         final_results_df = results[0]
