@@ -15,14 +15,24 @@ so_file = st.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visib
 st.markdown(
     """
     <style>
-        body {
-            zoom: 80%;
+        /* Reduce overall font size */
+        html, body, [class*="css"] {
+            font-size: 12px !important;
+        }
+
+        /* Reduce sidebar font size */
+        .css-1d391kg, .css-1v3fvcr, .css-qrbaxs {
+            font-size: 12px !important;
+        }
+
+        /* Reduce dataframe font size */
+        .stDataFrame {
+            font-size: 10px !important;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
-
 # Sidebar navigation
 tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
