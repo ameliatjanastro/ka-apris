@@ -10,14 +10,14 @@ st.set_page_config(layout="wide")
 st.title("SO Quantity Estimation")
 
 # File Upload Section
-so_file = st.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
+so_file = st.sidebar.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
 
 st.markdown(
     """
     <style>
         /* Reduce overall font size */
         html, body, [class*="css"] {
-            font-size: 12px !important;
+            font-size: 14px !important;
         }
 
         /* Reduce dataframe font size */
@@ -129,7 +129,7 @@ if so_file:
         'Predicted SO Qty D+0': 'sum'
         }).reset_index()
         
-        st.dataframe(wh_summary_df)
+        st.dataframe(wh_summary_df,column_config={col: st.column_config.TextColumn(width="small") for col in wh_summary_df.columns})
         wh_options = final_so_df["WH Name"].unique().tolist()
         selected_wh = st.selectbox("Select WH", wh_options)
     
