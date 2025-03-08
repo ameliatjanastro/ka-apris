@@ -20,11 +20,6 @@ st.markdown(
             font-size: 12px !important;
         }
 
-        /* Reduce sidebar font size */
-        .css-1d391kg, .css-1v3fvcr, .css-qrbaxs {
-            font-size: 12px !important;
-        }
-
         /* Reduce dataframe font size */
         div[data-testid="stDataFrame"] * {
             font-size: 10px !important;
@@ -142,7 +137,7 @@ if so_file:
         filtered_so_df = final_so_df[final_so_df["WH Name"] == selected_wh]
     
         # Display Final SO DataFrame
-        st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Sum of qty_so_final", "Predicted SO Qty D+0"]])
+        st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Sum of qty_so_final", "Predicted SO Qty D+0"]],column_config={col: st.column_config.TextColumn(width="small") for col in df.columns})
 
     with tab2:
             
