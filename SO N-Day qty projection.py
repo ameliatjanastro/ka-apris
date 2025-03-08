@@ -45,6 +45,65 @@ st.sidebar.markdown("""
 2. **The displayed Qty for CBN excludes Xdock** (30% of total SO)  
 """)
 
+## 📊 Understanding qty_so vs. qty_so_final Calculation  
+
+### 1️⃣ qty_so Calculation (How Much Should Be Ordered)  
+qty_so is calculated based on:  
+
+- If **hub_qty** (current stock at the hub) is **≤ reorder_point**, the system triggers an order.  
+- The order quantity is determined as:  
+
+  \[
+  qty\_so = \left(\frac{maxqty - hub\_qty}{multiplier} \right) \times multiplier
+  \]
+
+  Where:  
+  - **maxqty** = total_allocation (maximum stock limit for the hub).  
+  - **multiplier** ensures ordering is in fixed lot sizes (e.g., cartons or pallets).  
+
+✔ **Example Calculation:**  
+
+| hub_qty | reorder_point | maxqty | multiplier | qty_so |
+|---------|--------------|--------|------------|--------|
+| 80      | 100          | 200    | 10         | 120    |
+| 120     | 100          | 200    | 10         | NULL   |
+
+👉 If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**).  
+
+---
+
+### 2️⃣ qty_so_final Calculation (Final Approved SO Quantity)  
+Once **qty_so** is calculated, it must be validated against **warehouse stock (wh_qty)**.  
+
+- If **wh_qty** can fulfill all cumulative orders, **qty_so_final** remains the same.  
+- If **wh_qty is NOT sufficient**, **qty_so_final** becomes NULL (order not fully fulfilled).  
+
+✔ **Example Calculation:**  
+
+| product_id | hub_id | wh_id | qty_so | wh_qty | cumulative_so_qty | qty_so_final |
+|------------|--------|-------|--------|--------|-------------------|--------------|
+| A          | 1      | 40    | 100    | 500    | 100               | 100          |
+| A          | 2      | 40    | 150    | 500    | 250               | 150          |
+| A          | 3      | 40    | 300    | 500    | 550               | NULL         |
+
+👉 If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**).  
+
+---
+
+## 🔄 Summary of Differences  
+
+| Concept  | qty_so | qty_so_final |
+|----------|--------|-------------|
+| **Purpose** | Initial calculated order quantity | Final approved SO quantity after warehouse stock check |
+| **Based on** | hub_qty, reorder_point, maxqty, multiplier | wh_qty and cumulative_so_qty |
+| **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
+
+""")
+
+
+
+
+
 # Sidebar navigation
 tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
