@@ -8,7 +8,7 @@ import plotly.express as px
 st.title("SO Quantity Estimation")
 
 # File Upload Section
-so_file = st.file_uploader("Upload SQL-estimated SO for tomorrow", type=["xlsx"])
+so_file = st.file_uploader("Upload SQL-estimated SO", type=["xlsx"], label_visibility="collapsed")
 # Sidebar navigation
 tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
@@ -132,10 +132,10 @@ if so_file:
             daily_result = final_so_df.copy()
             daily_result[f'Updated Hub Qty D+{day}'] = daily_result['Sum of hub_qty']
             
-            for wh_id in final_so_df['wh_id'].unique():
-                for hub_id in final_so_df.loc[final_so_df['wh_id'] == wh_id, 'hub_id'].unique():
-                    hub_mask = (daily_result['wh_id'] == wh_id) & (daily_result['hub_id'] == hub_id)
-                    total_so_final = final_so_df.loc[final_so_df['wh_id'] == wh_id, 'Sum of qty_so_final'].sum()
+            for wh_id in final_so_df['WH ID'].unique():
+                for hub_id in final_so_df.loc[final_so_df['WH ID'] == wh_id, 'hub_id'].unique():
+                    hub_mask = (daily_result['WH ID'] == wh_id) & (daily_result['hub_id'] == hub_id)
+                    total_so_final = final_so_df.loc[final_so_df['WH ID'] == wh_id, 'Sum of qty_so_final'].sum()
                     
                     if total_so_final > 0:
                         hub_forecast = ((final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_so_final) * 
