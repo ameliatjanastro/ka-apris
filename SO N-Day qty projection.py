@@ -172,7 +172,7 @@ if so_file:
 
     # Dropdown for selecting Hub ID
    # Dropdown for selecting Hub ID
-    hub_options = final_results_df['hub_id'].unique()
+    hub_options = final_results_df['Hub ID'].unique()
     # Combine Hub ID and Name for display
     final_results_df["Hub Display"] = final_results_df["Hub ID"].astype(str) + " - " + final_results_df["Hub Name"]
 
