@@ -6,17 +6,6 @@ import plotly.express as px
 
 st.set_page_config(layout="wide") 
 
-st.markdown(
-    """
-    <style>
-    div.stFileUploader {
-        max-height: 80px !important;  /* Adjust width */
-        margin: auto;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 # Streamlit App Title
 st.title("SO Quantity Estimation")
