@@ -60,7 +60,7 @@ st.markdown("""
 | **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
 | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
 
-✔ Predicted SO Qty **D + X** is based on Demand Forecast for **next day**  
+✔ Predicted **SO Qty D + X** is based on Demand Forecast for **next day** - before considering wh_qty 
 ✔ **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
 
 """)
@@ -348,7 +348,7 @@ if so_file:
         filtered_df = final_results_df[final_results_df["WH ID"] == selected_wh]
         
         # Select relevant columns dynamically based on the chosen day
-        selected_columns = ["Hub ID", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
+        selected_columns = ["Hub ID", f"Updated Hub Qty {selected_day}", "Sum of maxqty", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
         
         # Apply selection and styling
         styled_df = filtered_df[selected_columns].style.applymap(highlight_triggered, subset=[f"SO vs Reorder Point {selected_day}"])
