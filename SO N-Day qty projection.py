@@ -38,11 +38,11 @@ st.sidebar.markdown("""
 - **Total Active Hubs**: 30  
 - **Total WH**: 4  
 
-### ⚠️ Important:
-1. **Daily Demand Forecast assumptions:**  
+#### ⚠️ Important:
+1. **Demand Forecast assumptions:**  
    - *Dry*: 2/3 demand for KOS, 1/3 for STL  
    - *Fresh*: By L2 Category (CBN -> Telur, Roti & Pastry, Sayur, Buah)  
-2. **The displayed Qty for CBN excludes Xdock** (30% of total SO)  
+2. **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
 """)
 
 
