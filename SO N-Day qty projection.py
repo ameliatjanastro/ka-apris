@@ -7,7 +7,7 @@ import plotly.express as px
 st.set_page_config(layout="wide") 
 
 # Streamlit App Title
-st.title("SO Quantity Estimation")
+#st.title("SO Quantity Estimation")
 
 # File Upload Section
 so_file = st.sidebar.file_uploader("Upload SQL-estimated SO (after 9 PM best :) )", type=["xlsx"])
@@ -47,7 +47,7 @@ st.sidebar.markdown("""
 
 
 st.markdown("""
-#### Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊  
+#### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊  
 
 | Concept  | qty_so (how much should be ordered) | qty_so_final (final approved SO quantity)|
 |----------|--------|-------------|
@@ -142,7 +142,7 @@ if so_file:
     }
 
     with tab1:
-        st.subheader("Next Day SO Prediction")
+        #st.subheader("Next Day SO Prediction")
     
          # Compute Predicted SO Qty D+0
         final_so_df['Predicted SO Qty D+0'] = ((final_so_df['Sum of maxqty'] - final_so_df['Sum of hub_qty']) / 
@@ -227,7 +227,7 @@ if so_file:
         #final_results_df["WH Name"] = final_results_df["wh_id"].map(wh_name_mapping)
         
         # Display Results
-        st.subheader("D+1 to D+6 SO Prediction")
+        #st.subheader("D+1 to D+6 SO Prediction")
         
         def highlight_triggered(val):
             color = 'background-color: lightgreen' if val == "Triggered" else 'background-color: lightcoral'
