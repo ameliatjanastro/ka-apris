@@ -8,9 +8,10 @@ import plotly.express as px
 st.title("SO Quantity Estimation")
 
 # File Upload Section
-so_file = st.sidebar.file_uploader("Upload SQL-estimated SO for tomorrow", type=["xlsx"])
+so_file = st.file_uploader("Upload SQL-estimated SO for tomorrow", type=["xlsx"])
 # Sidebar navigation
-page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
+tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
+#page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #dry_forecast_file = st.file_uploader("Upload Dry Demand Forecast CSV", type=["xlsx"])
 #fresh_cbn_forecast_file = st.file_uploader("Upload Fresh CBN Demand Forecast CSV", type=["xlsx"])
 #fresh_pgs_forecast_file = st.file_uploader("Upload Fresh PGS Demand Forecast CSV", type=["xlsx"])
@@ -84,7 +85,7 @@ if so_file:
         661: "CBN - WH Cibinong"
     }
 
-    if page == "D+0 SO Prediction":
+    with tab1:
         st.header("Next Day SO Prediction")
     
          # Compute Predicted SO Qty D+0
@@ -113,7 +114,7 @@ if so_file:
         # Display Final SO DataFrame
         st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Sum of qty_so_final", "Predicted SO Qty D+0"]])
 
-    elif page == "D+1 to D+6 SO Prediction":
+    with tab2:
             
         # Initialize result DataFrame
         results = []
