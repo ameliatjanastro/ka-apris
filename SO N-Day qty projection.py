@@ -95,17 +95,23 @@ if so_file:
         final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
         final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
         final_so_df = final_so_df.rename(columns={"wh_id": "WH ID"})
-        
-        st.dataframe(final_so_df[["WH ID", "Hub Name", "Sum of qty_so", "Sum of qty_so_final","Predicted SO Qty D+0"]])
     
         # Create a WH-level aggregated DataFrame
-        wh_summary_df = final_so_df.groupby("WH ID").agg({
+        wh_summary_df = final_so_df.groupby("WH Name").agg({
         'Sum of qty_so': 'sum',
         'Sum of qty_so_final': 'sum',
         'Predicted SO Qty D+0': 'sum'
         }).reset_index()
         
         st.dataframe(wh_summary_df)
+        wh_options = final_so_df["WH Name"].unique().tolist()
+        selected_wh = st.selectbox("Select WH", wh_options)
+    
+        # Filter DataFrame by selected WH ID
+        filtered_so_df = final_so_df[final_so_df["WH Name"] == selected_wh]
+    
+        # Display Final SO DataFrame
+        st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Sum of qty_so_final", "Predicted SO Qty D+0"]])
 
     elif page == "D+1 to D+6 SO Prediction":
             
