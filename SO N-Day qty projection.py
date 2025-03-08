@@ -185,7 +185,7 @@ if so_file:
         styled_filtered_so = filtered_so_df[["Hub Name", "Sum of qty_so", "Predicted SO Qty D+0", "Sum of qty_so_final"]].style.apply(
             highlight_final_so, subset=["Sum of qty_so_final"]
         )
-        
+
         # Display Final SO DataFrame with highlight
 
         st.dataframe(styled_filtered_so, column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns}, use_container_width=True)
@@ -386,10 +386,12 @@ if so_file:
             selected_wh = st.selectbox("Select WH ID", wh_options)
         
         # Filter the dataframe based on selected WH
+        
+        final_results_df = final_results_df.rename(columns={"Sum of maxqty": "Max Total Allocation"})
         filtered_df = final_results_df[final_results_df["WH ID"] == selected_wh]
         
         # Select relevant columns dynamically based on the chosen day
-        selected_columns = ["Hub ID", f"Updated Hub Qty {selected_day}", "Sum of maxqty", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
+        selected_columns = ["Hub ID", f"Updated Hub Qty {selected_day}", "Max Total Allocation", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
         
         # Apply selection and styling
         styled_df = filtered_df[selected_columns].style.applymap(highlight_triggered, subset=[f"SO vs Reorder Point {selected_day}"])
