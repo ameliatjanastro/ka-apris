@@ -226,7 +226,7 @@ if so_file:
         # Merge results into a single DataFrame
         final_results_df = results[0]
         for df in results[1:]:
-            final_results_df = final_results_df.merge(df, on=["WH ID", "Hub ID"], how="left")
+            final_results_df = final_results_df.merge(df, on=["WH ID", "Hub ID","Sum of maxqty"], how="left")
             
         #final_results_df["WH Name"] = final_results_df["wh_id"].map(wh_name_mapping)
         
