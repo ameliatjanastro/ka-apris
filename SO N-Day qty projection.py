@@ -361,12 +361,12 @@ if so_file:
         col1, col2 = st.columns(2)
         
         # Place the select boxes in separate columns
-        with col1:
-            selected_day = st.selectbox("Select D+X", [f"D+{i}" for i in range(1, 7)])
-        
         with col2:
+            selected_day = st.selectbox("Select D+X day(s)", [f"D+{i}" for i in range(1, 7)])
+        
+        with col1:
             wh_options = final_results_df["WH ID"].unique().tolist()
-            selected_wh = st.selectbox("Select WH", wh_options)
+            selected_wh = st.selectbox("Select WH ID", wh_options)
         
         # Filter the dataframe based on selected WH
         filtered_df = final_results_df[final_results_df["WH ID"] == selected_wh]
