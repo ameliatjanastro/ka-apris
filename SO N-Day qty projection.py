@@ -38,6 +38,12 @@ st.markdown(
         table {
             font-size: 10px !important;
         }
+
+        /* EXCLUDE Plotly Charts from Font Size Reduction */
+        .js-plotly-plot .plotly * {
+            font-size: 14px !important;  /* Ensures default or larger font */
+        }
+        
     </style>
     """,
     unsafe_allow_html=True
