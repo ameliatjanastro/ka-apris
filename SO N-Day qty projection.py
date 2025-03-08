@@ -14,12 +14,15 @@ so_file = st.file_uploader("Upload SQL-estimated SO for tomorrow", type=["xlsx"]
 #fresh_cbn_forecast_file = st.file_uploader("Upload Fresh CBN Demand Forecast CSV", type=["xlsx"])
 #fresh_pgs_forecast_file = st.file_uploader("Upload Fresh PGS Demand Forecast CSV", type=["xlsx"])
 
-if so_file:
-    # Load Data
-    final_so_df = pd.read_excel(so_file)
 dry_forecast_df = pd.read_excel("Forecast Mar Dry.xlsx")
 fresh_cbn_forecast_df = pd.read_excel("Forecast Mar Fresh CBN.xlsx")
 fresh_pgs_forecast_df = pd.read_excel("Forecast Mar Fresh PGS.xlsx")
+
+
+if so_file:
+    # Load Data
+    final_so_df = pd.read_excel(so_file)
+
     
     # Get forecast dates D+1 to D+6
     today = datetime.date.today()
