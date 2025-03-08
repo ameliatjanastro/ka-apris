@@ -146,7 +146,7 @@ if so_file:
     final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
     final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
     
-    st.dataframe(final_so_df[["WH Name", "Hub Name", "Sum of qty_so", "Sum of qty_so_final"]])
+    st.dataframe(final_so_df[["WH Name", "Hub Name", "Sum of qty_so", "Sum of qty_so_final","Predicted SO Qty D+0"]])
 
     # Create a WH-level aggregated DataFrame
     wh_summary_df = final_so_df.groupby("WH Name").agg({
