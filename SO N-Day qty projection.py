@@ -50,7 +50,7 @@ st.sidebar.markdown("""
 ### 1️⃣ qty_so Calculation (How Much Should Be Ordered)  
 qty_so is calculated based on:  
 
-- If **hub_qty** (current stock at the hub) is **≤ reorder_point**, the system triggers an order.  
+- If **hub_qty** (current stock at the hub) is **<= reorder_point**, the system triggers an order.  
 - The order quantity is determined as:  
 
   \[
