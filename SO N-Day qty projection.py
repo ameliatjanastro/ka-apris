@@ -237,11 +237,14 @@ if so_file:
         fresh_wh_df = melted_df[melted_df['WH ID'].isin([160, 661])]
         
         # Create Dry WHs line chart
-        col1, col2 = st.columns(2)
+       
         
-        # Dry WHs Line Chart in Column 1
-        with col1:
-            #st.subheader("Predicted SO Quantity for Dry Warehouses (772, 40)")
+        # Add radio button for product type selection
+        product_type = st.radio("Select Product Type:", ["Dry", "Fresh"], horizontal=True)
+        
+        # Show selected chart
+        if product_type == "Dry":
+            # Dry WHs Line Chart
             fig_dry = px.line(
                 dry_wh_df,
                 x='Date', 
@@ -265,9 +268,8 @@ if so_file:
         
             st.plotly_chart(fig_dry, use_container_width=True)
         
-        # Fresh WHs Line Chart in Column 2
-        with col2:
-            #st.subheader("Predicted SO Quantity for Fresh Warehouses (160, 661)")
+        else:
+            # Fresh WHs Line Chart
             fig_fresh = px.line(
                 fresh_wh_df,
                 x='Date', 
