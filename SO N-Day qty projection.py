@@ -6,6 +6,16 @@ import plotly.express as px
 
 st.set_page_config(layout="wide") 
 
+st.markdown(
+    """
+    <style>
+        body {
+            zoom: 80%;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Streamlit App Title
 st.title("SO Quantity Estimation")
