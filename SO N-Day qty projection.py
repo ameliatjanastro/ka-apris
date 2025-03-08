@@ -165,7 +165,8 @@ if so_file:
 
     #final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
     styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
-    st.dataframe(styled_df, use_container_width=True)
+    styled_df = styled_df.set_properties(**{'width': '80px'})
+    st.dataframe(styled_df, use_container_width=False)
 
 
     # Dropdown for selecting WH ID
