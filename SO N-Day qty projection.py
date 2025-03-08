@@ -210,8 +210,14 @@ if so_file:
         # Combine Hub ID and Name for display
         final_results_df["Hub Name"] = final_results_df["Hub ID"].map(hub_name_mapping)
         final_results_df["Hub Display"] = final_results_df["Hub ID"].astype(str) + " - " + final_results_df["Hub Name"]
-    
         
+        col1, col2 = st.columns(2)
+            with col1:
+                selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
+            
+            with col2:
+                product_type = st.selectbox("Select Product Type:", ["Dry", "Fresh"])
+            
     
         # Filter the DataFrame for the selected hub
         selected_hub_id = int(selected_hub.split(" - ")[0])  # Extracts ID
@@ -237,15 +243,6 @@ if so_file:
         fresh_wh_df = melted_df[melted_df['WH ID'].isin([160, 661])]
         
         # Create Dry WHs line chart
-       
-        
-
-        col1, col2 = st.columns(2)
-        with col1:
-            selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
-        
-        with col2:
-            product_type = st.selectbox("Select Product Type:", ["Dry", "Fresh"])
         
         # Show selected chart
         if product_type == "Dry":
