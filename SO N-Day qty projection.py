@@ -26,13 +26,14 @@ st.markdown(
         }
 
         /* Reduce dataframe font size */
-        .stDataFrame {
+        div[data-testid="stDataFrame"] {
             font-size: 10px !important;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 # Sidebar navigation
 tab1, tab2 = st.tabs(["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
