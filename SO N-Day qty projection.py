@@ -59,10 +59,7 @@ st.markdown("""
 - **Total WH**: 4  
 - Predicted **SO Qty D + X** is based on Demand Forecast for **next day, before considering wh_qty** 
 - **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
-
-**Demand Forecast assumptions:**  
-   - *Dry*: 2/3 demand for KOS, 1/3 for STL  
-   - *Fresh*: By L2 Category (CBN -> Telur, Roti & Pastry, Sayur, Buah)  
+ 
 """)
 
 
@@ -264,6 +261,13 @@ if so_file:
         # Combine Hub ID and Name for display
         final_results_df["Hub Name"] = final_results_df["Hub ID"].map(hub_name_mapping)
         final_results_df["Hub Display"] = final_results_df["Hub ID"].astype(str) + " - " + final_results_df["Hub Name"]
+
+        st.markdown("""
+        
+        **Demand Forecast assumptions:**  
+        - *Dry*: 2/3 demand for KOS, 1/3 for STL  
+        - *Fresh*: By L2 Category (CBN -> Telur, Roti & Pastry, Sayur, Buah) 
+        """)
         
         col1, col2 = st.columns(2)
         with col1:
