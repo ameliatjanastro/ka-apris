@@ -41,7 +41,7 @@ st.markdown(
 
         /* EXCLUDE Plotly Charts from Font Size Reduction */
         .js-plotly-plot .plotly * {
-            font-size: 12px !important;  /* Ensures default or larger font */
+            font-size: 11px !important;  /* Ensures default or larger font */
         }
         
     </style>
@@ -330,7 +330,8 @@ if so_file:
                     y=wh_data['SO Quantity'], 
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
-                    textposition="top center",
+                    textposition="top center",  # Adjusted placement
+                    textfont=dict(color="red", size=12, family="Arial", weight="bold"),  # Bold Red Text
                     showlegend=False
                 )
         
@@ -355,7 +356,8 @@ if so_file:
                     y=wh_data['SO Quantity'], 
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
-                    textposition="top center",
+                    textposition="top center",  # Adjusted placement
+                    textfont=dict(color="red", size=12, family="Arial", weight="bold"),  # Bold Red Text
                     showlegend=False
                 )
         
