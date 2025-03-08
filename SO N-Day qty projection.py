@@ -156,7 +156,10 @@ if so_file:
         final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
         final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
         final_so_df = final_so_df.rename(columns={"wh_id": "WH ID"})
-    
+
+        def highlight_final_so(s):
+            return ['background-color: #FFFACD' if s.name == 'Sum of qty_so_final' else '' for _ in s]
+
         # Create a WH-level aggregated DataFrame
         wh_summary_df = final_so_df.groupby("WH Name").agg({
         'Sum of qty_so': 'sum',
