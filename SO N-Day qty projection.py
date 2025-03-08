@@ -164,7 +164,7 @@ if so_file:
         return color
 
     #final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
-  # Create two columns for better layout
+    # Create two columns for better layout
     col1, col2 = st.columns(2)
     
     # Place the select boxes in separate columns
@@ -172,7 +172,7 @@ if so_file:
         selected_day = st.selectbox("Select D+X", [f"D+{i}" for i in range(1, 7)])
     
     with col2:
-        wh_options = ["All"] + final_results_df["WH Name"].unique().tolist()
+        wh_options = ["All"] + final_results_df["WH ID"].unique().tolist()
         selected_wh = st.selectbox("Select WH", wh_options)
     
     # Filter the dataframe based on selected WH (if "All" is not selected)
