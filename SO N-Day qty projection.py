@@ -331,8 +331,12 @@ if so_file:
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
-                    textfont=dict(color="red", size=12, family="Poppins", weight="bold"),  # Bold Red Text
+                    textfont=dict(color="gray", size=12, family="Roboto", weight="bold"),  # Bold Red Text
                     showlegend=False
+                )
+
+                fig_dry.update_layout(
+                    margin=dict(t=10),  # Reduce top space for Dry WH chart
                 )
         
             st.plotly_chart(fig_dry, use_container_width=True)
@@ -357,8 +361,12 @@ if so_file:
                     mode='text', 
                     text=wh_data['SO Quantity'].astype(str), 
                     textposition="top center",  # Adjusted placement
-                    textfont=dict(color="red", size=12, family="Poppins", weight="bold"),  # Bold Red Text
+                    textfont=dict(color="gray", size=12, family="Roboto", weight="bold"),  # Bold Red Text
                     showlegend=False
+                )
+
+                fig_fresh.update_layout(
+                    margin=dict(t=10),  # Reduce top space for Fresh WH chart
                 )
         
             st.plotly_chart(fig_fresh, use_container_width=True)
