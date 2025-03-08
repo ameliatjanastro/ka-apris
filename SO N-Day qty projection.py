@@ -41,24 +41,25 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown("""
-#### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊  
-
-| Concept  | qty_so (how much should be ordered) | qty_so_final (final approved SO quantity)|
-|----------|--------|-------------|
-| **Purpose** | Initial calculated order quantity | Final approved SO quantity after warehouse stock check |
-| **Based on** | hub_qty, reorder_point, total_allocation, multiplier | wh_qty and cumulative_so_qty |
-| **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
-| **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
-""")
-
-st.markdown("""
-- **Total Active Hubs**: 30  
-- **Total WH**: 4  
-- Predicted **SO Qty D + X** is based on Demand Forecast for **next day, before considering wh_qty** 
-- **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
- 
-""")
+with st.expander("View Description"):
+    st.markdown("""
+    #### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊  
+    
+    | Concept  | qty_so (how much should be ordered) | qty_so_final (final approved SO quantity)|
+    |----------|--------|-------------|
+    | **Purpose** | Initial calculated order quantity | Final approved SO quantity after warehouse stock check |
+    | **Based on** | hub_qty, reorder_point, total_allocation, multiplier | wh_qty and cumulative_so_qty |
+    | **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
+    | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
+    """)
+    
+    st.markdown("""
+    - **Total Active Hubs**: 30  
+    - **Total WH**: 4  
+    - Predicted **SO Qty D + X** is based on Demand Forecast for **next day, before considering wh_qty** 
+    - **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
+     
+    """)
 
 # Sidebar navigation
 tab1, tab2 = st.tabs(["Next Day SO Prediction", "D+1 to D+6 SO Prediction"])
