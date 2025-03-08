@@ -4,6 +4,20 @@ import datetime
 import numpy as np
 import plotly.express as px
 
+st.set_page_config(layout="wide") 
+
+st.markdown(
+    """
+    <style>
+    div.stFileUploader {
+        max-width: 200px !important;  /* Adjust width */
+        margin: auto;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # Streamlit App Title
 st.title("SO Quantity Estimation")
 
@@ -201,7 +215,7 @@ if so_file:
     
         #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
     
-        st.dataframe(styled_df, use_container_width=True)
+       
     
         # Dropdown for selecting WH ID
     
@@ -236,59 +250,67 @@ if so_file:
         fresh_wh_df = melted_df[melted_df['WH ID'].isin([160, 661])]
         
         # Create Dry WHs line chart
-        st.subheader("Predicted SO Quantity for Dry Warehouses (772, 40)")
-        fig_dry = px.line(
-            dry_wh_df,
-            x='Date', 
-            y='SO Quantity', 
-            color='WH ID',  
-            markers=True,  
-            title=f'Dry Warehouses (772 & 40) - Predicted SO Quantity for Hub {selected_hub}'
-        )
+        col1, col2 = st.columns(2)
         
-        # Add data labels
-        for wh in dry_wh_df['WH ID'].unique():
-            wh_data = dry_wh_df[dry_wh_df['WH ID'] == wh]
-            fig_dry.add_scatter(
-                x=wh_data['Date'], 
-                y=wh_data['SO Quantity'], 
-                mode='text', 
-                text=wh_data['SO Quantity'].astype(str), 
-                textposition="top center",
-                showlegend=False
+        # Dry WHs Line Chart in Column 1
+        with col1:
+            #st.subheader("Predicted SO Quantity for Dry Warehouses (772, 40)")
+            fig_dry = px.line(
+                dry_wh_df,
+                x='Date', 
+                y='SO Quantity', 
+                color='WH ID',  
+                markers=True,  
+                title=f'Dry Warehouses (KOS & STL) - Predicted SO Quantity for Hub {selected_hub}'
             )
         
-        st.plotly_chart(fig_dry)
+            # Add data labels
+            for wh in dry_wh_df['WH ID'].unique():
+                wh_data = dry_wh_df[dry_wh_df['WH ID'] == wh]
+                fig_dry.add_scatter(
+                    x=wh_data['Date'], 
+                    y=wh_data['SO Quantity'], 
+                    mode='text', 
+                    text=wh_data['SO Quantity'].astype(str), 
+                    textposition="top center",
+                    showlegend=False
+                )
         
-        # Create Fresh WHs line chart
-        st.subheader("Predicted SO Quantity for Fresh Warehouses (160, 661)")
-        fig_fresh = px.line(
-            fresh_wh_df,
-            x='Date', 
-            y='SO Quantity', 
-            color='WH ID',  
-            markers=True,  
-            title=f'Fresh Warehouses (160 & 661) - Predicted SO Quantity for Hub {selected_hub}'
-        )
+            st.plotly_chart(fig_dry, use_container_width=True)
         
-        # Add data labels
-        for wh in fresh_wh_df['WH ID'].unique():
-            wh_data = fresh_wh_df[fresh_wh_df['WH ID'] == wh]
-            fig_fresh.add_scatter(
-                x=wh_data['Date'], 
-                y=wh_data['SO Quantity'], 
-                mode='text', 
-                text=wh_data['SO Quantity'].astype(str), 
-                textposition="top center",
-                showlegend=False
+        # Fresh WHs Line Chart in Column 2
+        with col2:
+            #st.subheader("Predicted SO Quantity for Fresh Warehouses (160, 661)")
+            fig_fresh = px.line(
+                fresh_wh_df,
+                x='Date', 
+                y='SO Quantity', 
+                color='WH ID',  
+                markers=True,  
+                title=f'Fresh Warehouses (PGS & CBN) - Predicted SO Quantity for Hub {selected_hub}'
             )
         
-        st.plotly_chart(fig_fresh)
+            # Add data labels
+            for wh in fresh_wh_df['WH ID'].unique():
+                wh_data = fresh_wh_df[fresh_wh_df['WH ID'] == wh]
+                fig_fresh.add_scatter(
+                    x=wh_data['Date'], 
+                    y=wh_data['SO Quantity'], 
+                    mode='text', 
+                    text=wh_data['SO Quantity'].astype(str), 
+                    textposition="top center",
+                    showlegend=False
+                )
+        
+            st.plotly_chart(fig_fresh, use_container_width=True)
     
         
         # Provide a download button for results
+
+        st.dataframe(styled_df, use_container_width=True)
+        
         csv = final_results_df.to_csv(index=False).encode('utf-8')
-        st.download_button("Download W+1 to W+6 SO Prediction", csv, "w1_w6_so_prediction.csv", "text/csv")
+        st.download_button("Download D+1 to D+6 SO Prediction", csv, "d1_d6_so_prediction.csv", "text/csv")
 
 
 
