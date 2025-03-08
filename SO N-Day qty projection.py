@@ -52,8 +52,6 @@ st.markdown("""
 | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
 """)
 
-st.markdown("----")
-
 st.markdown("""
 - **Total Active Hubs**: 30  
 - **Total WH**: 4  
@@ -61,10 +59,6 @@ st.markdown("""
 - **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
  
 """)
-
-
-
-
 
 # Sidebar navigation
 tab1, tab2 = st.tabs(["Next Day SO Prediction", "D+1 to D+6 SO Prediction"])
@@ -168,6 +162,7 @@ if so_file:
         styled_wh_summary = wh_summary_df.style.apply(highlight_final_so, subset=["Sum of qty_so_final"])
         
         # Display WH-level summary with highlight
+        st.markdown("<h4>Summary by WH</h4>", unsafe_allow_html=True)
         st.dataframe(styled_wh_summary, use_container_width=True)
         
         # Select WH dropdown
@@ -183,6 +178,7 @@ if so_file:
         )
         
         # Display Final SO DataFrame with highlight
+        st.markdown("<h4>Summary by Hub</h4>", unsafe_allow_html=True)
         st.dataframe(styled_filtered_so, column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns}, use_container_width=True)
         #st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Predicted SO Qty D+0", "Sum of qty_so_final"]],column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns})
 
@@ -268,7 +264,9 @@ if so_file:
         - *Dry*: 2/3 demand for KOS, 1/3 for STL  
         - *Fresh*: By L2 Category (CBN -> Telur, Roti & Pastry, Sayur, Buah) 
         """)
-        
+
+
+        st.markdown("<h4>Predicted SO Qty for Next Week</h4>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         with col1:
             selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
@@ -379,6 +377,7 @@ if so_file:
         #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
         styled_df = styled_df.hide(axis="index")
+        st.markdown("<h4>Summary by WH by Day</h4>", unsafe_allow_html=True)
         st.dataframe(styled_df, use_container_width=True)
         
         csv = final_results_df.to_csv(index=False).encode('utf-8')
