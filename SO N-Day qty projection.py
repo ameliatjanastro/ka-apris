@@ -26,7 +26,7 @@ st.markdown(
         }
         /* Reduce overall font size */
         html, body, [class*="css"] {
-            font-size: 14px !important;
+            font-size: 12px !important;
         }
 
         /* Reduce dataframe font size */
