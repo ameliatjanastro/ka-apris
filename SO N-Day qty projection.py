@@ -26,7 +26,12 @@ st.markdown(
         }
 
         /* Reduce dataframe font size */
-        div[data-testid="stDataFrame"] {
+        div[data-testid="stDataFrame"] * {
+            font-size: 10px !important;
+        }
+        
+        /* Reduce table font size */
+        table {
             font-size: 10px !important;
         }
     </style>
