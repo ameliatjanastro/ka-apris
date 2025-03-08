@@ -47,7 +47,7 @@ st.sidebar.markdown("""
 
 
 st.markdown("""
-#### 📊 Understanding qty_so vs. qty_so_final Calculation  
+#### 📊 Understanding <span style="color:red;">Qty SO</span> vs. <span style="color:red;">Qty SO Final</span> Calculation 😊  
 
 | Concept  | qty_so (how much should be ordered) | qty_so_final (final approved SO quantity)|
 |----------|--------|-------------|
@@ -55,6 +55,9 @@ st.markdown("""
 | **Based on** | hub_qty, reorder_point, total_allocation, multiplier | wh_qty and cumulative_so_qty |
 | **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
 | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
+
+✔ **Predicted SO Qty <span style="color:red;">D + X</span> is based on Demand Forecast for <span style="color:red;">next day</span>**  
+
 """)
 
 
