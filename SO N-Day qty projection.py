@@ -212,11 +212,11 @@ if so_file:
         final_results_df["Hub Display"] = final_results_df["Hub ID"].astype(str) + " - " + final_results_df["Hub Name"]
         
         col1, col2 = st.columns(2)
-            with col1:
-                selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
+        with col1:
+            selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
             
-            with col2:
-                product_type = st.selectbox("Select Product Type:", ["Dry", "Fresh"])
+        with col2:
+            product_type = st.selectbox("Select Product Type:", ["Dry", "Fresh"])
             
     
         # Filter the DataFrame for the selected hub
