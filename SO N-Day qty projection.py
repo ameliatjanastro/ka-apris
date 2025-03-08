@@ -176,7 +176,7 @@ if so_file:
         selected_wh = st.selectbox("Select WH", wh_options)
     
     # Filter the dataframe based on selected WH (if "All" is not selected)
-    filtered_df = final_results_df if selected_wh == "All" else final_results_df[final_results_df["WH Name"] == selected_wh]
+    filtered_df = final_results_df if selected_wh == "All" else final_results_df[final_results_df["WH ID"] == selected_wh]
     
     # Select relevant columns dynamically based on the chosen day
     selected_columns = ["Hub ID", "WH Name", "Hub Name", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", f"SO vs Reorder Point {selected_day}"]
@@ -186,7 +186,7 @@ if so_file:
 
     #styled_df = final_results_df.style.applymap(highlight_triggered, subset=[col for col in final_results_df.columns if "SO vs Reorder Point" in col])
 
-    st.dataframe(styled_df, use_container_width=False)
+    st.dataframe(styled_df, use_container_width=True)
 
 
     # Dropdown for selecting WH ID
