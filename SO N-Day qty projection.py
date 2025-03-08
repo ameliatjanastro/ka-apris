@@ -8,7 +8,7 @@ st.set_page_config(layout="wide")
 
 # Streamlit App Title
 
-st.markdown(f"#### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊)  
+st.markdown("#### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊)  
 #st.title("SO Quantity Estimation")
 
 today = datetime.date.today()
