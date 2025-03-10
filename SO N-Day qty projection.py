@@ -405,7 +405,11 @@ if so_file:
         st.markdown('<h4 style="color: maroon;">Summary by WH by Day</h4>', unsafe_allow_html=True)
         st.dataframe(styled_df, use_container_width=True)
 
-        predicted_so_sum = filtered_df[f"Predicted SO Qty {selected_day}"].sum()*0.7
+        predicted_so_sum = np.where(
+            filtered_df["WH ID"] == 40,
+            filtered_df[f"Predicted SO Qty {selected_day}"].sum() * 0.75,
+            filtered_df[f"Predicted SO Qty {selected_day}"].sum() * 0.55
+        )
 
         # Display the sum in Streamlit
         st.markdown('<h4 style="color: maroon;">Summary by WH by Day</h4>', unsafe_allow_html=True)
