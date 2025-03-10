@@ -87,7 +87,7 @@ if so_file:
     
     # Get forecast dates D+1 to D+6
 
-    forecast_dates = [(today + datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(1, 7)]
+    forecast_dates = [(today + datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(0, 7)]
     
     # Filter forecast data for D+1 to D+6
     dry_forecast_df = dry_forecast_df[dry_forecast_df["date_key"].isin(forecast_dates)]
@@ -200,7 +200,7 @@ if so_file:
         # Initialize result DataFrame
         results = []
         
-        for day, forecast_date in enumerate(forecast_dates, start=0):
+        for day, forecast_date in enumerate(forecast_dates, start=1):
             # Get daily demand forecast
             daily_dry_forecast = dry_forecast_df[dry_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
             daily_fresh_cbn_forecast = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
