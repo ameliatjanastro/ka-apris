@@ -405,20 +405,14 @@ if so_file:
         st.markdown('<h4 style="color: maroon;">Summary by WH by Day</h4>', unsafe_allow_html=True)
         st.dataframe(styled_df, use_container_width=True)
 
-        # Create a summary by WH ID
-        summary = filtered_df.groupby("WH ID").agg(
-            **{
-                "Sum of maxqty": "sum",
-                f"Updated Hub Qty D+{day}": "sum",
-                f"Predicted SO Qty D+{day}": "sum",
-                f"SO vs Reorder Point D+{day}": "count"  # Or use another aggregation function as needed
-            }
-        ).reset_index()
+        predicted_so_sum = filtered_df[f"Predicted SO Qty {selected_day}"].sum()
+
+        # Display the sum in Streamlit
+        st.markdown('<h4 style="color: maroon;">Summary by WH by Day</h4>', unsafe_allow_html=True)
+        st.metric(label="Total Predicted SO Qty", value=f"{predicted_so_sum:,.0f}")
         
-        # Append the summary to the results list
-        results.append(summary)
-        
-        st.title("Summary by WH ID")
+       # Display the styled dataframe as before
+        st.dataframe(styled_df, use_container_width=True)
         st.dataframe(summary)
         
         csv = final_results_df.to_csv(index=False).encode('utf-8')
