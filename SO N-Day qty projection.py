@@ -8,7 +8,7 @@ import plotly.express as px
 
 # Streamlit App Title
 
-st.markdown(f"#### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊hehe")  
+st.markdown(f"#### SO Qty Projection: Understanding **:red[Qty SO]** vs. **:red[Qty SO Final]** 😊")  
 #st.title("SO Quantity Estimation")
 
 today = datetime.date.today()
