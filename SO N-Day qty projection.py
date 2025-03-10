@@ -226,10 +226,10 @@ if so_file:
 
                     previous_day_qty = 0
                     if day >= 1:
-                        previous_day_qty = daily_result.loc[hub_mask, f'Predicted SO Qty D+{day}'].fillna(0).astype(int)
+                        previous_day_qty = daily_result.loc[hub_mask, f'Predicted SO Qty D+{day-1}'].fillna(0).astype(int)
                     
                     daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = (
-                        daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] - hub_forecast + previous_day_qty
+                        daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] - hub_forecast + 10000
                     ).clip(lower=0)
 
                     #daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
