@@ -232,6 +232,7 @@ if so_file:
                                                         daily_result['Sum of multiplier']) * daily_result['Sum of multiplier'] 
             daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}']*0.48
             daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
+            
             #sample_wh = daily_result[(daily_result["wh_id"] == 160) & (daily_result["hub_id"] == 121)].head()
             #st.dataframe(sample_wh[["Sum of maxqty", "Updated Hub Qty D+1", "Sum of multiplier", "Predicted SO Qty D+1"]])
             
@@ -243,6 +244,8 @@ if so_file:
             daily_result[f'SO vs Reorder Point D+{day}'] = daily_result.apply(lambda row: check_triggered(row, day), axis=1)
             daily_result = daily_result.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
             results.append(daily_result[["WH ID", "Hub ID", "Sum of maxqty", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]])
+
+            
         
         # Merge results into a single DataFrame
         final_results_df = results[0]
@@ -401,6 +404,22 @@ if so_file:
         styled_df = styled_df.hide(axis="index")
         st.markdown('<h4 style="color: maroon;">Summary by WH by Day</h4>', unsafe_allow_html=True)
         st.dataframe(styled_df, use_container_width=True)
+
+        # Create a summary by WH ID
+        summary = daily_result.groupby("WH ID").agg(
+            **{
+                "Sum of maxqty": "sum",
+                f"Updated Hub Qty D+{day}": "sum",
+                f"Predicted SO Qty D+{day}": "sum",
+                f"SO vs Reorder Point D+{day}": "count"  # Or use another aggregation function as needed
+            }
+        ).reset_index()
+        
+        # Append the summary to the results list
+        results.append(summary)
+        
+        st.title("Summary by WH ID")
+        st.dataframe(summary)
         
         csv = final_results_df.to_csv(index=False).encode('utf-8')
         st.download_button("Download D+1 to D+6 SO Prediction", csv, "d1_d6_so_prediction.csv", "text/csv")
