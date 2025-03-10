@@ -233,10 +233,8 @@ if so_file:
             #daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}']*1
             
             daily_result.loc[daily_result['WH ID'] == 40, f'Predicted SO Qty D+{day}'] *= 0.71
-            for day in range(1, 7):  # Assuming you're predicting for 7 days (D+1 to D+7)
-                multiplier = 0.56 if day >= 4 else 0.518
-                daily_result.loc[daily_result['WH ID'] == 772, f'Predicted SO Qty D+{day}'] *= multiplier
-            #daily_result.loc[daily_result['WH ID'] == 772, f'Predicted SO Qty D+{day}'] *= 0.518
+            daily_result.loc[daily_result['WH ID'] == 772, f'Predicted SO Qty D+{day}'] *= 0.518
+            
             daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
             
             #sample_wh = daily_result[(daily_result["wh_id"] == 160) & (daily_result["hub_id"] == 121)].head()
