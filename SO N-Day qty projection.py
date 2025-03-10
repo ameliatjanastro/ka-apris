@@ -406,7 +406,7 @@ if so_file:
         st.dataframe(styled_df, use_container_width=True)
 
         # Create a summary by WH ID
-        summary = daily_result.groupby("WH ID").agg(
+        summary = styled_df.groupby("WH ID").agg(
             **{
                 "Sum of maxqty": "sum",
                 f"Updated Hub Qty D+{day}": "sum",
