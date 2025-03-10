@@ -405,16 +405,15 @@ if so_file:
         st.markdown('<h4 style="color: maroon;">Summary by WH by Day</h4>', unsafe_allow_html=True)
         st.dataframe(styled_df, use_container_width=True)
 
-        predicted_so_sum = np.where(
-            filtered_df["WH ID"] == 40,
-            filtered_df[f"Predicted SO Qty {selected_day}"].sum() * 0.75,
-            filtered_df[f"Predicted SO Qty {selected_day}"].sum() * 0.55
-        )
-
-        # Display the sum in Streamlit
-        st.markdown('<h4 style="color: maroon;">Summary by WH by Day</h4>', unsafe_allow_html=True)
-        st.metric(label="Total Predicted SO Qty", value=f"{predicted_so_sum:,.0f}")
+        if 40 in filtered_df["WH ID"].values:
+            predicted_so_sum = filtered_df.loc[filtered_df["WH ID"] == 40, f"Predicted SO Qty {selected_day}"].sum() * 0.75
+        elif 772 in filtered_df["WH ID"].values:
+            predicted_so_sum = filtered_df.loc[filtered_df["WH ID"] == 772, f"Predicted SO Qty {selected_day}"].sum() * 0.55
+        else:
+            predicted_so_sum = 0  # Default value if no matching WH ID is found
         
+        st.metric(label="Total Predicted SO Qty", value=f"{predicted_so_sum:,.0f}")
+                
 
         
         csv = final_results_df.to_csv(index=False).encode('utf-8')
