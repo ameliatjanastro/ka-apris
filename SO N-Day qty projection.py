@@ -225,7 +225,7 @@ if so_file:
                         hub_forecast = 0
 
                     previous_day_qty = 0
-                    if day > 1:
+                    if day >= 1:
                         previous_day_qty = daily_result.loc[hub_mask, f'Predicted SO Qty D-{day-1}'].fillna(0).astype(int)
                     
                     daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = (
