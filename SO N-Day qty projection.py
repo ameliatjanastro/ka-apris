@@ -182,7 +182,7 @@ if so_file:
         filtered_so_df = final_so_df[final_so_df["WH Name"] == selected_wh]
         
         # Apply styling to filtered DataFrame
-        styled_filtered_so = filtered_so_df[["Hub Name", "Sum of qty_so", "Predicted SO Qty D+0", "Sum of qty_so_final"]].style.apply(
+        styled_filtered_so = filtered_so_df[["Hub Name", "Sum of qty_so", "Sum of qty_so_final", "Predicted SO Qty D+0"]].style.apply(
             highlight_final_so, subset=["Sum of qty_so_final"]
         )
 
