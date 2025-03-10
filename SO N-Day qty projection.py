@@ -164,6 +164,8 @@ if so_file:
         'Predicted SO Qty D+0': 'sum',
         'Sum of qty_so_final': 'sum'
         }).reset_index()
+
+        wh_summary_df["Sum of qty_so_final"]
         
         # Apply styling
         styled_wh_summary = wh_summary_df.style.apply(highlight_final_so, subset=["Sum of qty_so_final"])
