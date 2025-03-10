@@ -406,7 +406,7 @@ if so_file:
         st.dataframe(styled_df, use_container_width=True)
 
         if 40 in filtered_df["WH ID"].values:
-            predicted_so_sum = filtered_df.loc[filtered_df["WH ID"] == 40, f"Predicted SO Qty {selected_day}"].sum() * 0.75
+            predicted_so_sum = filtered_df.loc[filtered_df["WH ID"] == 40, f"Predicted SO Qty {selected_day}"].sum() * 0.78
         elif 772 in filtered_df["WH ID"].values:
             predicted_so_sum = filtered_df.loc[filtered_df["WH ID"] == 772, f"Predicted SO Qty {selected_day}"].sum() * 0.55
         else:
