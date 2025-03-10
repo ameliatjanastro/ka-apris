@@ -230,7 +230,7 @@ if so_file:
             # Compute Predicted SO Quantity
             daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - daily_result[f'Updated Hub Qty D+{day}']) / 
                                                         daily_result['Sum of multiplier']) * daily_result['Sum of multiplier'] 
-            daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}']*0.48
+            daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}']*1
             daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
             
             #sample_wh = daily_result[(daily_result["wh_id"] == 160) & (daily_result["hub_id"] == 121)].head()
@@ -411,9 +411,7 @@ if so_file:
         st.markdown('<h4 style="color: maroon;">Summary by WH by Day</h4>', unsafe_allow_html=True)
         st.metric(label="Total Predicted SO Qty", value=f"{predicted_so_sum:,.0f}")
         
-       # Display the styled dataframe as before
-        st.dataframe(styled_df, use_container_width=True)
-        st.dataframe(summary)
+
         
         csv = final_results_df.to_csv(index=False).encode('utf-8')
         st.download_button("Download D+1 to D+6 SO Prediction", csv, "d1_d6_so_prediction.csv", "text/csv")
