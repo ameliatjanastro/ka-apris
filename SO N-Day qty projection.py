@@ -87,7 +87,7 @@ if so_file:
     
     # Get forecast dates D+1 to D+6
 
-    forecast_dates = [(today + datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(0, 7)]
+    forecast_dates = [(today + datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(1, 7)]
     
     # Filter forecast data for D+1 to D+6
     dry_forecast_df = dry_forecast_df[dry_forecast_df["date_key"].isin(forecast_dates)]
@@ -226,7 +226,7 @@ if so_file:
 
                     previous_day_qty = 0
                     if day >= 1:
-                        previous_day_qty = daily_result.loc[hub_mask, f'Predicted SO Qty D+{day-1}'].fillna(0).astype(int)
+                        previous_day_qty = daily_result.loc[hub_mask, f'Predicted SO Qty D+{day}'].fillna(0).astype(int)
                     
                     daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = (
                         daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] - hub_forecast + previous_day_qty
