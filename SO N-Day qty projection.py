@@ -200,7 +200,7 @@ if so_file:
         # Initialize result DataFrame
         results = []
         
-        for day, forecast_date in enumerate(forecast_dates, start=1):
+        for day, forecast_date in enumerate(forecast_dates, start=0):
             # Get daily demand forecast
             daily_dry_forecast = dry_forecast_df[dry_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
             daily_fresh_cbn_forecast = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
