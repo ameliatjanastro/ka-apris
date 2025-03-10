@@ -227,8 +227,14 @@ if so_file:
                     daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'].clip(lower=0)
             
             # Compute Predicted SO Quantity
-            daily_result['Predicted SO Qty D+0'] = final_so_df['Predicted SO Qty D+0']
-            daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - (daily_result[f'Updated Hub Qty D+{day}']+daily_result[f'Predicted SO Qty D+{day-1}'])) / 
+            # Initialize predicted SO quantity for D-1 as 0 if day == 1
+            if day == 1:
+                previous_day_qty = 0
+            else:
+                # Use .get() to safely access the previous day's predicted SO quantity
+                previous_day_qty = daily_result.get(f'Predicted SO Qty D+{day-1}', pd.Series(0, index=daily_result.index))
+                
+            daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - (daily_result[f'Updated Hub Qty D+{day}']+previous_day_qty)) / 
                                                         daily_result['Sum of multiplier']) * daily_result['Sum of multiplier']
             daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
     
