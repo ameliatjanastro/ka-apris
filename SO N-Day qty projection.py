@@ -144,18 +144,17 @@ if so_file:
         661: "CBN - WH Cibinong"
     }
 
+    # Compute Predicted SO Qty D+0
+    final_so_df['Predicted SO Qty D+0'] = ((final_so_df['Sum of maxqty'] - final_so_df['Sum of hub_qty']) / 
+                                               final_so_df['Sum of multiplier']) * final_so_df['Sum of multiplier']
+    final_so_df['Predicted SO Qty D+0'] = final_so_df['Predicted SO Qty D+0'].clip(lower=0).astype(int)
+    
+    final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
+    final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
+    final_so_df = final_so_df.rename(columns={"wh_id": "WH ID"})
+
     with tab1:
         #st.subheader("Next Day SO Prediction")
-    
-         # Compute Predicted SO Qty D+0
-        final_so_df['Predicted SO Qty D+0'] = ((final_so_df['Sum of maxqty'] - final_so_df['Sum of hub_qty']) / 
-                                               final_so_df['Sum of multiplier']) * final_so_df['Sum of multiplier']
-        final_so_df['Predicted SO Qty D+0'] = final_so_df['Predicted SO Qty D+0'].clip(lower=0).astype(int)
-    
-        final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
-        final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
-        final_so_df = final_so_df.rename(columns={"wh_id": "WH ID"})
-
         def highlight_final_so(s):
             return ['background-color: #FFFACD' if s.name == 'Sum of qty_so_final' else '' for _ in s]
 
