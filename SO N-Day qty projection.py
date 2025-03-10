@@ -230,7 +230,10 @@ if so_file:
             # Compute Predicted SO Quantity
             daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - daily_result[f'Updated Hub Qty D+{day}']) / 
                                                         daily_result['Sum of multiplier']) * daily_result['Sum of multiplier'] 
-            daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}']*1
+            #daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}']*1
+            
+            daily_result.loc[daily_result['wh_id'] == 40, f'Predicted SO Qty D+{day}'] *= 0.78
+            daily_result.loc[daily_result['wh_id'] == 772, f'Predicted SO Qty D+{day}'] *= 0.52
             daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
             
             #sample_wh = daily_result[(daily_result["wh_id"] == 160) & (daily_result["hub_id"] == 121)].head()
@@ -406,9 +409,9 @@ if so_file:
         st.dataframe(styled_df, use_container_width=True)
 
         if 40 in filtered_df["WH ID"].values:
-            predicted_so_sum = filtered_df.loc[filtered_df["WH ID"] == 40, f"Predicted SO Qty {selected_day}"].sum() * 0.78
+            predicted_so_sum = filtered_df.loc[filtered_df["WH ID"] == 40, f"Predicted SO Qty {selected_day}"].sum() #* #0.78
         elif 772 in filtered_df["WH ID"].values:
-            predicted_so_sum = filtered_df.loc[filtered_df["WH ID"] == 772, f"Predicted SO Qty {selected_day}"].sum() * 0.52
+            predicted_so_sum = filtered_df.loc[filtered_df["WH ID"] == 772, f"Predicted SO Qty {selected_day}"].sum() #*# 0.52
         else:
             predicted_so_sum = 0  # Default value if no matching WH ID is found
         
