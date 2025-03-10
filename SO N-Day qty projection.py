@@ -223,8 +223,16 @@ if so_file:
                                         (dry_demand_allocation.get(wh_id, 0) + fresh_demand_allocation.get(wh_id, 0))).astype(int)
                     else:
                         hub_forecast = 0
+
+                    previous_day_qty = 0
+                    if day > 1:
+                        previous_day_qty = daily_result.loc[hub_mask, f'Predicted SO Qty D-{day-1}'].fillna(0).astype(int)
                     
-                    daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
+                    daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = (
+                        daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] - hub_forecast + previous_day_qty
+                    ).clip(lower=0)
+
+                    #daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
                     daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'].clip(lower=0)
             
             # Compute Predicted SO Quantity
