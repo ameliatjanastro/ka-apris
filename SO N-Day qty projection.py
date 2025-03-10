@@ -224,7 +224,7 @@ if so_file:
                     else:
                         hub_forecast = 0
 
-                    #daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
+                    daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
                     daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'].clip(lower=0)
             
             # Compute Predicted SO Quantity
