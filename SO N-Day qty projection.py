@@ -232,7 +232,7 @@ if so_file:
             # Initialize predicted SO quantity for D-1 as 0 if day == 1
                 
             daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - (daily_result[f'Updated Hub Qty D+{day}'])) / 
-                                                        daily_result['Sum of multiplier']) * daily_result['Sum of multiplier']
+                                                        daily_result['Sum of multiplier']) * daily_result['Sum of multiplier'] *0.702
             daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
     
             #sample_wh = daily_result[(daily_result["wh_id"] == 160) & (daily_result["hub_id"] == 121)].head()
