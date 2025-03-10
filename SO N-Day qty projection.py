@@ -144,17 +144,18 @@ if so_file:
         661: "CBN - WH Cibinong"
     }
 
-    # Compute Predicted SO Qty D+0
-    final_so_df['Predicted SO Qty D+0'] = ((final_so_df['Sum of maxqty'] - final_so_df['Sum of hub_qty']) / 
-                                               final_so_df['Sum of multiplier']) * final_so_df['Sum of multiplier']
-    final_so_df['Predicted SO Qty D+0'] = final_so_df['Predicted SO Qty D+0'].clip(lower=0).astype(int)
-    
-    final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
-    final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
-    final_so_df = final_so_df.rename(columns={"wh_id": "WH ID"})
-
     with tab1:
         #st.subheader("Next Day SO Prediction")
+    
+         # Compute Predicted SO Qty D+0
+        final_so_df['Predicted SO Qty D+0'] = ((final_so_df['Sum of maxqty'] - final_so_df['Sum of hub_qty']) / 
+                                               final_so_df['Sum of multiplier']) * final_so_df['Sum of multiplier']
+        final_so_df['Predicted SO Qty D+0'] = final_so_df['Predicted SO Qty D+0'].clip(lower=0).astype(int)
+    
+        final_so_df["WH Name"] = final_so_df["wh_id"].map(wh_name_mapping)
+        final_so_df["Hub Name"] = final_so_df["hub_id"].map(hub_name_mapping)
+        final_so_df = final_so_df.rename(columns={"wh_id": "WH ID"})
+
         def highlight_final_so(s):
             return ['background-color: #FFFACD' if s.name == 'Sum of qty_so_final' else '' for _ in s]
 
@@ -164,8 +165,6 @@ if so_file:
         'Predicted SO Qty D+0': 'sum',
         'Sum of qty_so_final': 'sum'
         }).reset_index()
-
-        wh_summary_df["Sum of qty_so_final"]
         
         # Apply styling
         styled_wh_summary = wh_summary_df.style.apply(highlight_final_so, subset=["Sum of qty_so_final"])
@@ -225,13 +224,19 @@ if so_file:
                     else:
                         hub_forecast = 0
 
-                    daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
+                    previous_day_qty = 0
+                    if day > 1:
+                        previous_day_qty = daily_result.loc[hub_mask, f'Predicted SO Qty D-{day-1}'].fillna(0).astype(int)
+                    
+                    daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = (
+                        daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] - hub_forecast + previous_day_qty
+                    ).clip(lower=0)
+
+                    #daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
                     daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'].clip(lower=0)
             
             # Compute Predicted SO Quantity
-            # Initialize predicted SO quantity for D-1 as 0 if day == 1
-                
-            daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - (daily_result[f'Updated Hub Qty D+{day}'])) / 
+            daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - daily_result[f'Updated Hub Qty D+{day}']) / 
                                                         daily_result['Sum of multiplier']) * daily_result['Sum of multiplier'] *0.702
             daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
     
@@ -407,6 +412,9 @@ if so_file:
         
         csv = final_results_df.to_csv(index=False).encode('utf-8')
         st.download_button("Download D+1 to D+6 SO Prediction", csv, "d1_d6_so_prediction.csv", "text/csv")
+
+
+
 
 
 
