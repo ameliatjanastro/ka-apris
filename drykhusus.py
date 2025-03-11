@@ -84,7 +84,7 @@ if so_file:
 
     
     # Get forecast dates D+1 to D+6
-
+    dry_forecast_df['date_key'] = pd.to_datetime(dry_forecast_df['date_key'], errors='coerce')
     forecast_dates = [(today + datetime.timedelta(days=i)).strftime('%Y-%m-%d') for i in range(1, 7)]
     
     # Filter forecast data for D+1 to D+6
