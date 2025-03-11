@@ -49,25 +49,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-with st.expander("View Description"):
-    st.markdown("""
-    
-    | Concept  | qty_so (how much should be ordered) | qty_so_final (final approved SO quantity)|
-    |----------|--------|-------------|
-    | **Purpose** | Initial calculated order quantity | Final approved SO quantity after warehouse stock check |
-    | **Based on** | hub_qty, reorder_point, total_allocation, multiplier | wh_qty and cumulative_so_qty |
-    | **Triggers order?** | ✅ Yes, if hub_qty ≤ reorder_point | ❌ No, if warehouse stock is insufficient |
-    | **Explanation** | If **hub_qty > reorder_point**, no order is triggered (**qty_so = NULL**) | If **wh_qty < cumulative_so_qty**, lower-priority hubs might not get stock (**qty_so_final = NULL**) |
-    """)
-    
-    st.markdown("""
-    - **Total Active Hubs**: 30  
-    - **Total WH**: 4  
-    - Predicted **SO Qty D + X** is based on Demand Forecast for **next day, before considering wh_qty** 
-    - **The displayed Qty for CBN excludes Xdock (30% of total SO)**  
-     
-    """)
-
 # Sidebar navigation
 tab1, tab2 = st.tabs(["Next Day SO Prediction", "D+1 to D+6 SO Prediction"])
 #page = st.sidebar.radio("Select Page", ["D+0 SO Prediction", "D+1 to D+6 SO Prediction"])
@@ -76,7 +57,6 @@ tab1, tab2 = st.tabs(["Next Day SO Prediction", "D+1 to D+6 SO Prediction"])
 #fresh_pgs_forecast_file = st.file_uploader("Upload Fresh PGS Demand Forecast CSV", type=["xlsx"])
 
 dry_forecast_df = pd.read_excel("demand_dry_productid.xlsx")
-
 
 if so_file:
     # Load Data
@@ -214,11 +194,6 @@ if so_file:
         # Display Final SO DataFrame with highlight
 
         st.dataframe(filtered_so_df, use_container_width=True)
-        #st.dataframe(filtered_so_df[["Hub Name", "Sum of qty_so", "Sum of qty_so_final", "Predicted SO Qty D+0"]],column_config={col: st.column_config.TextColumn(width="small") for col in filtered_so_df.columns})
-
-        csv1 = final_so_df.to_csv(index=False).encode('utf-8')
-        st.download_button("Download Next Day SO Prediction", csv1, "next_day_so_prediction.csv", "text/csv")
-   
     
     with tab2:
             
@@ -294,11 +269,6 @@ if so_file:
             #daily_result.loc[daily_result['WH ID'] == 40, f'Predicted SO Qty D+{day}'] *= 0.71
             #daily_result.loc[daily_result['WH ID'] == 772, f'Predicted SO Qty D+{day}'] *= 0.535
             
-            #daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
-            
-            #sample_wh = daily_result[(daily_result["wh_id"] == 160) & (daily_result["hub_id"] == 121)].head()
-            #st.dataframe(sample_wh[["Sum of maxqty", "Updated Hub Qty D+1", "Sum of multiplier", "Predicted SO Qty D+1"]])
-            
             daily_result = daily_result.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
             results.append(daily_result[["WH ID", "Hub ID", "product_id", "Sum of maxqty", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}"]])
         
@@ -309,14 +279,6 @@ if so_file:
             
         #final_results_df["WH Name"] = final_results_df["wh_id"].map(wh_name_mapping)
         
-        # Display Results
-        #st.subheader("D+1 to D+6 SO Prediction")
-        
-        def highlight_triggered(val):
-            color = 'background-color: lightgreen' if val == "Triggered" else 'background-color: lightcoral'
-            return color
-    
-        #final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
 
          # Create two columns for better layout
         col1, col2 = st.columns(2)
