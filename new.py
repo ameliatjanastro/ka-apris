@@ -129,14 +129,14 @@ if so_file:
     final_so_df['Sum of hub_qty'] += final_so_df['quantity']
     
     # Load Incoming Stock to WH
-    incoming_ospo = pd.read_excel('ospo.xlsx')
+    #incoming_ospo = pd.read_excel('ospo.xlsx')
     
     # Merge incoming stock with the stock DataFrame
-    stock_df = stock_df.merge(incoming_ospo, on=['wh_id', 'product_id'], how='left')
-    stock_df['quantity_po'] = stock_df['quantity_po'].fillna(0)
+    #stock_df = stock_df.merge(incoming_ospo, on=['wh_id', 'product_id'], how='left')
+    #stock_df['quantity_po'] = stock_df['quantity_po'].fillna(0)
     
     # Update the stock quantity by adding incoming stock
-    stock_df['stock'] += stock_df['quantity_po']
+    #stock_df['stock'] += stock_df['quantity_po']
 
 # Initialize result DataFrame
     results = []
