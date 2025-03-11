@@ -224,8 +224,8 @@ if so_file:
                 ]["Forecast Step 3"].sum()
         
                 # Get unique product IDs for WH 40 and WH 772
-                wh_40_products = set(dry_forecast_df[dry_forecast_df["wh_id"] == 40]["product_id"].unique())
-                wh_772_products = set(dry_forecast_df[dry_forecast_df["wh_id"] == 772]["product_id"].unique())
+                wh_40_products = set(dry_forecast_df[dry_forecast_df["WH ID"] == 40]["product_id"].unique())
+                wh_772_products = set(dry_forecast_df[dry_forecast_df["WH ID"] == 772]["product_id"].unique())
                 
                 # Determine product IDs that are associated with both WHs
                 common_products = wh_40_products.intersection(wh_772_products)
