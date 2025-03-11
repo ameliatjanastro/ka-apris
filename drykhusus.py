@@ -140,8 +140,8 @@ if so_file:
         661: "CBN - WH Cibinong"
     }
 
-    stock_df1 = pd.read_csv('path/to/stock_file1.csv')
-    stock_df2 = pd.read_csv('path/to/stock_file2.csv')
+    stock_df1 = pd.read_csv('kos.csv')
+    stock_df2 = pd.read_csv('stl.csv')
     
     # Concatenate the stock data from both files (assuming they have the same structure)
     stock_df = pd.concat([stock_df1, stock_df2])
