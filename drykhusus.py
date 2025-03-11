@@ -244,7 +244,7 @@ if so_file:
                     dry_demand_allocation_split = {}
         
                 # Log the allocation for debugging
-                st.write(f"Day {day}, Product {product_id}, Allocation: {dry_demand_allocation_split}")
+                #st.write(f"Day {day}, Product {product_id}, Allocation: {dry_demand_allocation_split}")
                     
             daily_result = final_so_df.copy()
             daily_result[f'Updated Hub Qty D+{day}'] = daily_result['Sum of hub_qty']
