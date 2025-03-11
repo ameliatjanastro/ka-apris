@@ -149,14 +149,26 @@ if so_file:
     # Merge the stock data with the final SO data on 'product_id'
     final_so_df = final_so_df.merge(stock_df, on='product_id', how='left')
 
-
-
-
-
-
-
-
+    # Load Stock in Transit to Hub
+    stock_in_transit_df = pd.read_excel('sit.xlsx')
     
+    # Merge stock in transit with the final SO DataFrame
+    final_so_df = final_so_df.merge(stock_in_transit_df, on=['wh_id', 'hub_id'], how='left')
+    final_so_df['quantity'] = final_so_df['quantity'].fillna(0)
+
+    # Add stock in transit to the hub quantity
+    final_so_df['Sum of hub_qty'] += final_so_df['quantity']
+    
+    # Load Incoming Stock to WH
+    incoming_ospo = pd.read_excel('ospo.xlsx')
+    
+    # Merge incoming stock with the stock DataFrame
+    stock_df = stock_df.merge(incoming_ospo, on=['wh_id', 'product_id'], how='left')
+    stock_df['quantity_po'] = stock_df['quantity_po'].fillna(0)
+    
+    # Update the stock quantity by adding incoming stock
+    stock_df['stock'] += stock_df['quantity_po']
+
     with tab1:
         #st.subheader("Next Day SO Prediction")
     
