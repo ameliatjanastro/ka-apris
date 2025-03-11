@@ -75,9 +75,7 @@ tab1, tab2 = st.tabs(["Next Day SO Prediction", "D+1 to D+6 SO Prediction"])
 #fresh_cbn_forecast_file = st.file_uploader("Upload Fresh CBN Demand Forecast CSV", type=["xlsx"])
 #fresh_pgs_forecast_file = st.file_uploader("Upload Fresh PGS Demand Forecast CSV", type=["xlsx"])
 
-dry_forecast_df = pd.read_excel("Forecast Mar Dry.xlsx")
-fresh_cbn_forecast_df = pd.read_excel("Forecast Mar Fresh CBN.xlsx")
-fresh_pgs_forecast_df = pd.read_excel("Forecast Mar Fresh PGS.xlsx")
+dry_forecast_df = pd.read_excel("demand_dry_productid.xlsx")
 
 
 if so_file:
@@ -91,11 +89,9 @@ if so_file:
     
     # Filter forecast data for D+1 to D+6
     dry_forecast_df = dry_forecast_df[dry_forecast_df["date_key"].isin(forecast_dates)]
-    fresh_cbn_forecast_df = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"].isin(forecast_dates)]
-    fresh_pgs_forecast_df = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"].isin(forecast_dates)]
 
     # Convert IDs to integer type
-    final_so_df[['wh_id', 'hub_id']] = final_so_df[['wh_id', 'hub_id']].apply(pd.to_numeric)
+    final_so_df[['wh_id','product_id', 'hub_id']] = final_so_df[['wh_id','product_id', 'hub_id']].apply(pd.to_numeric)
 
     # Exclude specific hubs
     final_so_df["hub_id"] = final_so_df["hub_id"].astype(int)
@@ -144,6 +140,23 @@ if so_file:
         661: "CBN - WH Cibinong"
     }
 
+    stock_df1 = pd.read_csv('path/to/stock_file1.csv')
+    stock_df2 = pd.read_csv('path/to/stock_file2.csv')
+    
+    # Concatenate the stock data from both files (assuming they have the same structure)
+    stock_df = pd.concat([stock_df1, stock_df2])
+    
+    # Merge the stock data with the final SO data on 'product_id'
+    final_so_df = final_so_df.merge(stock_df, on='product_id', how='left')
+
+
+
+
+
+
+
+
+    
     with tab1:
         #st.subheader("Next Day SO Prediction")
     
@@ -202,59 +215,84 @@ if so_file:
         
         for day, forecast_date in enumerate(forecast_dates, start=1):
             # Get daily demand forecast
-            daily_dry_forecast = dry_forecast_df[dry_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
-            daily_fresh_cbn_forecast = fresh_cbn_forecast_df[fresh_cbn_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
-            daily_fresh_pgs_forecast = fresh_pgs_forecast_df[fresh_pgs_forecast_df["date_key"] == forecast_date]["Forecast Step 3"].sum()
-    
+            # Get the daily dry forecast for the given date and product ID
+            daily_dry_forecast = dry_forecast_df[
+                (dry_forecast_df["date_key"] == forecast_date) & 
+                (dry_forecast_df["product_id"] == product_id)
+            ]["Forecast Step 3"].sum()
+            
+            # Get unique product IDs for WH 40 and WH 772
+            wh_40_products = set(dry_forecast_df[dry_forecast_df["wh_id"] == 40]["product_id"].unique())
+            wh_772_products = set(dry_forecast_df[dry_forecast_df["wh_id"] == 772]["product_id"].unique())
+            
+            # Determine product IDs that are associated with both WHs
+            common_products = wh_40_products.intersection(wh_772_products)
+            
             # Allocate Demand Forecast to WHs
-            dry_demand_allocation = {772: int(daily_dry_forecast * (1/3)), 40: int(daily_dry_forecast * (2/3))}
-            fresh_demand_allocation = {661: int(daily_fresh_cbn_forecast), 160: int(daily_fresh_pgs_forecast)}
+            if product_id in common_products:
+                dry_demand_allocation_split = {
+                    772: int(daily_dry_forecast * 0.62), 
+                    40: int(daily_dry_forecast * 0.38)
+                }
+            else:
+                if product_id in wh_772_products:
+                    dry_demand_allocation_split = {772: daily_dry_forecast}
+                elif product_id in wh_40_products:
+                    dry_demand_allocation_split = {40: daily_dry_forecast}
+                else:
+                    # Default case: allocate to WH 772 (or handle as needed)
+                    dry_demand_allocation_split = {772: daily_dry_forecast}
+            
+            print(f"Product ID: {product_id}, Dry Demand Allocation Split:", dry_demand_allocation_split)
             
             daily_result = final_so_df.copy()
             daily_result[f'Updated Hub Qty D+{day}'] = daily_result['Sum of hub_qty']
             
+            # Iterate through each WH ID and Hub ID
             for wh_id in final_so_df['WH ID'].unique():
                 for hub_id in final_so_df.loc[final_so_df['WH ID'] == wh_id, 'hub_id'].unique():
                     hub_mask = (daily_result['WH ID'] == wh_id) & (daily_result['hub_id'] == hub_id)
                     total_so_final = final_so_df.loc[final_so_df['WH ID'] == wh_id, 'Sum of qty_so_final'].sum()
-                    
+            
                     if total_so_final > 0:
                         hub_forecast = ((final_so_df.loc[hub_mask, 'Sum of qty_so_final'] / total_so_final) * 
-                                        (dry_demand_allocation.get(wh_id, 0) + fresh_demand_allocation.get(wh_id, 0))).astype(int)
+                                        (dry_demand_allocation_split.get(wh_id, 0)).astype(int))
                     else:
                         hub_forecast = 0
-
+            
                     daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] -= hub_forecast
                     daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'] = daily_result.loc[hub_mask, f'Updated Hub Qty D+{day}'].clip(lower=0)
             
             # Compute Predicted SO Quantity
-            daily_result[f'Predicted SO Qty D+{day}'] = ((daily_result['Sum of maxqty'] - daily_result[f'Updated Hub Qty D+{day}']) / 
-                                                        daily_result['Sum of multiplier']) * daily_result['Sum of multiplier'] 
-            #daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}']*1
+            daily_result[f'Predicted SO Qty D+{day}'] = (
+                (daily_result['Sum of maxqty'] - daily_result[f'Updated Hub Qty D+{day}']) / 
+                daily_result['Sum of multiplier']
+            ) * daily_result['Sum of multiplier']
             
-            daily_result.loc[daily_result['WH ID'] == 40, f'Predicted SO Qty D+{day}'] *= 0.71
-            daily_result.loc[daily_result['WH ID'] == 772, f'Predicted SO Qty D+{day}'] *= 0.535
+            # Adjust Predicted SO Quantity based on stock availability
+            # Merge daily_result with stock_df to add the 'stock' column
+            daily_result = daily_result.merge(stock_df[['product_id', 'stock']], on='product_id', how='left')
             
-            daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
+            # Set Predicted SO Qty to NaN if stock is less than the predicted quantity
+            daily_result.loc[daily_result['stock'] < daily_result[f'Predicted SO Qty D+{day}'], f'Predicted SO Qty D+{day}'] = np.nan
+
+            print(daily_result[[f'Predicted SO Qty D+{day}', 'stock']])
+            
+            #daily_result.loc[daily_result['WH ID'] == 40, f'Predicted SO Qty D+{day}'] *= 0.71
+            #daily_result.loc[daily_result['WH ID'] == 772, f'Predicted SO Qty D+{day}'] *= 0.535
+            
+            #daily_result[f'Predicted SO Qty D+{day}'] = daily_result[f'Predicted SO Qty D+{day}'].clip(lower=0).astype(int)
             
             #sample_wh = daily_result[(daily_result["wh_id"] == 160) & (daily_result["hub_id"] == 121)].head()
             #st.dataframe(sample_wh[["Sum of maxqty", "Updated Hub Qty D+1", "Sum of multiplier", "Predicted SO Qty D+1"]])
             
-            def check_triggered(row, day):
-                if row[f'Predicted SO Qty D+{day}'] == 0:
-                    return "Not Triggered"
-                return "Triggered" if row[f'Predicted SO Qty D+{day}'] - row['Sum of reorder_point'] < 0 else "Not Triggered"
-            
-            daily_result[f'SO vs Reorder Point D+{day}'] = daily_result.apply(lambda row: check_triggered(row, day), axis=1)
             daily_result = daily_result.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
-            results.append(daily_result[["WH ID", "Hub ID", "Sum of maxqty", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}", f"SO vs Reorder Point D+{day}"]])
-
-            
+            results.append(daily_result[["WH ID", "Hub ID", "product_id", "Sum of maxqty", f"Updated Hub Qty D+{day}", f"Predicted SO Qty D+{day}"]])
         
         # Merge results into a single DataFrame
         final_results_df = results[0]
         for df in results[1:]:
-            final_results_df = final_results_df.merge(df, on=["WH ID", "Hub ID","Sum of maxqty"], how="left")
+            final_results_df = final_results_df.merge(df, on=["WH ID", "Hub ID","product_id", "Sum of maxqty"], how="left")
             
         #final_results_df["WH Name"] = final_results_df["wh_id"].map(wh_name_mapping)
         
@@ -266,120 +304,6 @@ if so_file:
             return color
     
         #final_results_df = final_results_df.rename(columns={"wh_id": "WH ID", "hub_id": "Hub ID"})
-
-        # Dropdown for selecting WH ID
-    
-        hub_options = final_results_df['Hub ID'].unique()
-        # Combine Hub ID and Name for display
-        final_results_df["Hub Name"] = final_results_df["Hub ID"].map(hub_name_mapping)
-        final_results_df["Hub Display"] = final_results_df["Hub ID"].astype(str) + " - " + final_results_df["Hub Name"]
-
-        st.markdown("""
-        
-        **Demand Forecast assumptions:**  
-        - *Dry*: 2/3 demand for KOS, 1/3 for STL  
-        - *Fresh*: By L2 Category (CBN -> Telur, Roti & Pastry, Sayur, Buah) 
-        """)
-
-
-        st.markdown('<h4 style="color: maroon;">Summary by Hub by Week</h4>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            #selected_hub = st.select_slider("Select WH", options=final_results_df["Hub Display"].dropna().unique())
-            selected_hub = st.selectbox("Select Hub", final_results_df["Hub Display"].dropna().unique())  # Drop NaN to avoid excluded hubs
-            
-        with col2:
-            product_type = st.selectbox("Select Product Type:", ["Dry", "Fresh"])
-            
-    
-        # Filter the DataFrame for the selected hub
-        selected_hub_id = int(selected_hub.split(" - ")[0])  # Extracts ID
-        filtered_df = final_results_df[final_results_df["Hub ID"] == selected_hub_id]
-    
-        #filtered_df = final_results_df[final_results_df['Hub ID'] == selected_hub].copy()
-        
-        # Rename D+1 to D+6 columns to actual dates
-        forecast_dates_dict = {f"Predicted SO Qty D+{i+1}": (today + datetime.timedelta(days=i+1)).strftime('%Y-%m-%d') for i in range(6)}
-        filtered_df.rename(columns=forecast_dates_dict, inplace=True)
-        
-        # Reshape the data for plotting
-        melted_df = filtered_df.melt(id_vars=['WH ID'], 
-                                      value_vars=list(forecast_dates_dict.values()), 
-                                      var_name='Date', 
-                                      value_name='SO Quantity')
-        
-        # Convert Date column to datetime type for proper plotting
-        melted_df['Date'] = pd.to_datetime(melted_df['Date'])
-        
-        # Separate data for Dry WHs (772, 40) and Fresh WHs (160, 661)
-        dry_wh_df = melted_df[melted_df['WH ID'].isin([772, 40])]
-        fresh_wh_df = melted_df[melted_df['WH ID'].isin([160, 661])]
-        
-        # Create Dry WHs line chart
-        
-        # Show selected chart
-        if product_type == "Dry":
-            # Dry WHs Line Chart
-            fig_dry = px.line(
-                dry_wh_df,
-                x='Date', 
-                y='SO Quantity', 
-                color='WH ID',  
-                markers=True  
-                #title=f'Dry Warehouses (KOS & STL) - Predicted SO Quantity for Hub {selected_hub}'
-            )
-        
-            # Add data labels
-            for wh in dry_wh_df['WH ID'].unique():
-                wh_data = dry_wh_df[dry_wh_df['WH ID'] == wh]
-                fig_dry.add_scatter(
-                    x=wh_data['Date'], 
-                    y=wh_data['SO Quantity'] * 1.05, 
-                    mode='text', 
-                    text=wh_data['SO Quantity'].astype(str), 
-                    textposition="top center",  # Adjusted placement
-                    textfont=dict(color="gray", size=11, weight="bold"),  # Bold Red Text
-                    showlegend=False
-                )
-
-                fig_dry.update_layout(
-                    margin=dict(t=10),  # Reduce top space for Dry WH chart
-                )
-        
-            st.plotly_chart(fig_dry, use_container_width=True)
-        
-        else:
-            # Fresh WHs Line Chart
-            fig_fresh = px.line(
-                fresh_wh_df,
-                x='Date', 
-                y='SO Quantity', 
-                color='WH ID',  
-                markers=True  
-                #title=f'Fresh Warehouses (PGS & CBN) - Predicted SO Quantity for Hub {selected_hub}'
-            )
-        
-            # Add data labels
-            for wh in fresh_wh_df['WH ID'].unique():
-                wh_data = fresh_wh_df[fresh_wh_df['WH ID'] == wh]
-                fig_fresh.add_scatter(
-                    x=wh_data['Date'], 
-                    y=wh_data['SO Quantity'] + 10, 
-                    mode='text', 
-                    text=wh_data['SO Quantity'].astype(str), 
-                    textposition="top center",  # Adjusted placement
-                    textfont=dict(color="gray", size=11, weight="bold"),  # Bold Red Text
-                    showlegend=False
-                )
-
-                fig_fresh.update_layout(
-                    margin=dict(t=10),  # Reduce top space for Fresh WH chart
-                )
-        
-            st.plotly_chart(fig_fresh, use_container_width=True)
-    
-        
-        # Provide a download button for results
 
          # Create two columns for better layout
         col1, col2 = st.columns(2)
@@ -398,7 +322,7 @@ if so_file:
         filtered_df = final_results_df[final_results_df["WH ID"] == selected_wh]
         
         # Select relevant columns dynamically based on the chosen day
-        selected_columns = ["Hub ID", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", "Max Total Allocation", f"SO vs Reorder Point {selected_day}"]
+        selected_columns = ["Hub ID","product_id", f"Updated Hub Qty {selected_day}", f"Predicted SO Qty {selected_day}", "Max Total Allocation"]
         
         # Apply selection and styling
         styled_df = filtered_df[selected_columns].style.applymap(highlight_triggered, subset=[f"SO vs Reorder Point {selected_day}"])
@@ -417,8 +341,6 @@ if so_file:
             predicted_so_sum = 0  # Default value if no matching WH ID is found
         
         st.metric(label="Total Predicted SO Qty", value=f"{predicted_so_sum:,.0f}")
-                
-
         
         csv = final_results_df.to_csv(index=False).encode('utf-8')
         st.download_button("Download D+1 to D+6 SO Prediction", csv, "d1_d6_so_prediction.csv", "text/csv")
