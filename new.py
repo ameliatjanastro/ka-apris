@@ -113,14 +113,10 @@ if so_file:
         661: "CBN - WH Cibinong"
     }
 
-    stock_df1 = pd.read_excel('kos.xlsx')
-    stock_df2 = pd.read_excel('stl.xlsx')
-    
-    # Concatenate the stock data from both files (assuming they have the same structure)
-    stock_df = pd.concat([stock_df1, stock_df2])
-    
+    stock_df = pd.read_excel('gab.xlsx')
+
     # Merge the stock data with the final SO data on 'product_id'
-    final_so_df = final_so_df.merge(stock_df, on='product_id', how='left')
+    final_so_df = final_so_df.merge(stock_df, on=['product_id','wh_id'], how='left')
 
     # Load Stock in Transit to Hub
     stock_in_transit_df = pd.read_excel('sit.xlsx')
