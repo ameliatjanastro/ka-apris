@@ -36,7 +36,7 @@ def calculate_columns(df, cycle):
             ), axis=1
         )
         # Assumed Stock WH for future cycle: last cycle stock + OSPR last cycle - average sales from RL order date to RL date this cycle
-        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospo_qty'] - df['avg_sales_future_cycle'])
+        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospr_qty'] - df['avg_sales_future_cycle'])
     else:
         df['assumed_stock_wh'] = df['stock_wh']  # For current cycle, assumed stock is simply the stock_wh
 
