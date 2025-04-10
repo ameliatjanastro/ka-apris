@@ -3,9 +3,28 @@ import numpy as np
 import streamlit as st
 
 # Load Excel Data
-@st.cache_data
-def load_data(file_path):
-    return pd.read_excel(file_path)
+# Streamlit Interface
+def main():
+    st.title('Supply Chain Data Calculation with Cycles')
+
+    # File Upload for Excel
+    uploaded_file = st.file_uploader("Upload your Excel file", type="xlsx")
+    
+    if uploaded_file is not None:
+        df = load_data(uploaded_file)
+
+        # Display the first few rows of the dataframe
+        st.write(df.head())
+
+        # Dropdown for selecting the cycle
+        cycle = st.selectbox("Select Cycle", ["Current", "Cycle 1", "Cycle 2"])
+
+        # Calculate columns based on selected cycle
+        df = calculate_columns(df, cycle)
+
+        # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
+        st.write(df)
+
 
 # Function to calculate JI, Max Stock WH, RL Qty New, Assumed Stock WH for future cycles, and Assumed OSPO Qty
 def calculate_columns(df, cycle):
@@ -45,24 +64,3 @@ def calculate_columns(df, cycle):
 
     return df
 
-# Streamlit Interface
-def main():
-    st.title('Supply Chain Data Calculation with Cycles')
-
-    # File Upload for Excel
-    uploaded_file = st.file_uploader("Upload your Excel file", type="xlsx")
-    
-    if uploaded_file is not None:
-        df = load_data(uploaded_file)
-
-        # Display the first few rows of the dataframe
-        st.write(df.head())
-
-        # Dropdown for selecting the cycle
-        cycle = st.selectbox("Select Cycle", ["Current", "Cycle 1", "Cycle 2"])
-
-        # Calculate columns based on selected cycle
-        df = calculate_columns(df, cycle)
-
-        # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
-        st.write(df)
