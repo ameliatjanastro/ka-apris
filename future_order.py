@@ -9,6 +9,10 @@ def load_data(file_path):
 
 # Function to calculate JI, Max Stock WH, RL Qty New, Assumed Stock WH for future cycles, and Assumed OSPO Qty
 def calculate_columns(df, cycle):
+    # Convert 'next_coverage_date' and 'next_order_date' to datetime if they aren't already
+    df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
+    df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
+    
     # Calculate JI as the difference between coverage_date and order_date
     df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days
     
@@ -73,4 +77,5 @@ def main():
 # Run the app
 if __name__ == "__main__":
     main()
+
 
