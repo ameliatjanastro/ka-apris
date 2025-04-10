@@ -82,10 +82,6 @@ def main():
 
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
         st.write(df)
-
-        # Optionally, download the updated Excel file
-        st.download_button("Download Updated Excel", df.to_excel(index=False), "updated_file.xlsx")
-
 # Run the app
 if __name__ == "__main__":
     main()
