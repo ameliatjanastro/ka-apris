@@ -24,17 +24,15 @@ def calculate_columns(df, cycle):
     # Check for missing dates and handle them (e.g., fill with a default date)
     # Ensure 'next_coverage_date' is in datetime format first
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
-    
-    # Fill NaN values with today's date + 14 days
-    df['next_coverage_date'].fillna(pd.to_datetime('today') + pd.Timedelta(days=14), inplace=True)
-    
-    # Now you can safely convert to date
-    df['next_coverage_date'] = df['next_coverage_date'].dt.date
-    
-    # Repeat the same logic for next_order_date if necessary
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
+    
+    # Fill NaN values with a default date (today + 14 days)
+    df['next_coverage_date'].fillna(pd.to_datetime('today') + pd.Timedelta(days=14), inplace=True)
     df['next_order_date'].fillna(pd.to_datetime('today') + pd.Timedelta(days=14), inplace=True)
-    df['next_order_date'] = df['next_order_date'].dt.date
+    
+    # Ensure both columns are of datetime type
+    df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
+    df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
         
     # Calculate JI as the difference between coverage_date and order_date
     df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days
