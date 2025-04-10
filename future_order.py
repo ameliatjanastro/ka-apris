@@ -13,6 +13,18 @@ def calculate_columns(df, cycle):
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
     
+    # Ensure avg_sales_final and doi_policy are numeric and handle missing values
+    df['avg_sales_final'] = pd.to_numeric(df['avg_sales_final'], errors='coerce')
+    df['doi_policy'] = pd.to_numeric(df['doi_policy'], errors='coerce')
+    
+    # Handle missing values by filling with 0 or another appropriate strategy
+    df['avg_sales_final'].fillna(0, inplace=True)
+    df['doi_policy'].fillna(0, inplace=True)
+
+    # Check for missing dates and handle them (e.g., fill with a default date)
+    df['next_coverage_date'].fillna(pd.to_datetime('today'), inplace=True)
+    df['next_order_date'].fillna(pd.to_datetime('today'), inplace=True)
+    
     # Calculate JI as the difference between coverage_date and order_date
     df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days
     
