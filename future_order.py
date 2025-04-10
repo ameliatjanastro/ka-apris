@@ -10,8 +10,8 @@ def load_data(file_path):
 # Function to calculate JI, Max Stock WH, RL Qty New, Assumed Stock WH for future cycles, and Assumed OSPO Qty
 def calculate_columns(df, cycle):
     # Convert 'next_coverage_date' and 'next_order_date' to datetime if they aren't already
-    df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
-    df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
+    df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce').date()
+    df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce').date()
     
     # Ensure avg_sales_final and doi_policy are numeric and handle missing values
     df['avg_sales_final'] = pd.to_numeric(df['avg_sales_final'], errors='coerce')
@@ -22,8 +22,8 @@ def calculate_columns(df, cycle):
     df['doi_policy'].fillna(0, inplace=True)
 
     # Check for missing dates and handle them (e.g., fill with a default date)
-    df['next_coverage_date'].fillna(pd.to_datetime('today'), inplace=True)
-    df['next_order_date'].fillna(pd.to_datetime('today'), inplace=True)
+    df['next_coverage_date'].fillna(pd.to_datetime('today')+14, inplace=True).date()
+    df['next_order_date'].fillna(pd.to_datetime('today'), inplace=True).date()
     
     # Calculate JI as the difference between coverage_date and order_date
     df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days
