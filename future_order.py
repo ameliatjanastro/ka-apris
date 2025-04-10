@@ -10,29 +10,29 @@ def load_data(file_path):
 # Function to calculate JI, Max Stock WH, RL Qty New, Assumed Stock WH for future cycles, and Assumed OSPO Qty
 def calculate_columns(df, cycle):
     # Calculate JI as the difference between coverage_date and order_date
-    df['JI'] = (df['coverage_date'] - df['order_date']).dt.days
+    df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days
     
     # Overwrite Max Stock WH based on the given formula
-    df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + (df['coverage_date'] - df['order_date']).dt.days)
+    df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + (df['next_coverage_date'] - df['next_order_date']).dt.days)
     
     # Calculate RL Qty New
     df['rl_qty_new'] = df['stock_wh'] - df['ospo_qty'] - df['osrl_qty'] - df['ospr_qty'] + df['rl_qty_hub']
     
     # Looping logic for future cycles based on the selected cycle
-    df['future_order_date'] = df['order_date']  # Default to the current order date
+    df['future_order_date'] = df['next_order_date']  # Default to the current order date
 
     # Cycle logic
     if cycle == 'Cycle 1':
-        df['future_order_date'] = df['order_date'] + pd.to_timedelta(df['JI'], unit='D')
+        df['future_order_date'] = df['next_order_date'] + pd.to_timedelta(df['JI'], unit='D')
     elif cycle == 'Cycle 2':
-        df['future_order_date'] = df['order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')
+        df['future_order_date'] = df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')
 
     # Calculate Assumed Stock WH for future cycle
     if cycle != 'Current':
         # Calculate Average Sales from RL order date to RL date of current cycle
         df['avg_sales_future_cycle'] = df.apply(
             lambda row: np.mean(
-                df[(df['order_date'] >= row['order_date']) & (df['order_date'] <= row['future_order_date'])]['avg_sales_final']
+                df[(df['next_order_date'] >= row['next_order_date']) & (df['next_order_date'] <= row['future_order_date'])]['avg_sales_final']
             ), axis=1
         )
         # Assumed Stock WH for future cycle: last cycle stock + OSPR last cycle - average sales from RL order date to RL date this cycle
