@@ -112,20 +112,7 @@ def calculate_columns(df, cycle):
         df['rl_qty_future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
         df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round()
 
-
-    columns_to_display = [
-        'product_id', 'product_name', 'avg_sales_final', 
-        'vendor_id', 'vendor_name', 'location_id', 'doi_policy', 
-        'max_stock_wh', 'assumed_stock_wh', 'ospo for future',  # Ensure this column exists
-        'rl_qty_future', 'landed_doi'
-    ]
-
-    # Make sure that the required columns exist before returning
-    if all(col in df.columns for col in columns_to_display):
-        return df[columns_to_display]
-    else:
-        st.error("Some required columns are missing from the DataFrame!")
-        return df  # If columns are missing, return the full DataFrame for debugging
+    return df
 
 # Streamlit Interface
 def main():
