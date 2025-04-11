@@ -152,9 +152,15 @@ def main():
 
         # Display only the specific columns
         df_display = df[columns_to_display]  # Filter the DataFrame
-        st.write(df_display)
+        def highlight_zero_doi(row):
+            color = 'background-color: #ffcccc' if row['landed_doi'] == 0 else ''
+            return [color] * len(row)
+        st.dataframe(df_display.style.apply(highlight_zero_doi, axis=1))
+
+        #st.write(df_display)
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
         #st.write(df)
+    
 # Run the app
 if __name__ == "__main__":
     main()
