@@ -74,12 +74,17 @@ def calculate_columns(df, cycle):
             df[f'assumed_stock_wh_{i}'] / (df['avg_sales_final'] * df['JI'])
         ).fillna(0).clip(lower=0).round()
 
+    df[f'min_JI_{i}'] = (df[f'assumed_stock_wh_{i}'] / df['avg_sales_final']).fillna(0).clip(lower=0)
+
+    # Calculate the coverage date when landed DOI is at least 1
+    df[f'coverage_date_{i}'] = (df['next_order_date'] + pd.to_timedelta(df[f'min_JI_{i}'], unit='D'))
+
     # Output the selected cycle’s results
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
     df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{selected_cycle}']
     df['rl_qty_amel'] = df[f'rl_qty_amel_{selected_cycle}']
     df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
-
+    df['coverage_date'] = df[f'coverage_date_{selected_cycle}']
     return df
 
 # Streamlit Interface
@@ -101,7 +106,7 @@ def main():
         # Show only selected columns
         cols_to_show = [
             'product_id', 'location_id', 'future_order_date', 'future_inbound_date',
-            'assumed_stock_wh', 'assumed_ospo_qty','rl_qty_amel', 'landed_doi'
+            'assumed_stock_wh', 'assumed_ospo_qty','rl_qty_amel', 'landed_doi','coverage_date
         ]
         existing_cols = [col for col in cols_to_show if col in result_df.columns]
 
