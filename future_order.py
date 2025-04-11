@@ -44,7 +44,7 @@ def calculate_columns(df, cycle):
         df['future_inbound_date'] = df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')
     else:
         df['future_order_date'] = df['next_order_date']  # For 'Current'
-        df['future_inbound_date'] = df['future_inbound_date']
+        df['future_inbound_date'] = df['next_inbound_date']
     
     # Calculate rl_qty_new
     df['rl_qty_new'] = (
