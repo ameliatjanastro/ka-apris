@@ -92,7 +92,7 @@ def main():
         #st.write(df.head())
 
         # Dropdown for selecting the cycle
-        num_cycles = 7  # Adjust this based on how far ahead you want to plan
+        num_cycles = 5  # Adjust this based on how far ahead you want to plan
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         
         cycle = st.selectbox("Select Cycle", cycle_options)
