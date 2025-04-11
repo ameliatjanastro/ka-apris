@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+import re
 
 # Load Excel Data
 @st.cache_data
@@ -8,168 +9,107 @@ def load_data(file_path):
     return pd.read_excel(file_path)
 
 # Function to calculate JI, Max Stock WH, RL Qty New, Assumed Stock WH for future cycles, and Assumed OSPO Qty
-import re
-
 def calculate_columns(df, cycle):
     # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
     df['next_inbound_date'] = pd.to_datetime(df['next_inbound_date'], errors='coerce')
 
-    # Fill NaT with today + 14 days
-    default_date = pd.to_datetime('today') + pd.Timedelta(days=14)
-    df['next_coverage_date'] = df['next_coverage_date'].fillna(default_date)
-    df['next_order_date'] = df['next_order_date'].fillna(default_date)
-    df['next_inbound_date'] = df['next_inbound_date'].fillna(default_date)
-
     # Ensure numeric columns
-    df['avg_sales_final'] = pd.to_numeric(df['avg_sales_final'], errors='coerce').fillna(0)
-    df['doi_policy'] = pd.to_numeric(df['doi_policy'], errors='coerce').fillna(0)
-    df['stock_wh'] = pd.to_numeric(df['stock_wh'], errors='coerce').fillna(0)
-    df['ospo_qty'] = pd.to_numeric(df['ospo_qty'], errors='coerce').fillna(0)
-    df['ospr_qty'] = pd.to_numeric(df['ospr_qty'], errors='coerce').fillna(0)
-    df['osrl_qty'] = pd.to_numeric(df['osrl_qty'], errors='coerce').fillna(0)
-    #df['rl_qty_hub'] = pd.to_numeric(df['rl_qty_hub'], errors='coerce').fillna(0)
+    for col in ['avg_sales_final', 'doi_policy', 'stock_wh', 'ospo_qty', 'ospr_qty', 'osrl_qty']:
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
     # JI and max stock
     df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
     df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + df['JI'])
 
-    # Determine future_order_date based on cycle
+    # Determine cycle number
     match = re.search(r'Cycle\s*(\d+)', cycle)
-    if match:
-        cycle_num = int(match.group(1))
-        df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
-        df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
-    else:
-        df['future_order_date'] = df['next_order_date'].dt.strftime('%d-%b-%Y')  # For 'Current'
-        df['future_inbound_date'] = df['next_inbound_date'].dt.strftime('%d-%b-%Y')
-    
-    # Calculate rl_qty_new
+    cycle_num = int(match.group(1)) if match else 0
+
+    # Future dates
+    df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+    df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+
+    # RL Qty New
     df['rl_qty_new'] = (
         df['max_stock_wh']
         - df['stock_wh']
         - df['ospo_qty']
         - df['ospr_qty']
         - df['osrl_qty']
-        #+ df['rl_qty_hub']
     ).fillna(0).clip(lower=0).round()
 
-    
-
-    # Process future cycles (Cycle 2 and beyond)
-    if cycle != 'Current':
-        # Calculate future average sales between order dates
-        df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.20, 0.10, size=len(df)))  # Random fluctuation
-
-        # Calculate assumed stock for the future cycle
+    if cycle == 'Current':
+        df['rl_qty_future'] = df['rl_qty_new']
+        df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
+        df['assumed_stock_wh'] = df['stock_wh']
+        df['assumed_ospo_qty'] = df['rl_qty_new']
+        df['ospo for future'] = df['rl_qty_new']
+    elif cycle == 'Cycle 1':
+        df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, size=len(df)))
         df['assumed_stock_wh'] = (df['stock_wh'] + df['ospo_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
-
-        # Sort before shifting so we get meaningful previous RL Qty per product/location
-        df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
-
-        # Initialize the column for assumed_ospo_qty and rl_qty_future
-        df['assumed_ospo_qty'] = 0
-        df['rl_qty_future'] = 0  # Initialize the future RL qty column
-
-        # Loop through cycles and calculate assumed_ospo_qty and rl_qty_future
-        for cycle_num in range(1, cycle_num + 1):
-            if cycle_num == 1:
-                # For Cycle 1 (current cycle), refer to 'rl_qty_new'
-                df['assumed_ospo_qty'] = df['rl_qty_new']
-                df['ospo for future'] = df['rl_qty_new']
-                df['rl_qty_future'] = (df['max_stock_wh']- df['assumed_stock_wh']- df['assumed_ospo_qty']
-                    #+ df['rl_qty_hub']
-                ).fillna(0).clip(lower=0).round()
-            else:
-                # For Cycle 2 and onwards, first calculate rl_qty_future
-                df['assumed_stock_wh'] = df.groupby(['product_id', 'location_id'])['assumed_stock_wh'].shift(1, fill_value=0)
-                df['assumed_ospo_qty'] = df.groupby(['product_id', 'location_id'])['ospo for future'].shift(1, fill_value=0)
-                df['assumed_ospo_qty'] = df['assumed_ospo_qty'].clip(lower=0).round()
-                df['rl_qty_future'] = (
-                    df['max_stock_wh']
-                    - df['assumed_stock_wh']
-                    - df['assumed_ospo_qty']
-                    #+ df['rl_qty_hub']
-                ).fillna(0).clip(lower=0).round()
-
-                # Now assign assumed_ospo_qty for future cycles using previous cycle's rl_qty_future
-                
-
-        # Calculate final future RL Qty
+        df['assumed_ospo_qty'] = df['rl_qty_new']
         df['rl_qty_future'] = (
             df['max_stock_wh']
             - df['assumed_stock_wh']
             - df['assumed_ospo_qty']
-            #+ df['rl_qty_hub']
         ).fillna(0).clip(lower=0).round()
-
-        # Calculate landed_doi
-        df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round().fillna(0)
-        
+        df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
+        df['ospo for future'] = df['rl_qty_future']
     else:
-        # Current cycle calculations
-        df['rl_qty_future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
-        df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round().fillna(0)
-        df['assumed_stock_wh'] = df['stock_wh'] 
-        df['ospo for future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
+        df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, size=len(df)))
+        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospo_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
+
+        df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
+        df['ospo for future'] = df['rl_qty_new']
+        df['assumed_ospo_qty'] = df['rl_qty_new']
+
+        for i in range(2, cycle_num + 1):
+            df[f'assumed_stock_wh_{i}'] = df.groupby(['product_id', 'location_id'])[f'assumed_stock_wh_{i-1}' if i > 2 else 'assumed_stock_wh'].shift(1).fillna(0)
+            df[f'assumed_ospo_qty_{i}'] = df.groupby(['product_id', 'location_id'])['ospo for future'].shift(1).fillna(0)
+
+            df[f'rl_qty_future_{i}'] = (
+                df['max_stock_wh']
+                - df[f'assumed_stock_wh_{i}']
+                - df[f'assumed_ospo_qty_{i}']
+            ).fillna(0).clip(lower=0).round()
+
+            df['ospo for future'] = df[f'rl_qty_future_{i}']
+            df['assumed_stock_wh'] = df[f'assumed_stock_wh_{i}']
+            df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{i}']
+            df['rl_qty_future'] = df[f'rl_qty_future_{i}']
+
+        df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
+
     return df
 
 # Streamlit Interface
 def main():
     st.title('Supply Chain Data Calculation with Cycles')
 
-    # File Upload for Excel
     uploaded_file = st.file_uploader("Upload your Excel file", type="xlsx")
-    
+
     if uploaded_file is not None:
         df = load_data(uploaded_file)
 
-        # Display the first few rows of the dataframe
-        #st.write(df.head())
-
-        # Dropdown for selecting the cycle
-        num_cycles = 6  # Adjust this based on how far ahead you want to plan
+        # Cycle selector
+        num_cycles = 6
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
-        
-        cycle = st.selectbox("Select Cycle", cycle_options)
+        selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
-        # Calculate columns based on selected cycle
-        df = calculate_columns(df, cycle)
-        #st.write(df.columns)  # Display the columns to debug
+        result_df = calculate_columns(df.copy(), selected_cycle)
 
-        # Specify the columns to display
-        columns_to_display = [
-            'product_id', 'product_name', 'avg_sales_final', 
-            'vendor_id', 'primary_vendor_name', 'location_id', 'doi_policy', 'future_order_date','future_inbound_date',
-            'max_stock_wh', 'assumed_stock_wh','ospo for future',  # Ensure this column exists
-            'rl_qty_future', 'landed_doi'
+        # Show only selected columns
+        cols_to_show = [
+            'product_id', 'location_id', 'future_order_date', 'future_inbound_date',
+            'rl_qty_future', 'landed_doi', 'assumed_stock_wh', 'assumed_ospo_qty'
         ]
+        existing_cols = [col for col in cols_to_show if col in result_df.columns]
 
-        # Check if the required columns are available
-        missing_columns = [col for col in columns_to_display if col not in df.columns]
-        if missing_columns:
-            st.warning(f"Missing columns: {', '.join(missing_columns)}")
+        st.success("Calculation complete.")
+        st.dataframe(result_df[existing_cols])
 
-        # Display only the specific columns
-        df_display = df[columns_to_display]  # Filter the DataFrame
-        def highlight_zero_doi(row):
-            color = 'background-color: #ffcccc' if row['landed_doi'] == 0 else ''
-            return [color] * len(row)
-        int_columns = df_display.select_dtypes(include='number').columns
-
-        # Apply styling and formatting
-        styled_df = df_display.style \
-            .apply(highlight_zero_doi, axis=1) \
-            .format({col: '{:,.0f}' for col in int_columns})  # Format numbers as integers
-        
-        st.dataframe(styled_df)
-
-        #st.write(df_display)
-        # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
-        #st.write(df)
-    
-# Run the app
 if __name__ == "__main__":
     main()
 
