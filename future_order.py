@@ -77,15 +77,16 @@ def calculate_columns(df, cycle):
         if cycle_num == 1:
             # For Cycle 1 (current cycle), refer to 'rl_qty_new'
             df['assumed_ospo_qty'] = df['rl_qty_new']
+            df['rl_qty_future'] = (
+            df['max_stock_wh']
+            - df['assumed_stock_wh']
+            - df['assumed_ospo_qty']
+            + df['rl_qty_hub']
+            ).fillna(0).clip(lower=0).round()
         else:
             # For Cycle 2 and onwards, calculate rl_qty_future first, then update assumed_ospo_qty
             # Calculate future RL Qty based on previous cycle
-            df['rl_qty_future'] = (
-                df['max_stock_wh']
-                - df['assumed_stock_wh']
-                - df['assumed_ospo_qty']
-                + df['rl_qty_hub']
-            ).fillna(0).clip(lower=0).round()
+            
 
             # Now assign assumed_ospo_qty for future cycles using previous cycle's rl_qty_future
             df['assumed_ospo_qty'] = (
@@ -95,14 +96,15 @@ def calculate_columns(df, cycle):
                 .clip(lower=0)
                 .round()
             )
+            df['rl_qty_future'] = (
+                df['max_stock_wh']
+                - df['assumed_stock_wh']
+                - df['assumed_ospo_qty']
+                + df['rl_qty_hub']
+            ).fillna(0).clip(lower=0).round()
 
         # Final RL Qty calculation for future cycle
-        df['rl_qty_future'] = (
-            df['max_stock_wh']
-            - df['assumed_stock_wh']
-            - df['assumed_ospo_qty']
-            + df['rl_qty_hub']
-        ).fillna(0).clip(lower=0).round()
+        
 
         # Calculate landed_doi
         df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round()
