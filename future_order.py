@@ -47,7 +47,7 @@ def calculate_columns(df, cycle):
         df['assumed_ospo_qty'] = df['ospo_qty']
     elif cycle == 'Cycle 1':
         df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, size=len(df)))
-        df['assumed_stock_wh'] = (df['assumed_stock_wh'].fillna(0) + df['assumed_ospo_qty'].fillna(0) - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
+        df['assumed_stock_wh'] = (df['stock_wh'].fillna(0) + df['ospo_qty'].fillna(0) - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
         df['assumed_ospo_qty'] = df['rl_qty_amel'].fillna(0)
         df['rl_qty_amel'] = (
             df['max_stock_wh']
