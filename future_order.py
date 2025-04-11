@@ -109,9 +109,12 @@ def calculate_columns(df, cycle):
         # Current cycle calculations
         df['rl_qty_future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
         df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round()
-     
-
-    return df
+         columns_to_display = [
+        'product_id', 'product_name', 'doi_policy', 'avg_sales_final', 'vendor_name', 
+        'vendor_id', 'location_id', 'assumed_ospo_qty', 'assumed_stock_wh', 
+        'rl_qty_new', 'rl_qty_future', 'landed_doi'
+        ]
+    return df[columns_to_display]
 
 
 
