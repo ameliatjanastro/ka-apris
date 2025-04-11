@@ -9,6 +9,10 @@ def load_data(file_path):
     return pd.read_excel(file_path)
 
 # Function to calculate JI, Max Stock WH, RL Qty New, Assumed Stock WH for future cycles, and Assumed OSPO Qty
+import pandas as pd
+import numpy as np
+import re
+
 def calculate_columns(df, cycle):
     # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
@@ -31,61 +35,50 @@ def calculate_columns(df, cycle):
     df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
     df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
 
-    # RL Qty New
-    df['rl_qty_amel'] = (
+    # Set base values from Current cycle (Cycle 0)
+    df['assumed_stock_wh_0'] = df['stock_wh'].fillna(0)
+    df['assumed_ospo_qty_0'] = df['ospo_qty'].fillna(0)
+    df['rl_qty_amel_0'] = (
         df['max_stock_wh']
-        - df['stock_wh']
-        - df['ospo_qty']
-        - df['ospr_qty']
-        - df['osrl_qty']
+        - df['assumed_stock_wh_0']
+        - df['assumed_ospo_qty_0']
     ).fillna(0).clip(lower=0).round()
 
-    if cycle == 'Current':
-        df['rl_qty_amel'] = df['max_stock_wh']- df['stock_wh']- df['ospo_qty']
-        df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
-        df['assumed_stock_wh'] = df['stock_wh']
-        df['assumed_ospo_qty'] = df['ospo_qty']
-    elif cycle == 'Cycle 1':
-        df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, size=len(df)))
-        df['assumed_stock_wh'] = (df['stock_wh'].fillna(0) + df['ospo_qty'].fillna(0) - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
-        df['assumed_ospo_qty'] = df['rl_qty_amel'].fillna(0)
-        df['rl_qty_amel'] = (
-            df['max_stock_wh']
-            - df['assumed_stock_wh']
-            - df['assumed_ospo_qty']
-        ).fillna(0).clip(lower=0).round()
-        df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
-    df[f'assumed_ospo_qty_1'] = df['assumed_ospo_qty']
-    df[f'assumed_stock_wh_1'] = df['assumed_stock_wh']
-    df['rl_qty_amel_1'] = df['rl_qty_amel']
+    # Choose how many cycles to run based on dropdown
+    selected_cycle = int(cycle.split()[-1]) if cycle.startswith('Cycle') else 0
+    start = 1
+    end = selected_cycle + 1
 
-    df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, size=len(df)))
-    df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
-    for i in range(2, cycle_num + 1):
-        df[f'assumed_ospo_qty_{i}'] = (
-            df.groupby(['product_id', 'location_id'])[f'rl_qty_amel_{i-1}']
-                .shift(1)
-                .fillna(0)
-            )
-    
+    # Loop from Cycle 1 up to the selected cycle
+    for i in range(start, end):
+        # Simulate forecast variance
+        df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, len(df)))
+
+        # Assumed stock = previous stock + previous RL Qty - estimated sales
         df[f'assumed_stock_wh_{i}'] = (
-            df.groupby(['product_id', 'location_id'])[f'assumed_stock_wh_{i-1}']
-                .shift(1)
-                .fillna(0)
-                + df[f'assumed_ospo_qty_{i}']
-            )
-    
+            df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - df[f'avg_sales_future_cycle_{i}']
+        ).fillna(0).clip(lower=0).round()
+
+        # OSPO = previous cycle's RL Qty
+        df[f'assumed_ospo_qty_{i}'] = df[f'rl_qty_amel_{i-1}'].fillna(0)
+
+        # RL Qty for this cycle
         df[f'rl_qty_amel_{i}'] = (
             df['max_stock_wh']
             - df[f'assumed_stock_wh_{i}']
             - df[f'assumed_ospo_qty_{i}']
-            ).fillna(0).clip(lower=0).round()
+        ).fillna(0).clip(lower=0).round()
 
-        df['assumed_stock_wh'] = df[f'assumed_stock_wh_{i}']
-        df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{i}']
-        df['rl_qty_amel'] = df[f'rl_qty_amel_{i}']
+        # Optional: DOI for this cycle
+        df[f'landed_doi_{i}'] = (
+            df[f'assumed_stock_wh_{i}'] / (df['avg_sales_final'] * df['JI'])
+        ).fillna(0).clip(lower=0).round()
 
-        df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
+    # Output the selected cycle’s results
+    df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
+    df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{selected_cycle}']
+    df['rl_qty_amel'] = df[f'rl_qty_amel_{selected_cycle}']
+    df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
 
     return df
 
