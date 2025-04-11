@@ -140,7 +140,7 @@ def main():
         # Specify the columns to display
         columns_to_display = [
             'product_id', 'product_name', 'avg_sales_final', 
-            'vendor_id', 'primary_vendor_name', 'location_id', 'doi_policy', 
+            'vendor_id', 'primary_vendor_name', 'location_id', 'doi_policy', 'future_order_date','future_inbound_date',
             'max_stock_wh', 'assumed_stock_wh','rl_qty_hub','ospo for future',  # Ensure this column exists
             'rl_qty_future', 'landed_doi'
         ]
