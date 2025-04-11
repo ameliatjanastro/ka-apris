@@ -58,6 +58,8 @@ def calculate_columns(df, cycle):
         df['future_order_date'] = df['next_order_date']  # or keep as-is for current
     
     # Calculate avg sales between next_order_date and future_order_date
+    df['JI'] = pd.to_numeric(df['JI'], errors='coerce')
+    df['JI'] = df['JI'].fillna(0).clip(lower=0, upper=1000)
     if cycle != 'Current':
         df['avg_sales_future_cycle'] = df.apply(
             lambda row: df[
