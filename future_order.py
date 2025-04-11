@@ -51,16 +51,16 @@ def calculate_columns(df, cycle):
             ]['avg_sales_final'].mean(),
             axis=1
         )
-
-        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospr_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
-        df['assumed_ospo_qty'] = df['rl_qty_new'].shift(1).fillna(0).clip(lower=0).round()
-
         df['rl_qty_new'] = (
             df['max_stock_wh']
             - df['assumed_stock_wh']
             - df['assumed_ospo_qty']
             + df['rl_qty_hub']
         ).fillna(0).clip(lower=0).round()
+        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospr_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
+        df['assumed_ospo_qty'] = df['rl_qty_new'].shift(1).fillna(0).clip(lower=0).round()
+
+        
     else:
         # Current cycle calculations
         df['assumed_stock_wh'] = df['stock_wh']
