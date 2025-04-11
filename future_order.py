@@ -27,15 +27,7 @@ def calculate_columns(df, cycle):
     df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
     df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + df['JI'])
 
-    # Determine cycle number
-    match = re.search(r'Cycle\s*(\d+)', cycle)
-    cycle_num = int(match.group(1)) if match else 0
-
-    # Future dates
-    df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
-    df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
-
-    # Set base values from Current cycle (Cycle 0)
+    # Set base values for Cycle 0 (Current)
     df['assumed_stock_wh_0'] = df['stock_wh'].fillna(0)
     df['assumed_ospo_qty_0'] = df['ospo_qty'].fillna(0)
     df['rl_qty_amel_0'] = (
@@ -44,22 +36,22 @@ def calculate_columns(df, cycle):
         - df['assumed_ospo_qty_0']
     ).fillna(0).clip(lower=0).round()
 
-    # Choose how many cycles to run based on dropdown
+    # Choose how many cycles to run based on Streamlit dropdown
     selected_cycle = int(cycle.split()[-1]) if cycle.startswith('Cycle') else 0
     start = 1
     end = selected_cycle + 1
 
-    # Loop from Cycle 1 up to the selected cycle
+    # Loop from Cycle 1 up to selected cycle
     for i in range(start, end):
-        # Simulate forecast variance
+        # Simulate future sales (can be replaced with actual forecast)
         df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, len(df)))
 
-        # Assumed stock = previous stock + previous RL Qty - estimated sales
+        # Assumed stock WH: from previous stock + previous RL Qty - estimated sales
         df[f'assumed_stock_wh_{i}'] = (
             df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - df[f'avg_sales_future_cycle_{i}']
         ).fillna(0).clip(lower=0).round()
 
-        # OSPO = previous cycle's RL Qty
+        # Assumed OSPO: previous cycle's RL Qty
         df[f'assumed_ospo_qty_{i}'] = df[f'rl_qty_amel_{i-1}'].fillna(0)
 
         # RL Qty for this cycle
@@ -69,22 +61,24 @@ def calculate_columns(df, cycle):
             - df[f'assumed_ospo_qty_{i}']
         ).fillna(0).clip(lower=0).round()
 
-        # Optional: DOI for this cycle
+        # Landed DOI for this cycle
         df[f'landed_doi_{i}'] = (
             df[f'assumed_stock_wh_{i}'] / (df['avg_sales_final'] * df['JI'])
         ).fillna(0).clip(lower=0).round()
 
+        # Calculate the minimum JI required to ensure Landed DOI >= 1
         df[f'min_JI_{i}'] = (df[f'assumed_stock_wh_{i}'] / df['avg_sales_final']).fillna(0).clip(lower=0)
-    
-        # Calculate the coverage date when landed DOI is at least 1
+
+        # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
         df[f'coverage_date_{i}'] = (df['next_order_date'] + pd.to_timedelta(df[f'min_JI_{i}'], unit='D'))
 
-    # Output the selected cycle’s results
+    # After loop: Output selected cycle's columns
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
     df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{selected_cycle}']
     df['rl_qty_amel'] = df[f'rl_qty_amel_{selected_cycle}']
     df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
-    df['coverage_date'] = df[f'coverage_date_{selected_cycle}']
+    df['coverage_date'] = df[f'coverage_date_{selected_cycle}']  # Adding the coverage date column
+
     return df
 
 # Streamlit Interface
