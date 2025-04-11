@@ -135,7 +135,7 @@ def main():
 
         # Calculate columns based on selected cycle
         df = calculate_columns(df, cycle)
-        st.write(df.columns)  # Display the columns to debug
+        #st.write(df.columns)  # Display the columns to debug
 
         # Specify the columns to display
         columns_to_display = [
