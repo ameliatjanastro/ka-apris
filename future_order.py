@@ -55,11 +55,7 @@ def calculate_columns(df, cycle):
         + df['rl_qty_hub']
     ).fillna(0).clip(lower=0).round()
 
-    columns_to_display = [
-        'product_id', 'product_name', 'avg_sales_final', 
-        'vendor_id', 'vendor_name', 'location_id', 'doi_policy', 'max_stock_wh', 'assumed_stock_wh', 'ospo for future',
-        'rl_qty_future', 'landed_doi'
-    ]
+    
 
     # Process future cycles (Cycle 2 and beyond)
     if cycle != 'Current':
@@ -115,7 +111,13 @@ def calculate_columns(df, cycle):
         # Current cycle calculations
         df['rl_qty_future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
         df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round()
-    
+
+
+    columns_to_display = [
+        'product_id', 'product_name', 'avg_sales_final', 
+        'vendor_id', 'vendor_name', 'location_id', 'doi_policy', 'max_stock_wh', 'assumed_stock_wh', 'ospo for future',
+        'rl_qty_future', 'landed_doi'
+    ]
     return df[columns_to_display]
 
 
