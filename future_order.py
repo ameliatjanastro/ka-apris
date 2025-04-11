@@ -115,7 +115,7 @@ def calculate_columns(df, cycle):
         'rl_qty_future', 'landed_doi'
     ]    
 
-    return df[columns_to_display]
+    return df
 
 
 
@@ -142,7 +142,7 @@ def main():
         df = calculate_columns(df, cycle)
 
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
-        st.write(df)
+        st.write(df[columns_to_display])
 # Run the app
 if __name__ == "__main__":
     main()
