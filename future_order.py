@@ -41,7 +41,7 @@ def calculate_columns(df, cycle):
     df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + (df['next_coverage_date'] - df['next_order_date']).dt.days)
     
     # Calculate RL Qty New
-    df['rl_qty_new'] = df['stock_wh'] - df['ospo_qty'] - df['osrl_qty'] - df['ospr_qty'] + df['rl_qty_hub']
+    df['rl_qty_new'] = df['max_stock_wh'] - df['stock_wh'] - df['ospo_qty'] - df['osrl_qty'] - df['ospr_qty'] + df['rl_qty_hub']
     
     # Looping logic for future cycles based on the selected cycle
     df['future_order_date'] = df['next_order_date']  # Default to the current order date
