@@ -21,7 +21,7 @@ def calculate_columns(df, cycle):
     default_date = pd.to_datetime('today') + pd.Timedelta(days=14)
     df['next_coverage_date'] = df['next_coverage_date'].fillna(default_date)
     df['next_order_date'] = df['next_order_date'].fillna(default_date)
-     df['next_inbound_date'] = pd.to_datetime(df['next_inbound_date'], errors='coerce')
+    df['next_inbound_date'] = pd.to_datetime(df['next_inbound_date'], errors='coerce')
 
     # Ensure numeric columns
     df['avg_sales_final'] = pd.to_numeric(df['avg_sales_final'], errors='coerce').fillna(0)
