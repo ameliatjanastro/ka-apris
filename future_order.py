@@ -90,7 +90,7 @@ def calculate_columns(df, cycle):
                     df['max_stock_wh']
                     - df['assumed_stock_wh']
                     - df['assumed_ospo_qty']
-                    + df['rl_qty_hub']
+                    #+ df['rl_qty_hub']
                 ).fillna(0).clip(lower=0).round()
 
                 # Now assign assumed_ospo_qty for future cycles using previous cycle's rl_qty_future
@@ -102,7 +102,7 @@ def calculate_columns(df, cycle):
             df['max_stock_wh']
             - df['assumed_stock_wh']
             - df['assumed_ospo_qty']
-            + df['rl_qty_hub']
+            #+ df['rl_qty_hub']
         ).fillna(0).clip(lower=0).round()
 
         # Calculate landed_doi
@@ -143,7 +143,7 @@ def main():
         columns_to_display = [
             'product_id', 'product_name', 'avg_sales_final', 
             'vendor_id', 'primary_vendor_name', 'location_id', 'doi_policy', 'future_order_date','future_inbound_date',
-            'max_stock_wh', 'assumed_stock_wh','rl_qty_hub','ospo for future',  # Ensure this column exists
+            'max_stock_wh', 'assumed_stock_wh','ospo for future',  # Ensure this column exists
             'rl_qty_future', 'landed_doi'
         ]
 
