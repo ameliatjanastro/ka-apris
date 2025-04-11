@@ -112,7 +112,7 @@ def calculate_columns(df, cycle):
         df['rl_qty_future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
         df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round().fillna(0)
         df['assumed_stock_wh'] = df['stock_wh'] 
-        df['ospo for future'] = df['ospo for future']
+        df['ospo for future'] = df['original rl_qty']
     return df
 
 # Streamlit Interface
