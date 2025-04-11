@@ -155,7 +155,14 @@ def main():
         def highlight_zero_doi(row):
             color = 'background-color: #ffcccc' if row['landed_doi'] == 0 else ''
             return [color] * len(row)
-        st.dataframe(df_display.style.apply(highlight_zero_doi, axis=1))
+        int_columns = df_display.select_dtypes(include='number').columns
+
+        # Apply styling and formatting
+        styled_df = df_display.style \
+            .apply(highlight_zero_doi, axis=1) \
+            .format({col: '{:,.0f}' for col in int_columns})  # Format numbers as integers
+        
+        st.dataframe(styled_df)
 
         #st.write(df_display)
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
