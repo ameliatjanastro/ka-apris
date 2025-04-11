@@ -41,9 +41,7 @@ def calculate_columns(df, cycle):
     ).fillna(0).clip(lower=0).round()
 
     if cycle == 'Current':
-        df['rl_qty_amel'] = df['max_stock_wh']
-            - df['stock_wh']
-            - df['ospo_qty']
+        df['rl_qty_amel'] = df['max_stock_wh']- df['stock_wh']- df['ospo_qty']
         df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
         df['assumed_stock_wh'] = df['stock_wh']
         df['assumed_ospo_qty'] = df['ospo_qty']
