@@ -67,19 +67,31 @@ def calculate_columns(df, cycle):
         #)
         
         # Calculate assumed stock for the future cycle
-        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospr_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
+        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospo_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
 
         # Sort before shift so we get meaningful previous RL Qty per product/location
         df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
 
         # Shift by product_id & location_id group
-        df['assumed_ospo_qty'] = (
-            df.groupby(['product_id', 'location_id'])['rl_qty_new']
-            .shift(1)
-            .fillna(0)
-            .clip(lower=0)
-            .round()
-        )
+        df['assumed_ospo_qty'] = 0  # Initialize the column with 0s
+
+        # Cycle logic
+        match = re.search(r'Cycle\s*(\d+)', cycle)
+        if match:
+            cycle_num = int(match.group(1))
+            
+            # For Cycle 1 (current cycle), refer to 'rl_qty_new'
+            if cycle_num == 1:
+                df['assumed_ospo_qty'] = df['rl_qty_new']
+            else:
+                # For Cycle 2 and onwards, refer to 'rl_qty_future' from previous cycle
+                df['assumed_ospo_qty'] = (
+                    df.groupby(['product_id', 'location_id'])['rl_qty_future']
+                    .shift(1)  # Shift by 1 cycle
+                    .fillna(0)  # Fill NaN with 0 for the first cycle
+                    .clip(lower=0)  # Ensure no negative values
+                    .round()  # Round values to nearest integer
+                )
 
         # Final future RL Qty calculation
         df['rl_qty_future'] = (
