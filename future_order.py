@@ -47,26 +47,32 @@ def calculate_columns(df, cycle):
     df['future_order_date'] = df['next_order_date']  # Default to the current order date
 
     # Cycle logic
-    if cycle == 'Cycle 1':
-        df['future_order_date'] = df['next_order_date'] + pd.to_timedelta(df['JI'], unit='D')
-    elif cycle == 'Cycle 2':
-        df['future_order_date'] = df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')
+    import re
 
-    # Calculate Assumed Stock WH for future cycle
+# Extract numeric part from cycle name, e.g. "Cycle 3" => 3
+    match = re.search(r'Cycle\s*(\d+)', cycle)
+    if match:
+        cycle_num = int(match.group(1))
+        df['future_order_date'] = df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')
+    elif cycle == 'Current':
+        df['future_order_date'] = df['next_order_date']  # or keep as-is for current
+    
+    # Calculate avg sales between next_order_date and future_order_date
     if cycle != 'Current':
-        # Calculate Average Sales from RL order date to RL date of current cycle
         df['avg_sales_future_cycle'] = df.apply(
-            lambda row: np.mean(
-                df[(df['next_order_date'] >= row['next_order_date']) & (df['next_order_date'] <= row['future_order_date'])]['avg_sales_final']
-            ), axis=1
+            lambda row: df[
+                (df['next_order_date'] >= row['next_order_date']) & 
+                (df['next_order_date'] <= row['future_order_date'])
+            ]['avg_sales_final'].mean(),
+            axis=1
         )
         # Assumed Stock WH for future cycle: last cycle stock + OSPR last cycle - average sales from RL order date to RL date this cycle
-        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospr_qty'] - df['avg_sales_future_cycle'])
+        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospr_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
     else:
-        df['assumed_stock_wh'] = df['stock_wh']  # For current cycle, assumed stock is simply the stock_wh
+        df['assumed_stock_wh'] = df['stock_wh'].fillna(0).clip(lower=0).round()  # For current cycle, assumed stock is simply the stock_wh
 
     # Assumed OSPO Qty for future cycle: from previous RL Qty of the last cycle
-    df['assumed_ospo_qty'] = df['rl_qty_new'].shift(1)  # Assuming RL Qty from last cycle is the OSPO for future cycle
+    df['assumed_ospo_qty'] = df['rl_qty_new'].shift(1).fillna(0).clip(lower=0).round()  # Assuming RL Qty from last cycle is the OSPO for future cycle
 
     return df
 
@@ -81,10 +87,13 @@ def main():
         df = load_data(uploaded_file)
 
         # Display the first few rows of the dataframe
-        st.write(df.head())
+        #st.write(df.head())
 
         # Dropdown for selecting the cycle
-        cycle = st.selectbox("Select Cycle", ["Current", "Cycle 1", "Cycle 2"])
+        num_cycles = 12  # Adjust this based on how far ahead you want to plan
+        cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
+        
+        cycle = st.selectbox("Select Cycle", cycle_options)
 
         # Calculate columns based on selected cycle
         df = calculate_columns(df, cycle)
