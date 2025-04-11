@@ -124,8 +124,8 @@ def main():
     if uploaded_file is not None:
         df = load_data(uploaded_file)
 
-        # Display the first few rows of the dataframe for debugging
-        st.write(df.head())  # Show initial data to check
+        # Display the first few rows of the dataframe
+        #st.write(df.head())
 
         # Dropdown for selecting the cycle
         num_cycles = 5  # Adjust this based on how far ahead you want to plan
@@ -137,6 +137,9 @@ def main():
         df = calculate_columns(df, cycle)
 
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
-        st.write(df)  # Display the DataFrame for debugging
+        st.write(df)
+# Run the app
+if __name__ == "__main__":
+    main() i cant display the column i want
 
 
