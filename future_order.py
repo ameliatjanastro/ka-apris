@@ -19,6 +19,10 @@ import pandas as pd
 import numpy as np
 import re
 
+import pandas as pd
+import numpy as np
+import re
+
 def calculate_columns(df, cycle):
     # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
@@ -75,8 +79,9 @@ def calculate_columns(df, cycle):
         # Sort before shift so we get meaningful previous RL Qty per product/location
         df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
 
-        # Initialize the column for assumed_ospo_qty
+        # Initialize the column for assumed_ospo_qty and rl_qty_future
         df['assumed_ospo_qty'] = 0
+        df['rl_qty_future'] = 0  # Initialize the future RL qty column
 
         # Loop through cycles and calculate assumed_ospo_qty and rl_qty_future
         for cycle_num in range(1, cycle_num + 1):
@@ -90,7 +95,7 @@ def calculate_columns(df, cycle):
                     + df['rl_qty_hub']
                 ).fillna(0).clip(lower=0).round()
             else:
-                # For Cycle 2 and onwards, calculate rl_qty_future first, then update assumed_ospo_qty
+                # For Cycle 2 and onwards, first calculate rl_qty_future
                 df['rl_qty_future'] = (
                     df['max_stock_wh']
                     - df['assumed_stock_wh']
@@ -124,6 +129,7 @@ def calculate_columns(df, cycle):
         df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round()
 
     return df
+
 
 
 
