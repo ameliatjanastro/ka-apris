@@ -141,8 +141,9 @@ def main():
         'max_stock_wh', 'assumed_stock_wh', 'ospo for future',  # Ensure this column exists
         'rl_qty_future', 'landed_doi'
         ]
+        df = df[columns_to_display]
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
-        st.write(df[columns_to_display])
+        st.write(df)
 # Run the app
 if __name__ == "__main__":
     main()
