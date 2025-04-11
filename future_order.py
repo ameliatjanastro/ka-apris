@@ -15,6 +15,10 @@ import pandas as pd
 import numpy as np
 import re
 
+import pandas as pd
+import numpy as np
+import re
+
 def calculate_columns(df, cycle):
     # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
@@ -60,6 +64,7 @@ def calculate_columns(df, cycle):
         + df['rl_qty_hub']
     ).fillna(0).clip(lower=0).round()
 
+    # Process future cycles (Cycle 2 and beyond)
     if cycle != 'Current':
         # Calculate future average sales between order dates
         df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.20, 0.10, size=len(df)))  # Random fluctuation
@@ -70,41 +75,45 @@ def calculate_columns(df, cycle):
         # Sort before shift so we get meaningful previous RL Qty per product/location
         df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
 
-        # Shift by product_id & location_id group
-        df['assumed_ospo_qty'] = 0  # Initialize the column with 0s
+        # Initialize the column for assumed_ospo_qty
+        df['assumed_ospo_qty'] = 0
 
-        # Cycle logic
-        if cycle_num == 1:
-            # For Cycle 1 (current cycle), refer to 'rl_qty_new'
-            df['assumed_ospo_qty'] = df['rl_qty_new']
-            df['rl_qty_future'] = (
+        # Loop through cycles and calculate assumed_ospo_qty and rl_qty_future
+        for cycle_num in range(1, cycle_num + 1):
+            if cycle_num == 1:
+                # For Cycle 1 (current cycle), refer to 'rl_qty_new'
+                df['assumed_ospo_qty'] = df['rl_qty_new']
+                df['rl_qty_future'] = (
+                    df['max_stock_wh']
+                    - df['assumed_stock_wh']
+                    - df['assumed_ospo_qty']
+                    + df['rl_qty_hub']
+                ).fillna(0).clip(lower=0).round()
+            else:
+                # For Cycle 2 and onwards, calculate rl_qty_future first, then update assumed_ospo_qty
+                df['rl_qty_future'] = (
+                    df['max_stock_wh']
+                    - df['assumed_stock_wh']
+                    - df['assumed_ospo_qty']
+                    + df['rl_qty_hub']
+                ).fillna(0).clip(lower=0).round()
+
+                # Now assign assumed_ospo_qty for future cycles using previous cycle's rl_qty_future
+                df['assumed_ospo_qty'] = (
+                    df.groupby(['product_id', 'location_id'])['rl_qty_future']
+                    .shift(1)  # Shift by 1 to get the previous cycle's rl_qty_future
+                    .fillna(0)  # For the first row, fill with 0
+                    .clip(lower=0)
+                    .round()
+                )
+
+        # Calculate final future RL Qty
+        df['rl_qty_future'] = (
             df['max_stock_wh']
             - df['assumed_stock_wh']
             - df['assumed_ospo_qty']
             + df['rl_qty_hub']
-            ).fillna(0).clip(lower=0).round()
-        else:
-            # For Cycle 2 and onwards, calculate rl_qty_future first, then update assumed_ospo_qty
-            # Calculate future RL Qty based on previous cycle
-            
-
-            # Now assign assumed_ospo_qty for future cycles using previous cycle's rl_qty_future
-            df['assumed_ospo_qty'] = (
-                df.groupby(['product_id', 'location_id'])['rl_qty_future']
-                .shift(1)  # Shift by 1 to get the previous cycle's rl_qty_future
-                .fillna(0)  # For the first row, fill with 0
-                .clip(lower=0)
-                .round()
-            )
-            df['rl_qty_future'] = (
-                df['max_stock_wh']
-                - df['assumed_stock_wh']
-                - df['assumed_ospo_qty']
-                + df['rl_qty_hub']
-            ).fillna(0).clip(lower=0).round()
-
-        # Final RL Qty calculation for future cycle
-        
+        ).fillna(0).clip(lower=0).round()
 
         # Calculate landed_doi
         df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round()
@@ -115,6 +124,7 @@ def calculate_columns(df, cycle):
         df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).clip(lower=0).round()
 
     return df
+
 
 
 # Streamlit Interface
