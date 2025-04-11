@@ -142,7 +142,7 @@ def main():
         'rl_qty_future', 'landed_doi'
         ]
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
-        st.write(df[columns_to_display)
+        st.write(df[columns_to_display])
 # Run the app
 if __name__ == "__main__":
     main()
