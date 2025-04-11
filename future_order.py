@@ -39,8 +39,8 @@ def calculate_columns(df, cycle):
     match = re.search(r'Cycle\s*(\d+)', cycle)
     if match:
         cycle_num = int(match.group(1))
-        df['future_order_date'] = df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')
-        df['future_inbound_date'] = df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')
+        df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+        df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
     else:
         df['future_order_date'] = df['next_order_date'].dt.strftime('%d-%b-%Y')  # For 'Current'
         df['future_inbound_date'] = df['next_inbound_date'].dt.strftime('%d-%b-%Y')
