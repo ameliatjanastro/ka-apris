@@ -84,6 +84,8 @@ def calculate_columns(df, cycle):
             else:
                 # For Cycle 2 and onwards, first calculate rl_qty_future
                 df['assumed_stock_wh'] = df.groupby(['product_id', 'location_id'])['assumed_stock_wh'].shift(1, fill_value=0)
+                df['assumed_ospo_qty'] = df.groupby(['product_id', 'location_id'])['ospo for future'].shift(1, fill_value=0)
+                df['assumed_ospo_qty'] = df['assumed_ospo_qty'].clip(lower=0).round()
                 df['rl_qty_future'] = (
                     df['max_stock_wh']
                     - df['assumed_stock_wh']
@@ -92,8 +94,7 @@ def calculate_columns(df, cycle):
                 ).fillna(0).clip(lower=0).round()
 
                 # Now assign assumed_ospo_qty for future cycles using previous cycle's rl_qty_future
-                df['assumed_ospo_qty'] = df.groupby(['product_id', 'location_id'])['ospo for future'].shift(1, fill_value=0)
-                df['assumed_ospo_qty'] = df['assumed_ospo_qty'].clip(lower=0).round()
+                
 
         # Calculate final future RL Qty
         df['rl_qty_future'] = (
