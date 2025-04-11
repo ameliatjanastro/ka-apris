@@ -95,7 +95,7 @@ def main():
 
         # Cycle selector
         num_cycles = 6
-        cycle_options = [f'Cycle {i}' for i in range(0, num_cycles + 1)]
+        cycle_options = ['Current']+[f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
         result_df = calculate_columns(df.copy(), selected_cycle)
