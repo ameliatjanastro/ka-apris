@@ -139,14 +139,9 @@ def main():
 
         # Calculate columns based on selected cycle
         df = calculate_columns(df, cycle)
-        columns_to_display = [
-        'product_id', 'product_name', 'avg_sales_final', 
-        'vendor_id', 'vendor_name', 'location_id', 'doi_policy', 'max_stock_wh', 'assumed_stock_wh', 'ospo for future',
-        'rl_qty_future', 'landed_doi'
-        ]   
 
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
-        st.write(df.columns)
+        st.write(df)
 # Run the app
 if __name__ == "__main__":
     main()
