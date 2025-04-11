@@ -74,10 +74,10 @@ def calculate_columns(df, cycle):
             df[f'assumed_stock_wh_{i}'] / (df['avg_sales_final'] * df['JI'])
         ).fillna(0).clip(lower=0).round()
 
-    df[f'min_JI_{i}'] = (df[f'assumed_stock_wh_{i}'] / df['avg_sales_final']).fillna(0).clip(lower=0)
-
-    # Calculate the coverage date when landed DOI is at least 1
-    df[f'coverage_date_{i}'] = (df['next_order_date'] + pd.to_timedelta(df[f'min_JI_{i}'], unit='D'))
+        df[f'min_JI_{i}'] = (df[f'assumed_stock_wh_{i}'] / df['avg_sales_final']).fillna(0).clip(lower=0)
+    
+        # Calculate the coverage date when landed DOI is at least 1
+        df[f'coverage_date_{i}'] = (df['next_order_date'] + pd.to_timedelta(df[f'min_JI_{i}'], unit='D'))
 
     # Output the selected cycle’s results
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
