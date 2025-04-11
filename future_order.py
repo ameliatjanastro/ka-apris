@@ -88,11 +88,12 @@ def calculate_columns(df, cycle):
             - df['assumed_ospo_qty']
             + df['rl_qty_hub']
         ).fillna(0).clip(lower=0).round()
+        df['landed_doi'] =  df['assumed_stock_wh']/(df['avg_sales_final']*(df['JI'])).clip(lower=0).round()
         
     else:
         # Current cycle calculations
         df['rl_qty_future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
-    df['landed_doi'] =  df['assumed_stock_wh']/(df['avg_sales_final']*(df['JI'])).clip(lower=0).round()
+        df['landed_doi'] =  df['stock_wh']/(df['avg_sales_final']*(df['JI'])).clip(lower=0).round()
     return df
 
 
