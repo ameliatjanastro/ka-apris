@@ -57,7 +57,7 @@ def calculate_columns(df, cycle):
         df['avg_sales_future_cycle'] = df['avg_sales_final'] #df.apply(
             #lambda row: df[
                 #(df['next_order_date'] >= row['next_order_date']) & 
-                (df['next_order_date'] <= row['future_order_date'])
+                #(df['next_order_date'] <= row['future_order_date'])
             #]['avg_sales_final'].mean(),
             #axis=1
         #)
