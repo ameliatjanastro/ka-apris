@@ -8,10 +8,10 @@ def load_data(file_path):
     return pd.read_excel(file_path)
 
 # Function to calculate JI, Max Stock WH, RL Qty New, Assumed Stock WH for future cycles, and Assumed OSPO Qty
-def calculate_columns(df, cycle):
-    import re
-    import pandas as pd
+import re
+import pandas as pd
 
+def calculate_columns(df, cycle):
     # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
@@ -42,6 +42,7 @@ def calculate_columns(df, cycle):
     else:
         df['future_order_date'] = df['next_order_date']  # For 'Current'
 
+    # Calculate rl_qty_new
     df['rl_qty_new'] = (
             df['max_stock_wh']
             - df['stock_wh']
@@ -61,8 +62,22 @@ def calculate_columns(df, cycle):
             axis=1
         )
         
+        # Calculate assumed stock for the future cycle
         df['assumed_stock_wh'] = (df['stock_wh'] + df['ospr_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
-        df['assumed_ospo_qty'] = df['rl_qty_new'].shift(1).fillna(0).clip(lower=0).round()
+
+        # Sort before shift so we get meaningful previous RL Qty per product/location
+        df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
+
+        # Shift by product_id & location_id group
+        df['assumed_ospo_qty'] = (
+            df.groupby(['product_id', 'location_id'])['rl_qty_new']
+            .shift(1)
+            .fillna(0)
+            .clip(lower=0)
+            .round()
+        )
+
+        # Final future RL Qty calculation
         df['rl_qty_future'] = (
             df['max_stock_wh']
             - df['assumed_stock_wh']
@@ -72,8 +87,6 @@ def calculate_columns(df, cycle):
         
     else:
         # Current cycle calculations
-        #df['assumed_stock_wh'] = df['stock_wh']
-        #df['assumed_ospo_qty'] = df['ospo_qty']
         df['rl_qty_future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
 
     return df
