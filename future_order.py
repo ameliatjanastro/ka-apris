@@ -115,12 +115,17 @@ def calculate_columns(df, cycle):
 
     columns_to_display = [
         'product_id', 'product_name', 'avg_sales_final', 
-        'vendor_id', 'vendor_name', 'location_id', 'doi_policy', 'max_stock_wh', 'assumed_stock_wh', 'ospo for future',
+        'vendor_id', 'vendor_name', 'location_id', 'doi_policy', 
+        'max_stock_wh', 'assumed_stock_wh', 'ospo for future',  # Ensure this column exists
         'rl_qty_future', 'landed_doi'
     ]
-    return df[columns_to_display]
 
-
+    # Make sure that the required columns exist before returning
+    if all(col in df.columns for col in columns_to_display):
+        return df[columns_to_display]
+    else:
+        st.error("Some required columns are missing from the DataFrame!")
+        return df  # If columns are missing, return the full DataFrame for debugging
 
 # Streamlit Interface
 def main():
@@ -132,8 +137,8 @@ def main():
     if uploaded_file is not None:
         df = load_data(uploaded_file)
 
-        # Display the first few rows of the dataframe
-        #st.write(df.head())
+        # Display the first few rows of the dataframe for debugging
+        st.write(df.head())  # Show initial data to check
 
         # Dropdown for selecting the cycle
         num_cycles = 5  # Adjust this based on how far ahead you want to plan
@@ -145,9 +150,6 @@ def main():
         df = calculate_columns(df, cycle)
 
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
-        st.write(df)
-# Run the app
-if __name__ == "__main__":
-    main()
+        st.write(df)  # Display the DataFrame for debugging
 
 
