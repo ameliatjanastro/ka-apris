@@ -78,10 +78,7 @@ def calculate_columns(df, cycle):
                 # For Cycle 1 (current cycle), refer to 'rl_qty_new'
                 df['assumed_ospo_qty'] = df['rl_qty_new']
                 df['ospo for future'] = df['rl_qty_new']
-                df['rl_qty_future'] = 
-                    (df['max_stock_wh']
-                    - df['assumed_stock_wh']
-                    - df['assumed_ospo_qty']
+                df['rl_qty_future'] = (df['max_stock_wh']- df['assumed_stock_wh']- df['assumed_ospo_qty']
                     #+ df['rl_qty_hub']
                 ).fillna(0).clip(lower=0).round()
             else:
