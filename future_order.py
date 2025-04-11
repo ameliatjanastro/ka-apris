@@ -54,13 +54,13 @@ def calculate_columns(df, cycle):
     
     if cycle != 'Current':
         # Calculate future average sales between order dates
-        df['avg_sales_future_cycle'] = df.apply(
-            lambda row: df[
-                (df['next_order_date'] >= row['next_order_date']) & 
+        df['avg_sales_future_cycle'] = df['avg_sales_final'] #df.apply(
+            #lambda row: df[
+                #(df['next_order_date'] >= row['next_order_date']) & 
                 (df['next_order_date'] <= row['future_order_date'])
-            ]['avg_sales_final'].mean(),
-            axis=1
-        )
+            #]['avg_sales_final'].mean(),
+            #axis=1
+        #)
         
         # Calculate assumed stock for the future cycle
         df['assumed_stock_wh'] = (df['stock_wh'] + df['ospr_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
