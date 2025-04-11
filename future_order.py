@@ -9,58 +9,41 @@ def load_data(file_path):
 
 # Function to calculate JI, Max Stock WH, RL Qty New, Assumed Stock WH for future cycles, and Assumed OSPO Qty
 def calculate_columns(df, cycle):
-    # Convert 'next_coverage_date' and 'next_order_date' to datetime if they aren't already
-    df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce').dt.date.astype(int)
-    df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce').dt.date.astype(int)
-    
-    # Ensure avg_sales_final and doi_policy are numeric and handle missing values
-    df['avg_sales_final'] = pd.to_numeric(df['avg_sales_final'], errors='coerce')
-    df['doi_policy'] = pd.to_numeric(df['doi_policy'], errors='coerce')
-    
-    # Handle missing values by filling with 0 or another appropriate strategy
-    df['avg_sales_final'].fillna(0, inplace=True)
-    df['doi_policy'].fillna(0, inplace=True)
+    import re
+    import pandas as pd
 
-    # Check for missing dates and handle them (e.g., fill with a default date)
-    # Ensure 'next_coverage_date' is in datetime format first
+    # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
-    
-    # Fill NaN values with a default date (today + 14 days)
-    df['next_coverage_date'].fillna(pd.to_datetime('today') + pd.Timedelta(days=14), inplace=True).astype(int)
-    df['next_order_date'].fillna(pd.to_datetime('today') + pd.Timedelta(days=14), inplace=True).astype(int)
-    
-    # Ensure both columns are of datetime type
-    df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce').astype(int)
-    df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce').astype(int)
-        
-    # Calculate JI as the difference between coverage_date and order_date
-    df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days
-    
-    # Overwrite Max Stock WH based on the given formula
-    df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + (df['next_coverage_date'] - df['next_order_date']).dt.days)
-    
-    # Calculate RL Qty New
-    df['rl_qty_new'] = df['max_stock_wh'] - df['stock_wh'] - df['ospo_qty'] - df['osrl_qty'] - df['ospr_qty'] + df['rl_qty_hub']
-    df['rl_qty_new'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
-    # Looping logic for future cycles based on the selected cycle
-    df['future_order_date'] = df['next_order_date'].astype(int)  # Default to the current order date
 
-    # Cycle logic
-    import re
+    # Fill NaT with today + 14 days
+    default_date = pd.to_datetime('today') + pd.Timedelta(days=14)
+    df['next_coverage_date'] = df['next_coverage_date'].fillna(default_date)
+    df['next_order_date'] = df['next_order_date'].fillna(default_date)
 
-# Extract numeric part from cycle name, e.g. "Cycle 3" => 3
+    # Ensure numeric columns
+    df['avg_sales_final'] = pd.to_numeric(df['avg_sales_final'], errors='coerce').fillna(0)
+    df['doi_policy'] = pd.to_numeric(df['doi_policy'], errors='coerce').fillna(0)
+    df['stock_wh'] = pd.to_numeric(df['stock_wh'], errors='coerce').fillna(0)
+    df['ospo_qty'] = pd.to_numeric(df['ospo_qty'], errors='coerce').fillna(0)
+    df['ospr_qty'] = pd.to_numeric(df['ospr_qty'], errors='coerce').fillna(0)
+    df['osrl_qty'] = pd.to_numeric(df['osrl_qty'], errors='coerce').fillna(0)
+    df['rl_qty_hub'] = pd.to_numeric(df['rl_qty_hub'], errors='coerce').fillna(0)
+
+    # JI and max stock
+    df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
+    df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + df['JI'])
+
+    # Determine future_order_date based on cycle
     match = re.search(r'Cycle\s*(\d+)', cycle)
     if match:
         cycle_num = int(match.group(1))
         df['future_order_date'] = df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')
-    elif cycle == 'Current':
-        df['future_order_date'] = df['next_order_date']  # or keep as-is for current
-    
-    # Calculate avg sales between next_order_date and future_order_date
-    df['JI'] = pd.to_numeric(df['JI'], errors='coerce')
-    df['JI'] = df['JI'].fillna(0).clip(lower=0, upper=1000)
+    else:
+        df['future_order_date'] = df['next_order_date']  # For 'Current'
+
     if cycle != 'Current':
+        # Calculate future average sales between order dates
         df['avg_sales_future_cycle'] = df.apply(
             lambda row: df[
                 (df['next_order_date'] >= row['next_order_date']) & 
@@ -68,33 +51,31 @@ def calculate_columns(df, cycle):
             ]['avg_sales_final'].mean(),
             axis=1
         )
-        # Assumed Stock WH for future cycle: last cycle stock + OSPR last cycle - average sales from RL order date to RL date this cycle
+
         df['assumed_stock_wh'] = (df['stock_wh'] + df['ospr_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
+        df['assumed_ospo_qty'] = df['rl_qty_new'].shift(1).fillna(0).clip(lower=0).round()
+
+        df['rl_qty_new'] = (
+            df['max_stock_wh']
+            - df['assumed_stock_wh']
+            - df['assumed_ospo_qty']
+            + df['rl_qty_hub']
+        ).fillna(0).clip(lower=0).round()
     else:
-        df['assumed_stock_wh'] = df['stock_wh'].fillna(0).clip(lower=0).round()  # For current cycle, assumed stock is simply the stock_wh
-
-    # Assumed OSPO Qty for future cycle: from previous RL Qty of the last cycle
-    df['assumed_ospo_qty'] = df['rl_qty_new'].shift(1).fillna(0).clip(lower=0).round()  # Assuming RL Qty from last cycle is the OSPO for future cycle
-    df['rl_qty_new'] = (
-        df['max_stock_wh']
-        - df['assumed_stock_wh']
-        - df['assumed_ospo_qty']
-        + df['rl_qty_hub']
-    ).fillna(0).clip(lower=0).round()
-
-else:
-    # For current cycle
-    df['assumed_stock_wh'] = df['stock_wh'].fillna(0).clip(lower=0).round()
-    df['assumed_ospo_qty'] = df['ospo_qty'].fillna(0)
-    df['rl_qty_new'] = (
+        # Current cycle calculations
+        df['assumed_stock_wh'] = df['stock_wh']
+        df['assumed_ospo_qty'] = df['ospo_qty']
+        df['rl_qty_new'] = (
             df['max_stock_wh']
             - df['stock_wh']
             - df['ospo_qty']
             - df['ospr_qty']
             - df['osrl_qty']
             + df['rl_qty_hub']
-    ).fillna(0).clip(lower=0).round()
+        ).fillna(0).clip(lower=0).round()
+
     return df
+
 
 # Streamlit Interface
 def main():
