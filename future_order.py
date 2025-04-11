@@ -67,7 +67,10 @@ def calculate_columns(df, cycle):
         ).fillna(0).clip(lower=0).round()
 
         # Calculate the minimum JI required to ensure Landed DOI >= 1
-        df[f'min_JI_{i}'] = pd.to_numeric(df.get(f'min_JI_{i}', 0), errors='coerce').fillna(0).clip(lower=0, upper=1000)
+        df[f'min_JI_{i}'] = pd.to_numeric(
+            df[f'min_JI_{i}'] if f'min_JI_{i}' in df.columns else pd.Series(0, index=df.index),
+            errors='coerce'
+        ).fillna(0).clip(lower=0, upper=1000)
 
         # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
         df[f'coverage_date_{i}'] = (df['next_order_date'] + pd.to_timedelta(df[f'min_JI_{i}'], unit='D'))
