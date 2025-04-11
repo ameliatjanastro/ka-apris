@@ -135,8 +135,26 @@ def main():
 
         # Calculate columns based on selected cycle
         df = calculate_columns(df, cycle)
+        st.write(df.columns)  # Display the columns to debug
+
+        # Specify the columns to display
+        columns_to_display = [
+            'product_id', 'product_name', 'avg_sales_final', 
+            'vendor_id', 'vendor_name', 'location_id', 'doi_policy', 
+            'max_stock_wh', 'assumed_stock_wh', 'ospo for future',  # Ensure this column exists
+            'rl_qty_future', 'landed_doi'
+        ]
+
+        # Check if the required columns are available
+        missing_columns = [col for col in columns_to_display if col not in df.columns]
+        if missing_columns:
+            st.warning(f"Missing columns: {', '.join(missing_columns)}")
+
+        # Display only the specific columns
+        df_display = df[columns_to_display]  # Filter the DataFrame
+        st.write(df_display)
         # Display the modified dataframe with future order dates, assumed stock, and assumed OSPO
-        st.write(df)
+        #st.write(df)
 # Run the app
 if __name__ == "__main__":
     main()
