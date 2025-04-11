@@ -62,6 +62,11 @@ def calculate_columns(df, cycle):
         df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, size=len(df)))
 
         df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
+        if 'rl_qty_amel_1' not in df.columns:
+            df['assumed_ospo_qty_1'] = df['rl_qty_amel'].fillna(0)
+            df['assumed_stock_wh_1'] = df['stock_wh'].fillna(0)
+            df['rl_qty_amel_1'] = df['rl_qty_amel'].fillna(0)
+
        
         for i in range(2, cycle_num + 1):
             df[f'assumed_ospo_qty_{i}'] = df.groupby(['product_id', 'location_id'])[f'rl_qty_amel_{i-1}' if i >= 2 else 'rl_qty_amel'].shift(1).fillna(0)
