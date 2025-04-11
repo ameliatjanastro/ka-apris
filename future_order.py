@@ -52,7 +52,7 @@ def calculate_columns(df, cycle):
         - df['ospo_qty']
         - df['ospr_qty']
         - df['osrl_qty']
-        + df['rl_qty_hub']
+        #+ df['rl_qty_hub']
     ).fillna(0).clip(lower=0).round()
 
     
