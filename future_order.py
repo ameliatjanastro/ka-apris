@@ -29,7 +29,7 @@ def calculate_columns(df, cycle):
     df['ospo_qty'] = pd.to_numeric(df['ospo_qty'], errors='coerce').fillna(0)
     df['ospr_qty'] = pd.to_numeric(df['ospr_qty'], errors='coerce').fillna(0)
     df['osrl_qty'] = pd.to_numeric(df['osrl_qty'], errors='coerce').fillna(0)
-    df['rl_qty_hub'] = pd.to_numeric(df['rl_qty_hub'], errors='coerce').fillna(0)
+    #df['rl_qty_hub'] = pd.to_numeric(df['rl_qty_hub'], errors='coerce').fillna(0)
 
     # JI and max stock
     df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
@@ -130,7 +130,7 @@ def main():
         #st.write(df.head())
 
         # Dropdown for selecting the cycle
-        num_cycles = 5  # Adjust this based on how far ahead you want to plan
+        num_cycles = 6  # Adjust this based on how far ahead you want to plan
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         
         cycle = st.selectbox("Select Cycle", cycle_options)
