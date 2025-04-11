@@ -39,9 +39,11 @@ def calculate_columns(df, cycle):
     if match:
         cycle_num = int(match.group(1))
         df['future_order_date'] = df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')
+        df['future_inbound_date'] = df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')
     else:
         df['future_order_date'] = df['next_order_date']  # For 'Current'
-
+        df['future_inbound_date'] = df['future_inbound_date']
+    
     # Calculate rl_qty_new
     df['rl_qty_new'] = (
             df['max_stock_wh']
@@ -88,7 +90,7 @@ def calculate_columns(df, cycle):
     else:
         # Current cycle calculations
         df['rl_qty_future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
-
+        df['landed_doi'] =  df['assumed_stock_wh']/(df['avg_sales_final']*(df['JI'])).clip(lower=0).round()
     return df
 
 
