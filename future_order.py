@@ -58,7 +58,7 @@ def calculate_columns(df, cycle):
     
     if cycle != 'Current':
         # Calculate future average sales between order dates
-        df['avg_sales_future_cycle'] = df['avg_sales_final'] #df.apply(
+        df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.20, 0.10, size=len(df))) #df.apply(
             #lambda row: df[
                 #(df['next_order_date'] >= row['next_order_date']) & 
                 #(df['next_order_date'] <= row['future_order_date'])
