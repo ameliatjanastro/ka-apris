@@ -63,7 +63,7 @@ def calculate_columns(df, cycle):
         df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
        
         for i in range(2, cycle_num + 1):
-            df[f'assumed_ospo_qty_{i}'] = df.groupby(['product_id', 'location_id'])[f'assumed_ospo_qty_{i-1}' if i >= 2 else 'assumed_ospo_qty'].shift(1).fillna(0)
+            df[f'assumed_ospo_qty_{i}'] = df.groupby(['product_id', 'location_id'])[f'rl_qty_amel_{i-1}' if i >= 2 else 'rl_qty_amel'].shift(1).fillna(0)
             df[f'assumed_stock_wh_{i}'] = (df.groupby(['product_id', 'location_id'])[f'assumed_stock_wh_{i-1}' if i >= 2 else 'assumed_stock_wh'].shift(1).fillna(0))+df[f'assumed_ospo_qty_{i}']
             df[f'rl_qty_amel_{i}'] = (
                 df['max_stock_wh']
