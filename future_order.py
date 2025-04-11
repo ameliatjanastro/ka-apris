@@ -72,8 +72,8 @@ def calculate_columns(df, cycle):
         
     else:
         # Current cycle calculations
-        df['assumed_stock_wh'] = df['stock_wh']
-        df['assumed_ospo_qty'] = df['ospo_qty']
+        #df['assumed_stock_wh'] = df['stock_wh']
+        #df['assumed_ospo_qty'] = df['ospo_qty']
         df['rl_qty_future'] = df['rl_qty_new'].fillna(0).clip(lower=0).round()
 
     return df
