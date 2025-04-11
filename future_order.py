@@ -82,19 +82,19 @@ def calculate_columns(df, cycle):
         + df['rl_qty_hub']
     ).fillna(0).clip(lower=0).round()
 
-    else:
-        # For current cycle
-        df['assumed_stock_wh'] = df['stock_wh'].fillna(0).clip(lower=0).round()
-        df['assumed_ospo_qty'] = df['ospo_qty'].fillna(0)
-        df['rl_qty_new'] = (
+else:
+    # For current cycle
+    df['assumed_stock_wh'] = df['stock_wh'].fillna(0).clip(lower=0).round()
+    df['assumed_ospo_qty'] = df['ospo_qty'].fillna(0)
+    df['rl_qty_new'] = (
             df['max_stock_wh']
             - df['stock_wh']
             - df['ospo_qty']
             - df['ospr_qty']
             - df['osrl_qty']
             + df['rl_qty_hub']
-        ).fillna(0).clip(lower=0).round()
-        return df
+    ).fillna(0).clip(lower=0).round()
+    return df
 
 # Streamlit Interface
 def main():
