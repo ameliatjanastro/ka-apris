@@ -101,7 +101,7 @@ def main():
         # Show only selected columns
         cols_to_show = [
             'product_id', 'location_id', 'future_order_date', 'future_inbound_date',
-            'rl_qty_amel', 'landed_doi', 'assumed_stock_wh', 'assumed_ospo_qty'
+            'assumed_stock_wh', 'assumed_ospo_qty','rl_qty_amel', 'landed_doi'
         ]
         existing_cols = [col for col in cols_to_show if col in result_df.columns]
 
