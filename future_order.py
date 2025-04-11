@@ -32,7 +32,7 @@ def calculate_columns(df, cycle):
     df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
 
     # RL Qty New
-    df['rl_qty_new'] = (
+    df['rl_qty_amel'] = (
         df['max_stock_wh']
         - df['stock_wh']
         - df['ospo_qty']
@@ -41,44 +41,39 @@ def calculate_columns(df, cycle):
     ).fillna(0).clip(lower=0).round()
 
     if cycle == 'Current':
-        df['rl_qty_future'] = df['rl_qty_new']
+        df['rl_qty_amel'] = df['max_stock_wh']
+            - df['stock_wh']
+            - df['ospo_qty']
         df['landed_doi'] = (df['stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
         df['assumed_stock_wh'] = df['stock_wh']
-        df['assumed_ospo_qty'] = df['rl_qty_new']
-        df['ospo for future'] = df['rl_qty_new']
+        df['assumed_ospo_qty'] = df['ospo_qty']
     elif cycle == 'Cycle 1':
         df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, size=len(df)))
-        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospo_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
-        df['assumed_ospo_qty'] = df['rl_qty_new']
-        df['rl_qty_future'] = (
+        df['assumed_stock_wh'] = (df['assumed_stock_wh'].shift(1).fillna(0) + df['assumed_ospo_qty'].shift(1).fillna(0) - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
+        df['assumed_ospo_qty'] = df['rl_qty_amel'].shift(1).fillna(0)
+        df['rl_qty_amel'] = (
             df['max_stock_wh']
             - df['assumed_stock_wh']
             - df['assumed_ospo_qty']
         ).fillna(0).clip(lower=0).round()
         df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
-        df['ospo for future'] = df['rl_qty_future']
     else:
         df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, size=len(df)))
-        df['assumed_stock_wh'] = (df['stock_wh'] + df['ospo_qty'] - df['avg_sales_future_cycle']).fillna(0).clip(lower=0).round()
 
         df.sort_values(by=['product_id', 'location_id', 'next_order_date'], inplace=True)
-        df['ospo for future'] = df['rl_qty_new']
-        df['assumed_ospo_qty'] = df['rl_qty_new']
-
+       
         for i in range(2, cycle_num + 1):
-            df[f'assumed_stock_wh_{i}'] = df.groupby(['product_id', 'location_id'])[f'assumed_stock_wh_{i-1}' if i > 2 else 'assumed_stock_wh'].shift(1).fillna(0)
-            df[f'assumed_ospo_qty_{i}'] = df.groupby(['product_id', 'location_id'])['ospo for future'].shift(1).fillna(0)
-
-            df[f'rl_qty_future_{i}'] = (
+            df[f'assumed_ospo_qty_{i}'] = df.groupby(['product_id', 'location_id'])[f'assumed_ospo_qty_{i-1}' if i > 2 else 'assumed_ospo_qty'].shift(1).fillna(0)
+            df[f'assumed_stock_wh_{i}'] = (df.groupby(['product_id', 'location_id'])[f'assumed_stock_wh_{i-1}' if i > 2 else 'assumed_stock_wh'].shift(1).fillna(0))+df[f'assumed_ospo_qty_{i}']
+            df[f'rl_qty_amel_{i}'] = (
                 df['max_stock_wh']
                 - df[f'assumed_stock_wh_{i}']
                 - df[f'assumed_ospo_qty_{i}']
             ).fillna(0).clip(lower=0).round()
 
-            df['ospo for future'] = df[f'rl_qty_future_{i}']
             df['assumed_stock_wh'] = df[f'assumed_stock_wh_{i}']
             df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{i}']
-            df['rl_qty_future'] = df[f'rl_qty_future_{i}']
+            df['rl_qty_amel'] = df[f'rl_qty_amel_{i}']
 
         df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
 
@@ -103,7 +98,7 @@ def main():
         # Show only selected columns
         cols_to_show = [
             'product_id', 'location_id', 'future_order_date', 'future_inbound_date',
-            'rl_qty_future', 'landed_doi', 'assumed_stock_wh', 'assumed_ospo_qty'
+            'rl_qty_amel', 'landed_doi', 'assumed_stock_wh', 'assumed_ospo_qty'
         ]
         existing_cols = [col for col in cols_to_show if col in result_df.columns]
 
