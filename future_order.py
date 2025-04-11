@@ -55,6 +55,8 @@ def calculate_columns(df, cycle):
             - df['assumed_ospo_qty']
         ).fillna(0).clip(lower=0).round()
         df['landed_doi'] = (df['assumed_stock_wh'] / (df['avg_sales_final'] * df['JI'])).fillna(0).clip(lower=0).round()
+        df[f'assumed_ospo_qty_{1}'] = df['assumed_ospo_qty']
+        df[f'assumed_stock_wh_{1}'] = df['assumed_stock_wh']
     else:
         df['avg_sales_future_cycle'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, size=len(df)))
 
