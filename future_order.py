@@ -94,7 +94,9 @@ def calculate_columns(df, cycle):
     if str(selected_cycle).lower() == 'current':
         df['landed_doi'] = (df['stock_wh'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']
         df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y'))
-        df.loc[df['assumed_stock_wh'].abs() < 1e-3, 'bisa_cover_sampai'] = "currently OOS WH"
+        zero_mask = (df['assumed_stock_wh'].fillna(0).abs() < 1e-3)
+        print("Zero assumed_stock_wh rows:", zero_mask.sum())  # debug
+        df.loc[zero_mask, 'bisa_cover_sampai'] = "currently OOS WH"
     else:
         df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', ((df['stock_wh'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']).round().fillna(0).clip(lower=0))
         df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')))  # Adding the coverage date column
