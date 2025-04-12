@@ -96,23 +96,26 @@ def calculate_columns(df, cycle):
     if str(selected_cycle).lower() == 'current':
         df['landed_doi'] = '-'
         df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y'))
-        df.loc[df['assumed_stock_wh'] == 0, 'bisa_cover_sampai'] = df['next_order_date'].dt.strftime('%d-%b-%Y')
+        df.loc[df['assumed_stock_wh'] == 0, 'bisa_cover_sampai'] = df['future_order_date'].dt.strftime('%d-%b-%Y')
     else:
         df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', '-')
         df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')))  # Adding the coverage date column
 
         # Overwrite if assumed stock WH for the selected cycle is 0
         assumed_stock_col = f'assumed_stock_wh_{selected_cycle}'
-        future_order_date_col = f'next_order_date_{selected_cycle}'
+        future_order_date_col = f'future_order_date_{selected_cycle}'
     
         if assumed_stock_col in df.columns and future_order_date_col in df.columns:
             mask = df[assumed_stock_col] == 0
             df.loc[mask, 'bisa_cover_sampai'] = df.loc[mask, future_order_date_col].dt.strftime('%d-%b-%Y')
 
     assumed_stock_tot = f'assumed_stock_wh_{selected_cycle}'
+    assumed_rl = f'rl_qty_amel_{selected_cycle}'
     if assumed_stock_tot in df.columns:
         total_assumed_stock = df[assumed_stock_tot].sum()
         st.metric(f"Total Assumed Stock WH ({selected_cycle})", f"{int(total_assumed_stock):,}")
+        total_rl = df[assumed_rl].sum()
+        st.metric(f"Total RL Qty ({selected_cycle})", f"{int(total_rl):,}")
     return df
 
 # Streamlit Interface
