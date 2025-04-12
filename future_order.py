@@ -85,11 +85,6 @@ def calculate_columns(df, cycle):
         # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
         df[f'bisa_cover_sampai_{i}'] = ((df['future_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
 
-
-    if str(selected_cycle).lower() == 'current':
-        df['landed_doi'] = '-'
-    else:
-        df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', '-')
         
     # After loop: Output selected cycle's columns
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
@@ -98,6 +93,11 @@ def calculate_columns(df, cycle):
     df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
     df['bisa_cover_sampai'] = df[f'bisa_cover_sampai_{selected_cycle}']  # Adding the coverage date column
 
+    if str(selected_cycle).lower() == 'current':
+        df['landed_doi'] = '-'
+    else:
+        df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', '-')
+        
     return df
 
 # Streamlit Interface
