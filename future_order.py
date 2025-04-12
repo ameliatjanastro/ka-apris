@@ -130,6 +130,27 @@ def calculate_columns(df, cycle):
     return df
     
 # Streamlit Interface
+def load_data(uploaded_file):
+    return pd.read_excel(uploaded_file)
+
+def calculate_columns(df, selected_cycle):
+    # Your existing calculation logic here
+    # This is assumed to already add 'rl_qty_amel', 'mov', 'cycle', etc.
+    df['cycle'] = selected_cycle
+    return df
+
+def generate_summary_by_vendor_and_cycle(df):
+    df['rl_qty_amel'] = pd.to_numeric(df['rl_qty_amel'], errors='coerce').fillna(0)
+    df['mov'] = pd.to_numeric(df['mov'], errors='coerce').fillna(0)
+
+    summary = df.groupby(['cycle', 'primary_vendor_name']).agg(
+        total_rl_qty_amel=('rl_qty_amel', 'sum'),
+        average_mov=('mov', 'mean')
+    ).reset_index()
+
+    summary['rl_qty_vs_mov_ratio'] = summary['total_rl_qty_amel'] / summary['average_mov']
+    return summary
+
 def main():
     st.title('Supply Chain Data Calculation with Cycles')
 
@@ -143,9 +164,10 @@ def main():
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
+        # Apply calculation
         result_df = calculate_columns(df.copy(), selected_cycle)
 
-        # Show only selected columns
+        # Show key columns
         cols_to_show = [
             'product_id', 'location_id','primary_vendor_name','avg_sales_future_cycle','doi_policy', 'future_order_date', 'future_inbound_date',
             'assumed_stock_wh', 'assumed_ospo_qty','rl_qty_amel', 'landed_doi','bisa_cover_sampai'
@@ -153,9 +175,13 @@ def main():
         existing_cols = [col for col in cols_to_show if col in result_df.columns]
 
         st.success("Calculation complete.")
+        st.subheader(f"Details for {selected_cycle}")
         st.dataframe(result_df[existing_cols])
+
+        # Show vendor summary by cycle
+        summary_df = generate_summary_by_vendor_and_cycle(result_df)
+        st.subheader("Summary by Vendor and Cycle")
+        st.dataframe(summary_df)
 
 if __name__ == "__main__":
     main()
-
-
