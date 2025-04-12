@@ -39,6 +39,7 @@ def calculate_columns(df, cycle):
     (df['future_order_date'] - df['next_order_date']).dt.days
     ).clip(lower=0).fillna(0)
     df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+    df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
     # Set base values for Cycle 0 (Current)
     df['assumed_stock_wh_0'] = df['stock_wh'].fillna(0)
     df['assumed_ospo_qty_0'] = df['ospo_qty'].fillna(0)
@@ -83,7 +84,7 @@ def calculate_columns(df, cycle):
         ).fillna(0).clip(lower=0, upper=1000)
 
         # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
-        df[f'bisa_cover_sampai_{i}'] = ((df['future_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
+        df[f'bisa_cover_sampai_{i}'] = ((df['future_order_date2'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
 
         
     # After loop: Output selected cycle's columns
