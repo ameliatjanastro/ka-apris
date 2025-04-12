@@ -60,7 +60,7 @@ def calculate_columns(df, cycle):
         df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, len(df)))
 
         # Assumed stock WH: from previous stock + previous RL Qty - estimated sales
-        df[f'assumed_stock_wh_{i}'] = (df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - df[f'avg_sales_future_cycle_{i}'] * df['period_days']).fillna(0).clip(lower=0).round()
+        df[f'assumed_stock_wh_{i}'] = (df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - (df[f'avg_sales_future_cycle_{i}'] * df['period_days'])).fillna(0).clip(lower=0).round()
 
         # Assumed OSPO: previous cycle's RL Qty
         df[f'assumed_ospo_qty_{i}'] = df[f'rl_qty_amel_{i-1}'].fillna(0)
@@ -84,7 +84,7 @@ def calculate_columns(df, cycle):
         ).fillna(0).clip(lower=0, upper=1000)
 
         # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
-        df[f'bisa_cover_sampai_{i}'] = ((df['future_order_date2'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
+        df[f'bisa_cover_sampai_{i}'] = ((df['next_coverage_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
 
         
     # After loop: Output selected cycle's columns
