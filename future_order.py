@@ -35,7 +35,7 @@ def calculate_columns(df, cycle):
     df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D'))
     df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
 
-    df[f'period_days_{i}'] = (
+    df['period_days'] = (
     (df['future_order_date'] - df['next_order_date']).dt.days
     ).clip(lower=0).fillna(0)
     df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
@@ -59,7 +59,7 @@ def calculate_columns(df, cycle):
         df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, len(df)))
 
         # Assumed stock WH: from previous stock + previous RL Qty - estimated sales
-        df[f'assumed_stock_wh_{i}'] = (df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - df[f'avg_sales_future_cycle_{i}'] * df[f'period_days_{i}']).fillna(0).clip(lower=0).round()
+        df[f'assumed_stock_wh_{i}'] = (df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - df[f'avg_sales_future_cycle_{i}'] * df['period_days']).fillna(0).clip(lower=0).round()
 
         # Assumed OSPO: previous cycle's RL Qty
         df[f'assumed_ospo_qty_{i}'] = df[f'rl_qty_amel_{i-1}'].fillna(0)
