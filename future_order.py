@@ -74,7 +74,7 @@ def calculate_columns(df, cycle):
 
         # Landed DOI for this cycle
         df[f'landed_doi_{i}'] = (
-            ((df[f'assumed_stock_wh_{i}'] + (df[f'avg_sales_future_cycle_{i}'] * df['period_days'])) / (df['avg_sales_future_cycle_{i}'] * df['JI']))
+            (df[f'assumed_stock_wh_{i}'] + (df[f'avg_sales_future_cycle_{i}'] * df['period_days'])) / (df['avg_sales_future_cycle_{i}'] * df['JI']))
         ).fillna(0).clip(lower=0).round()
 
         # Calculate the minimum JI required to ensure Landed DOI >= 1
