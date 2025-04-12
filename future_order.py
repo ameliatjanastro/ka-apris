@@ -90,7 +90,7 @@ def calculate_columns(df, cycle):
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
     df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{selected_cycle}']
     df['rl_qty_amel'] = df[f'rl_qty_amel_{selected_cycle}']
-    df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
+    #df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
     df['bisa_cover_sampai'] = df[f'bisa_cover_sampai_{selected_cycle}']  # Adding the coverage date column
 
     if str(selected_cycle).lower() == 'current':
