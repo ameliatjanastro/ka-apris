@@ -133,21 +133,33 @@ def calculate_columns(df, cycle):
 def load_data(uploaded_file):
     return pd.read_excel(uploaded_file)
 
-def calculate_columns(df, cycle_name):
-    # Dummy logic; replace with your real calculation
-    df['cycle'] = cycle_name
-    df['rl_qty_amel'] = pd.to_numeric(df.get('rl_qty_amel', 0), errors='coerce').fillna(0)
-    df['mov'] = pd.to_numeric(df.get('mov', 0), errors='coerce').fillna(1)
-    return df
+def calculate_columns(df, selected_cycle):
+    # Handle 'Current' case
+    if selected_cycle == 'Current':
+        rl_qty_col = 'rl_qty_amel'
+    else:
+        rl_qty_col = f'rl_qty_amel_{selected_cycle}'
 
-def generate_summary_by_vendor_and_cycle(df):
-    summary = df.groupby(['cycle', 'primary_vendor_name']).agg(
-        total_rl_qty_amel=('rl_qty_amel', 'sum'),
-        average_mov=('mov', 'mean')
+    # Ensure those columns exist and are numeric
+    if rl_qty_col in df.columns:
+        df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)
+    else:
+        df[rl_qty_col] = 0
+
+    # MOV column
+    if 'mov' in df.columns:
+        df['mov'] = pd.to_numeric(df['mov'], errors='coerce').fillna(1)
+    else:
+        df['mov'] = 1
+
+    # Summary by vendor
+    summary_df = df.groupby('primary_vendor_name').agg(
+        total_rl_qty_amel=(rl_qty_col, 'sum'),
+        avg_mov=('mov', 'mean')
     ).reset_index()
+    summary_df['ratio_rl_to_mov'] = summary_df['total_rl_qty_amel'] / summary_df['avg_mov']
 
-    summary['rl_qty_vs_mov_ratio'] = summary['total_rl_qty_amel'] / summary['average_mov']
-    return summary
+    return df, summary_df, rl_qty_col
     
 def main():
     st.title('Supply Chain Data Calculation with Cycles')
