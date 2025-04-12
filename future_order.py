@@ -174,7 +174,7 @@ def main():
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
-        result_df, summary_df = calculate_columns(df.copy(), selected_cycle)
+        result_df = calculate_columns(df.copy(), selected_cycle)
 
         # Show only selected columns
         cols_to_show = [
