@@ -127,31 +127,31 @@ def calculate_columns(df, cycle):
         total_rl = df[assumed_rl].sum()
         st.metric(f"Total RL Qty ({selected_cycle})", f"{int(total_rl):,}")
 
-     rl_qty_col = 'rl_qty_amel' if selected_cycle == 'Current' else f'rl_qty_amel_{selected_cycle}'
+         rl_qty_col = 'rl_qty_amel' if selected_cycle == 'Current' else f'rl_qty_amel_{selected_cycle}'
+        
+        # Safely create rl_qty_col if missing
+        if rl_qty_col in df.columns:
+            df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)
+        else:
+            df[rl_qty_col] = 0  # Create a column of zeros
     
-    # Safely create rl_qty_col if missing
-    if rl_qty_col in df.columns:
-        df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)
-    else:
-        df[rl_qty_col] = 0  # Create a column of zeros
-
-    # Safely create 'mov' column if missing
-    if 'mov' in df.columns:
-        df['mov'] = pd.to_numeric(df['mov'], errors='coerce').fillna(1)
-    else:
-        df['mov'] = 1  # Default to 1 if MOV not available
-
-    # Calculate summary by vendor
-    summary_df = (
-        df.groupby('primary_vendor_name')
-        .agg(
-            total_rl_qty=(rl_qty_col, 'sum'),
-            avg_mov=('mov', 'mean')
+        # Safely create 'mov' column if missing
+        if 'mov' in df.columns:
+            df['mov'] = pd.to_numeric(df['mov'], errors='coerce').fillna(1)
+        else:
+            df['mov'] = 1  # Default to 1 if MOV not available
+    
+        # Calculate summary by vendor
+        summary_df = (
+            df.groupby('primary_vendor_name')
+            .agg(
+                total_rl_qty=(rl_qty_col, 'sum'),
+                avg_mov=('mov', 'mean')
+            )
+            .reset_index()
         )
-        .reset_index()
-    )
-    summary_df['rl_to_mov_ratio'] = summary_df['total_rl_qty'] / summary_df['avg_mov']
-    
+        summary_df['rl_to_mov_ratio'] = summary_df['total_rl_qty'] / summary_df['avg_mov']
+        
     return df
     
 # Streamlit Interface
