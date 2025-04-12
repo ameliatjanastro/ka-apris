@@ -96,7 +96,7 @@ def calculate_columns(df, cycle):
         df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y'))
         df.loc[df['assumed_stock_wh'] == 0, 'bisa_cover_sampai'] = df['future_order_date'].dt.strftime('%d-%b-%Y')
     else:
-        df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', ((df['stock_wh'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']).round().clip(lower=0).fillna(0))
+        df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', ((df['stock_wh'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']).round().fillna(0).clip(lower=0))
         df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')))  # Adding the coverage date column
 
     # Add logic for 'bisa_cover_sampai_custom'
@@ -104,7 +104,7 @@ def calculate_columns(df, cycle):
     assumed_stock_cols = [col for col in df.columns if col.startswith("assumed_stock_wh_")]
 
     # Step 2: Create helper masks
-    landed_zero = df['landed_doi'] == 0
+    landed_zero = df['landed_doi_{i}'] == 0
     all_zero_assumed = df[assumed_stock_cols].sum(axis=1) == 0
 
     # Step 3: Initialize the column with default values
