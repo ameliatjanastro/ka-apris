@@ -159,7 +159,7 @@ def calculate_columns(df, selected_cycle):
     ).reset_index()
     summary_df['ratio_rl_to_mov'] = summary_df['total_rl_qty_amel'] / summary_df['avg_mov']
 
-    return df, summary_df, rl_qty_col
+    return summary_df
     
 def main():
     st.title('Supply Chain Data Calculation with Cycles')
@@ -174,7 +174,7 @@ def main():
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
-        result_df, summary_df, rl_qty_col = calculate_columns(df.copy(), selected_cycle)
+        result_df, summary_df = calculate_columns(df.copy(), selected_cycle)
 
         # Show only selected columns
         cols_to_show = [
@@ -186,7 +186,7 @@ def main():
         st.success("Calculation complete.")
         st.dataframe(result_df[existing_cols])
 
-        summary_df = generate_summary_by_vendor_and_cycle(result_df)
+        summary_df = generate_summary_by_vendor_and_cycle(summary_df)
         st.subheader("Summary by Vendor and Cycle")
         st.dataframe(summary_df)
 
