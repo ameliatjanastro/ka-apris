@@ -125,22 +125,31 @@ def calculate_columns(df, cycle):
     all_zero_assumed = df[assumed_stock_cols].sum(axis=1) == 0
     
     # Step 3: Initialize the column with default values
-    df['bisa_cover_sampai_custom'] = df['bisa_cover_sampai']  # Copy existing coverage
+    df['bisa_cover_sampai_custom'] = df['bisa_cover_sampai']
+    df['custom_updated'] = False  # Helper flag to track updates
     
     # Step 4: Condition 1 — landed_doi == 0 AND all assumed_stock_wh == 0
-    df.loc[landed_zero & all_zero_assumed, 'bisa_cover_sampai_custom'] = "currently OOS WH"
+    mask1 = landed_zero & all_zero_assumed
+    df.loc[mask1, 'bisa_cover_sampai_custom'] = "currently OOS WH"
+    df.loc[mask1, 'custom_updated'] = True
     
     # Step 5: Condition 2 — landed_doi == 0 AND at least one assumed_stock_wh > 0
     def find_latest_cycle(row):
-        for cycle in sorted(assumed_stock_cols, reverse=True):  # change to normal sorted if you want earliest
+        for cycle in sorted(assumed_stock_cols, reverse=True):  # latest cycle first
             if row[cycle] > 0:
                 return f"OOS, order at cycle {cycle.split('_')[-1]}"
         return None
     
-    df.loc[landed_zero & ~all_zero_assumed, 'bisa_cover_sampai_custom'] = df.apply(find_latest_cycle, axis=1)
+    mask2 = landed_zero & ~all_zero_assumed
+    df.loc[mask2, 'bisa_cover_sampai_custom'] = df[mask2].apply(find_latest_cycle, axis=1)
+    df.loc[mask2, 'custom_updated'] = True
     
-    # Step 6: Condition 3 — Only landed_doi == 0
-    df.loc[landed_zero & (df['bisa_cover_sampai_custom'] == df['bisa_cover_sampai']), 'bisa_cover_sampai_custom'] = "add coverage/qty"
+    # Step 6: Condition 3 — Only landed_doi == 0 and not already updated
+    mask3 = landed_zero & ~df['custom_updated']
+    df.loc[mask3, 'bisa_cover_sampai_custom'] = "add coverage/qty"
+    
+    # Optional cleanup
+    df.drop(columns='custom_updated', inplace=True)
     return df
 
 # Streamlit Interface
