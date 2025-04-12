@@ -35,9 +35,9 @@ def calculate_columns(df, cycle):
     df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D'))
     df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
 
-    df['period_days'] = (
-    (df['future_order_date'] - df['next_order_date']).dt.days
-    ).clip(lower=0).fillna(0)
+    df['period_days'] = 7 #(
+    #(df['future_order_date'] - df['next_order_date']).dt.days
+    #).clip(lower=0).fillna(0)
     df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
     df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
     # Set base values for Cycle 0 (Current)
