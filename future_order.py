@@ -92,15 +92,15 @@ def calculate_columns(df, cycle):
     df['rl_qty_amel'] = df[f'rl_qty_amel_{selected_cycle}']
     #df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
     
-    if str(selected_cycle).lower() == 'current':
-        df['landed_doi'] = '-'
-        df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
-    else:
-        df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', '-')
-        df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y'))  # Adding the coverage date column
+if str(selected_cycle).lower() == 'current':
+    df['landed_doi'] = '-'
+    df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+else:
+    df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', '-')
+    df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y'))  # Adding the coverage date column
 
         
-    return df
+return df
 
 # Streamlit Interface
 def main():
