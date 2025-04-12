@@ -94,7 +94,7 @@ def calculate_columns(df, cycle):
     #df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
     
     if str(selected_cycle).lower() == 'current':
-        df['landed_doi'] = '-'
+        df['landed_doi'] = (df['stock_wh'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']
         df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y'))
         df.loc[df['assumed_stock_wh'] == 0, 'bisa_cover_sampai'] = df['future_order_date'].dt.strftime('%d-%b-%Y')
     else:
