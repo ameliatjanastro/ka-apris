@@ -128,7 +128,7 @@ def main():
         df = load_data(uploaded_file)
 
         # Cycle selector
-        num_cycles = 6
+        num_cycles = 12
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
