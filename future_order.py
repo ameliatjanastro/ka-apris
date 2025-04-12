@@ -86,7 +86,7 @@ def calculate_columns(df, cycle):
         df[f'bisa_cover_sampai_{i}'] = ((df['future_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
 
 
-    if selected_cycle.lower() == 'Current':
+    if str(selected_cycle).lower() == 'current':
         df['landed_doi'] = '-'
     else:
         df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', '-')
