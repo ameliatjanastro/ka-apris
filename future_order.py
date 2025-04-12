@@ -83,7 +83,7 @@ def calculate_columns(df, cycle):
         ).fillna(0).clip(lower=0, upper=1000)
 
         # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
-        df[f'bisa_cover_sampai_{i}'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
+        df[f'bisa_cover_sampai_{i}'] = ((df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
 
     # After loop: Output selected cycle's columns
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
