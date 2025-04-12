@@ -47,6 +47,7 @@ def calculate_columns(df, cycle):
         - df['assumed_stock_wh_0']
         - df['assumed_ospo_qty_0']
     ).fillna(0).clip(lower=0).round()
+    df[f'avg_sales_future_cycle_0'] = df['avg_sales_final'].fillna(0)
 
     # Choose how many cycles to run based on Streamlit dropdown
     selected_cycle = int(cycle.split()[-1]) if cycle.startswith('Cycle') else 0
