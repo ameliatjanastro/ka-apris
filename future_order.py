@@ -85,6 +85,12 @@ def calculate_columns(df, cycle):
         # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
         df[f'bisa_cover_sampai_{i}'] = ((df['future_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
 
+
+    if selected_cycle.lower() == 'Current':
+        df['landed_doi'] = '-'
+    else:
+        df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', '-')
+        
     # After loop: Output selected cycle's columns
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
     df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{selected_cycle}']
@@ -105,7 +111,7 @@ def main():
 
         # Cycle selector
         num_cycles = 6
-        cycle_options = [f'Cycle {i}' for i in range(0, num_cycles + 1)]
+        cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
         result_df = calculate_columns(df.copy(), selected_cycle)
