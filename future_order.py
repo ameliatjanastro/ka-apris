@@ -91,13 +91,14 @@ def calculate_columns(df, cycle):
     df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{selected_cycle}']
     df['rl_qty_amel'] = df[f'rl_qty_amel_{selected_cycle}']
     #df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
-    df['bisa_cover_sampai'] = df[f'bisa_cover_sampai_{selected_cycle}']  # Adding the coverage date column
-
+    
     if str(selected_cycle).lower() == 'current':
         df['landed_doi'] = '-'
         df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(1 * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
     else:
         df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', '-')
+        df['bisa_cover_sampai'] = df[f'bisa_cover_sampai_{selected_cycle}']  # Adding the coverage date column
+
         
     return df
 
