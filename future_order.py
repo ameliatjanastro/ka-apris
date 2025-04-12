@@ -94,10 +94,10 @@ def calculate_columns(df, cycle):
     
     if str(selected_cycle).lower() == 'current':
         df['landed_doi'] = '-'
-        df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(1 * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
+        df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
     else:
         df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', '-')
-        df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(1 * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y'))  # Adding the coverage date column
+        df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y'))  # Adding the coverage date column
 
         
     return df
