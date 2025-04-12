@@ -24,8 +24,9 @@ def calculate_columns(df, cycle):
         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
     # JI and max stock
+    df['cov'] = (df['next_inbound_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
     df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
-    df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + df['JI'])
+    df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + df['cov'])
 
     match = re.search(r'Cycle\s*(\d+)', cycle)
     cycle_num = int(match.group(1)) if match else 0
@@ -82,14 +83,14 @@ def calculate_columns(df, cycle):
         ).fillna(0).clip(lower=0, upper=1000)
 
         # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
-        df[f'coverage_date_{i}'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
+        df[f'bisa_cover_sampai_{i}'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
 
     # After loop: Output selected cycle's columns
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
     df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{selected_cycle}']
     df['rl_qty_amel'] = df[f'rl_qty_amel_{selected_cycle}']
     df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
-    df['coverage_date'] = df[f'coverage_date_{selected_cycle}']  # Adding the coverage date column
+    df['bisa_cover_sampai'] = df[f'bisa_cover_sampai_{selected_cycle}']  # Adding the coverage date column
 
     return df
 
@@ -112,7 +113,7 @@ def main():
         # Show only selected columns
         cols_to_show = [
             'product_id', 'location_id', 'future_order_date', 'future_inbound_date',
-            'assumed_stock_wh', 'assumed_ospo_qty','rl_qty_amel', 'landed_doi','coverage_date'
+            'assumed_stock_wh', 'assumed_ospo_qty','rl_qty_amel', 'landed_doi','bisa_cover_sampai'
         ]
         existing_cols = [col for col in cols_to_show if col in result_df.columns]
 
