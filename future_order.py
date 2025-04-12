@@ -133,16 +133,14 @@ def calculate_columns(df, cycle):
 def load_data(uploaded_file):
     return pd.read_excel(uploaded_file)
 
-def calculate_columns(df, selected_cycle):
-    # Your existing calculation logic here
-    # This is assumed to already add 'rl_qty_amel', 'mov', 'cycle', etc.
-    df['cycle'] = selected_cycle
+def calculate_columns(df, cycle_name):
+    # Dummy logic; replace with your real calculation
+    df['cycle'] = cycle_name
+    df['rl_qty_amel'] = pd.to_numeric(df.get('rl_qty_amel', 0), errors='coerce').fillna(0)
+    df['mov'] = pd.to_numeric(df.get('mov', 0), errors='coerce').fillna(1)
     return df
 
 def generate_summary_by_vendor_and_cycle(df):
-    df['rl_qty_amel'] = pd.to_numeric(df[f'rl_qty_amel_{selected_cycle}'], errors='coerce').fillna(0)
-    df['mov'] = pd.to_numeric(df['mov'], errors='coerce').fillna(0)
-
     summary = df.groupby(['cycle', 'primary_vendor_name']).agg(
         total_rl_qty_amel=('rl_qty_amel', 'sum'),
         average_mov=('mov', 'mean')
@@ -150,7 +148,7 @@ def generate_summary_by_vendor_and_cycle(df):
 
     summary['rl_qty_vs_mov_ratio'] = summary['total_rl_qty_amel'] / summary['average_mov']
     return summary
-
+    
 def main():
     st.title('Supply Chain Data Calculation with Cycles')
 
@@ -175,6 +173,10 @@ def main():
 
         st.success("Calculation complete.")
         st.dataframe(result_df[existing_cols])
+
+        summary_df = generate_summary_by_vendor_and_cycle(result_df)
+        st.subheader("Summary by Vendor and Cycle")
+        st.dataframe(summary_df)
 
 if __name__ == "__main__":
     main()
