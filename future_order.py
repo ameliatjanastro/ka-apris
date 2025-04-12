@@ -89,6 +89,7 @@ def calculate_columns(df, cycle):
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
     df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{selected_cycle}']
     df['rl_qty_amel'] = df[f'rl_qty_amel_{selected_cycle}']
+    df[f'avg_sales_future_cycle'] = df[f'avg_sales_future_cycle_{selected_cycle}']
 
     # Calculate Landed DOI and Coverage date for the selected cycle
     if str(selected_cycle).lower() == 'current':
