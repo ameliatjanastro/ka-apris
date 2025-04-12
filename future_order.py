@@ -151,7 +151,7 @@ def calculate_columns(df, cycle):
             .reset_index()
         )
         summary_df['rl_to_mov_ratio'] = summary_df['total_rl_qty'] / summary_df['avg_mov']
-        
+        st.dataframe(summary_df)
     return df
     
 # Streamlit Interface
