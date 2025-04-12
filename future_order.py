@@ -131,7 +131,7 @@ def calculate_columns(df, cycle):
         
         # Safely create rl_qty_col if missing
         if rl_qty_col in df.columns:
-            df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)
+            df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)*df['cogs']
         else:
             df[rl_qty_col] = 0  # Create a column of zeros
     
