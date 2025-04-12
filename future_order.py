@@ -116,6 +116,31 @@ def calculate_columns(df, cycle):
         st.metric(f"Total Assumed Stock WH ({selected_cycle})", f"{int(total_assumed_stock):,}")
         total_rl = df[assumed_rl].sum()
         st.metric(f"Total RL Qty ({selected_cycle})", f"{int(total_rl):,}")
+
+    # Step 1: Identify which columns are the assumed stock columns
+    assumed_stock_cols = [col for col in df.columns if col.startswith("assumed_stock_wh_")]
+    
+    # Step 2: Create helper masks
+    landed_zero = df['landed_doi'] == 0
+    all_zero_assumed = df[assumed_stock_cols].sum(axis=1) == 0
+    
+    # Step 3: Initialize the column with default values
+    df['bisa_cover_sampai_custom'] = df['bisa_cover_sampai']  # Copy existing coverage
+    
+    # Step 4: Condition 1 — landed_doi == 0 AND all assumed_stock_wh == 0
+    df.loc[landed_zero & all_zero_assumed, 'bisa_cover_sampai_custom'] = "currently OOS WH"
+    
+    # Step 5: Condition 2 — landed_doi == 0 AND at least one assumed_stock_wh > 0
+    def find_latest_cycle(row):
+        for cycle in sorted(assumed_stock_cols, reverse=True):  # change to normal sorted if you want earliest
+            if row[cycle] > 0:
+                return f"OOS, order at cycle {cycle.split('_')[-1]}"
+        return None
+    
+    df.loc[landed_zero & ~all_zero_assumed, 'bisa_cover_sampai_custom'] = df.apply(find_latest_cycle, axis=1)
+    
+    # Step 6: Condition 3 — Only landed_doi == 0
+    df.loc[landed_zero & (df['bisa_cover_sampai_custom'] == df['bisa_cover_sampai']), 'bisa_cover_sampai_custom'] = "add coverage/qty"
     return df
 
 # Streamlit Interface
