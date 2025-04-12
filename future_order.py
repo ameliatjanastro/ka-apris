@@ -140,7 +140,7 @@ def calculate_columns(df, selected_cycle):
     return df
 
 def generate_summary_by_vendor_and_cycle(df):
-    df['rl_qty_amel'] = pd.to_numeric(df['rl_qty_amel'], errors='coerce').fillna(0)
+    df['rl_qty_amel'] = pd.to_numeric(df[f'rl_qty_amel_{selected_cycle}'], errors='coerce').fillna(0)
     df['mov'] = pd.to_numeric(df['mov'], errors='coerce').fillna(0)
 
     summary = df.groupby(['cycle', 'primary_vendor_name']).agg(
