@@ -24,8 +24,8 @@ def calculate_columns(df, cycle):
         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
     # JI and max stock
-    df['cov'] = (df['next_inbound_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
-    df['JI'] = (df['next_coverage_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
+    df['cov'] = (df['next_coverage_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
+    df['JI'] = (df['next_inbound_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
     df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + df['cov'])
 
     match = re.search(r'Cycle\s*(\d+)', cycle)
@@ -84,7 +84,7 @@ def calculate_columns(df, cycle):
         ).fillna(0).clip(lower=0, upper=1000)
 
         # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
-        df[f'bisa_cover_sampai_{i}'] = ((df['next_coverage_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
+        df[f'bisa_cover_sampai_{i}'] = ((df['next_coverage_date'] + pd.to_timedelta(cycle_num * df['cov'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
 
         
     # After loop: Output selected cycle's columns
