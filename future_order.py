@@ -164,10 +164,9 @@ def main():
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
-        # Apply calculation
         result_df = calculate_columns(df.copy(), selected_cycle)
 
-        # Show key columns
+        # Show only selected columns
         cols_to_show = [
             'product_id', 'location_id','primary_vendor_name','avg_sales_future_cycle','doi_policy', 'future_order_date', 'future_inbound_date',
             'assumed_stock_wh', 'assumed_ospo_qty','rl_qty_amel', 'landed_doi','bisa_cover_sampai'
@@ -175,13 +174,7 @@ def main():
         existing_cols = [col for col in cols_to_show if col in result_df.columns]
 
         st.success("Calculation complete.")
-        st.subheader(f"Details for {selected_cycle}")
         st.dataframe(result_df[existing_cols])
-
-        # Show vendor summary by cycle
-        summary_df = generate_summary_by_vendor_and_cycle(result_df)
-        st.subheader("Summary by Vendor and Cycle")
-        st.dataframe(summary_df)
 
 if __name__ == "__main__":
     main()
