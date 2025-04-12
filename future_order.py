@@ -134,6 +134,7 @@ def calculate_columns(df, cycle):
     # Optional cleanup
     df.drop(columns='custom_updated', inplace=True)
 
+    # Optional: Output total assumptions for the selected cycle
     assumed_stock_tot = f'assumed_stock_wh_{selected_cycle}'
     assumed_rl = f'rl_qty_amel_{selected_cycle}'
     if assumed_stock_tot in df.columns:
