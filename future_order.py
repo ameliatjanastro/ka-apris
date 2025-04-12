@@ -134,59 +134,53 @@ def load_data(uploaded_file):
     return pd.read_excel(uploaded_file)
 
 def calculate_columns(df, selected_cycle):
-    # Handle 'Current' case
-    if selected_cycle == 'Current':
-        rl_qty_col = 'rl_qty_amel'
-    else:
-        rl_qty_col = f'rl_qty_amel_{selected_cycle}'
-
-    # Ensure those columns exist and are numeric
-    if rl_qty_col in df.columns:
-        df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)
-    else:
-        df[rl_qty_col] = 0
-
-    # MOV column
-    if 'mov' in df.columns:
-        df['mov'] = pd.to_numeric(df['mov'], errors='coerce').fillna(1)
-    else:
-        df['mov'] = 1
-
-    # Summary by vendor
-    summary_df = df.groupby('primary_vendor_name').agg(
-        total_rl_qty_amel=(rl_qty_col, 'sum'),
-        avg_mov=('mov', 'mean')
-    ).reset_index()
-    summary_df['ratio_rl_to_mov'] = summary_df['total_rl_qty_amel'] / summary_df['avg_mov']
-
-    return summary_df
+    # Determine the RL column name based on cycle
+    rl_qty_col = 'rl_qty_amel' if selected_cycle == 'Current' else f'rl_qty_amel_{selected_cycle}'
     
+    # Make sure the RL column and MOV are numeric
+    df[rl_qty_col] = pd.to_numeric(df.get(rl_qty_col, 0), errors='coerce').fillna(0)
+    df['mov'] = pd.to_numeric(df.get('mov', 1), errors='coerce').fillna(1)
+
+    # Calculate summary by vendor
+    summary_df = (
+        df.groupby('primary_vendor_name')
+        .agg(
+            total_rl_qty=(rl_qty_col, 'sum'),
+            avg_mov=('mov', 'mean')
+        )
+        .reset_index()
+    )
+    summary_df['rl_to_mov_ratio'] = summary_df['total_rl_qty'] / summary_df['avg_mov']
+
+    return df, summary_df, rl_qty_col
+
 def main():
-    st.title('Supply Chain Data Calculation with Cycles')
+    st.title('Supply Chain RL Quantity & Vendor Summary')
 
     uploaded_file = st.file_uploader("Upload your Excel file", type="xlsx")
 
-    if uploaded_file is not None:
+    if uploaded_file:
         df = load_data(uploaded_file)
 
         # Cycle selector
-        num_cycles = 12
-        cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
+        cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, 13)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
-        result_df, summary_df = calculate_columns(df.copy(), selected_cycle)
+        detailed_df, summary_df, rl_qty_col = calculate_columns(df.copy(), selected_cycle)
 
-        # Show only selected columns
-        cols_to_show = [
-            'product_id', 'location_id','primary_vendor_name','avg_sales_future_cycle','doi_policy', 'future_order_date', 'future_inbound_date',
-            'assumed_stock_wh', 'assumed_ospo_qty','rl_qty_amel', 'landed_doi','bisa_cover_sampai'
+        # Define and show key columns
+        detail_cols = [
+            'product_id', 'location_id', 'primary_vendor_name', 'avg_sales_future_cycle',
+            'doi_policy', 'future_order_date', 'future_inbound_date', 'assumed_stock_wh',
+            'assumed_ospo_qty', rl_qty_col, 'landed_doi', 'bisa_cover_sampai'
         ]
-        existing_cols = [col for col in cols_to_show if col in result_df.columns]
+        detail_cols = [col for col in detail_cols if col in detailed_df.columns]
 
         st.success("Calculation complete.")
-        st.dataframe(result_df[existing_cols])
+        st.subheader("Detailed RL Quantity per Product")
+        st.dataframe(detailed_df[detail_cols])
 
-        st.subheader("Summary by Vendor and Cycle")
+        st.subheader("Summary by Vendor")
         st.dataframe(summary_df)
 
 if __name__ == "__main__":
