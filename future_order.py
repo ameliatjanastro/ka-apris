@@ -137,9 +137,17 @@ def calculate_columns(df, selected_cycle):
     # Determine the RL column name based on cycle
     rl_qty_col = 'rl_qty_amel' if selected_cycle == 'Current' else f'rl_qty_amel_{selected_cycle}'
     
-    # Make sure the RL column and MOV are numeric
-    df[rl_qty_col] = pd.to_numeric(df.get(rl_qty_col, 0), errors='coerce').fillna(0)
-    df['mov'] = pd.to_numeric(df.get('mov', 1), errors='coerce').fillna(1)
+    # Safely create rl_qty_col if missing
+    if rl_qty_col in df.columns:
+        df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)
+    else:
+        df[rl_qty_col] = 0  # Create a column of zeros
+
+    # Safely create 'mov' column if missing
+    if 'mov' in df.columns:
+        df['mov'] = pd.to_numeric(df['mov'], errors='coerce').fillna(1)
+    else:
+        df['mov'] = 1  # Default to 1 if MOV not available
 
     # Calculate summary by vendor
     summary_df = (
