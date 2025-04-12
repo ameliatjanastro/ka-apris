@@ -104,7 +104,7 @@ def calculate_columns(df, cycle):
         assumed_stock_cols = [col for col in df.columns if col.startswith("assumed_stock_wh_")]
     
         # Step 2: Create helper masks
-        landed_zero = df[f'landed_doi_{i}'] == 0
+        landed_zero = df['landed_doi'] == 0
         all_zero_assumed = df[assumed_stock_cols].sum(axis=1) == 0
     
         # Step 3: Initialize the column with default values
