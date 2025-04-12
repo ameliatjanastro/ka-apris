@@ -98,7 +98,34 @@ def calculate_columns(df, cycle):
     else:
         df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', ((df['stock_wh'] + df['ospo_qty'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']).round().fillna(0).clip(lower=0))
         df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')))  # Adding the coverage date column
-     
+
+    # Add a helper column for the cycle group
+    df['cycle_number'] = df['future_order_date'].str.extract(r'(\d+)').astype(float)
+    
+    # Backup original value for landed_doi for logic comparison
+    df['landed_doi_original'] = df['landed_doi']
+    
+    # Set "currently oos wh" where both assumed_stock_wh and landed_doi are 0
+    df.loc[(df['assumed_stock_wh'] == 0) & (df['landed_doi_original'] == 0), 'bisa_cover_sampai'] = 'currently oos wh'
+    
+    # For rows where only landed_doi is 0, fill with the last non-zero cycle
+    # First, replace 0s with NaN in 'landed_doi' temporarily
+    df['landed_doi'] = df['landed_doi'].replace(0, np.nan)
+    
+    # Create a helper column to track the cycle from 'bisa_cover_sampai'
+    df['bisa_cover_sampai_filled'] = df['bisa_cover_sampai']
+    df['bisa_cover_sampai_filled'] = df['bisa_cover_sampai_filled'].where(df['landed_doi'].notna())
+    
+    # Now fill forward across cycles for each product_id or location_id (adjust grouping as necessary)
+    df['bisa_cover_sampai_filled'] = df.groupby(['cycle_number', 'product_id', 'location_id'])['bisa_cover_sampai_filled'].ffill()
+    
+    # Overwrite only those that are NaN landed_doi but non-zero assumed_stock_wh
+    df.loc[(df['assumed_stock_wh'] != 0) & (df['landed_doi_original'] == 0), 'bisa_cover_sampai'] = df['bisa_cover_sampai_filled']
+    
+    # Optional: clean up helper columns
+    df.drop(['bisa_cover_sampai_filled', 'landed_doi_original'], axis=1, inplace=True)
+
+    
     # Optional: Output total assumptions for the selected cycle
     assumed_stock_tot = f'assumed_stock_wh_{selected_cycle}'
     assumed_rl = f'rl_qty_amel_{selected_cycle}'
