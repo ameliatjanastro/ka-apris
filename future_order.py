@@ -186,7 +186,6 @@ def main():
         st.success("Calculation complete.")
         st.dataframe(result_df[existing_cols])
 
-        summary_df = generate_summary_by_vendor_and_cycle(summary_df)
         st.subheader("Summary by Vendor and Cycle")
         st.dataframe(summary_df)
 
