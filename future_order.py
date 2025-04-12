@@ -98,7 +98,7 @@ def calculate_columns(df, cycle):
         df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y'))
         df.loc[df['assumed_stock_wh'] == 0, 'bisa_cover_sampai'] = df['future_order_date'].dt.strftime('%d-%b-%Y')
     else:
-        df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', ((df['stock_wh'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']).round().clip(lower=0))
+        df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', ((df['stock_wh'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']).round().clip(lower=0).fillna(0))
         df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')))  # Adding the coverage date column
 
         # Overwrite if assumed stock WH for the selected cycle is 0
