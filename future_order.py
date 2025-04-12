@@ -110,10 +110,9 @@ def calculate_columns(df, cycle):
     
     # For rows where only landed_doi is 0, fill with the last non-zero cycle
     # First, replace 0s with NaN in 'landed_doi' temporarily
-    df['landed_doi'] = df['landed_doi'].replace(0, np.nan)
     
     # Overwrite only those that are NaN landed_doi but non-zero assumed_stock_wh
-    df.loc[(df['assumed_stock_wh'] != 0) & (df['landed_doi_original'] == np.nan), 'bisa_cover_sampai'] = 'tambah coverage/qty'
+    df.loc[(df['assumed_stock_wh'] != 0) & (df['landed_doi_original'] == 0), 'bisa_cover_sampai'] = 'tambah coverage/qty'
     df['landed_doi'] = df['landed_doi'].replace(np.nan,0)
     # Optional: clean up helper columns
     
