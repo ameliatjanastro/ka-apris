@@ -127,15 +127,7 @@ def calculate_columns(df, cycle):
         total_rl = df[assumed_rl].sum()
         st.metric(f"Total RL Qty ({selected_cycle})", f"{int(total_rl):,}")
 
-    return df
-    
-# Streamlit Interface
-def load_data(uploaded_file):
-    return pd.read_excel(uploaded_file)
-
-def calculate_columns(df, selected_cycle):
-    # Determine the RL column name based on cycle
-    rl_qty_col = 'rl_qty_amel' if selected_cycle == 'Current' else f'rl_qty_amel_{selected_cycle}'
+     rl_qty_col = 'rl_qty_amel' if selected_cycle == 'Current' else f'rl_qty_amel_{selected_cycle}'
     
     # Safely create rl_qty_col if missing
     if rl_qty_col in df.columns:
@@ -159,37 +151,34 @@ def calculate_columns(df, selected_cycle):
         .reset_index()
     )
     summary_df['rl_to_mov_ratio'] = summary_df['total_rl_qty'] / summary_df['avg_mov']
-
-    return df, summary_df, rl_qty_col
-
+    
+    return df
+    
+# Streamlit Interface
 def main():
-    st.title('Supply Chain RL Quantity & Vendor Summary')
+    st.title('Supply Chain Data Calculation with Cycles')
 
     uploaded_file = st.file_uploader("Upload your Excel file", type="xlsx")
 
-    if uploaded_file:
+    if uploaded_file is not None:
         df = load_data(uploaded_file)
 
         # Cycle selector
-        cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, 13)]
+        num_cycles = 12
+        cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
-        detailed_df, summary_df, rl_qty_col = calculate_columns(df.copy(), selected_cycle)
+        result_df = calculate_columns(df.copy(), selected_cycle)
 
-        # Define and show key columns
-        detail_cols = [
-            'product_id', 'location_id', 'primary_vendor_name', 'avg_sales_future_cycle',
-            'doi_policy', 'future_order_date', 'future_inbound_date', 'assumed_stock_wh',
-            'assumed_ospo_qty', rl_qty_col, 'landed_doi', 'bisa_cover_sampai'
+        # Show only selected columns
+        cols_to_show = [
+            'product_id', 'location_id','primary_vendor_name','avg_sales_future_cycle','doi_policy', 'future_order_date', 'future_inbound_date',
+            'assumed_stock_wh', 'assumed_ospo_qty','rl_qty_amel', 'landed_doi','bisa_cover_sampai'
         ]
-        detail_cols = [col for col in detail_cols if col in detailed_df.columns]
+        existing_cols = [col for col in cols_to_show if col in result_df.columns]
 
         st.success("Calculation complete.")
-        st.subheader("Detailed RL Quantity per Product")
-        st.dataframe(detailed_df[detail_cols])
-
-        st.subheader("Summary by Vendor")
-        st.dataframe(summary_df)
+        st.dataframe(result_df[existing_cols])
 
 if __name__ == "__main__":
     main()
