@@ -35,11 +35,10 @@ def calculate_columns(df, cycle):
     df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D'))
     df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
 
-    df['period_days'] = 7 #(
-    #(df['future_order_date'] - df['next_order_date']).dt.days
-    #).clip(lower=0).fillna(0)
+    df['period_days'] = 7  # Default to 7 for period days
     df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
     df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
+
     # Set base values for Cycle 0 (Current)
     df['assumed_stock_wh_0'] = df['stock_wh'].fillna(0)
     df['assumed_ospo_qty_0'] = df['ospo_qty'].fillna(0)
@@ -86,13 +85,12 @@ def calculate_columns(df, cycle):
         # Calculate the coverage date when Landed DOI is at least 1 (using min_JI)
         df[f'bisa_cover_sampai_{i}'] = ((df['next_coverage_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')) + pd.to_timedelta(df[f'min_JI_{i}'], unit='D')).dt.strftime('%d-%b-%Y')
 
-        
     # After loop: Output selected cycle's columns
     df['assumed_stock_wh'] = df[f'assumed_stock_wh_{selected_cycle}']
     df['assumed_ospo_qty'] = df[f'assumed_ospo_qty_{selected_cycle}']
     df['rl_qty_amel'] = df[f'rl_qty_amel_{selected_cycle}']
-    #df['landed_doi'] = df[f'landed_doi_{selected_cycle}']
-    
+
+    # Calculate Landed DOI and Coverage date for the selected cycle
     if str(selected_cycle).lower() == 'current':
         df['landed_doi'] = (df['stock_wh'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']
         df['bisa_cover_sampai'] = ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y'))
@@ -101,51 +99,41 @@ def calculate_columns(df, cycle):
         df['landed_doi'] = df.get(f'landed_doi_{selected_cycle}', ((df['stock_wh'] - (df['avg_sales_final'] * df['period_days'])) / df['avg_sales_final']).round().clip(lower=0).fillna(0))
         df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')))  # Adding the coverage date column
 
-        # Overwrite if assumed stock WH for the selected cycle is 0
-        assumed_stock_col = f'assumed_stock_wh_{selected_cycle}'
-        future_order_date_col = f'future_order_date_{selected_cycle}'
-        
-        # Ensure the date column is datetime
-        if future_order_date_col in df.columns:
-            df[future_order_date_col] = pd.to_datetime(df[future_order_date_col], errors='coerce')
+    # Add logic for 'bisa_cover_sampai_custom'
+    # Step 1: Identify which columns are the assumed stock columns
+    assumed_stock_cols = [col for col in df.columns if col.startswith("assumed_stock_wh_")]
 
-        if assumed_stock_col in df.columns and future_order_date_col in df.columns:
-            mask = df[assumed_stock_col] == 0
-            df.loc[mask, 'bisa_cover_sampai'] = df.loc[mask, future_order_date_col].dt.strftime('%d-%b-%Y')
+    # Step 2: Create helper masks
+    landed_zero = df['landed_doi'] == 0
+    all_zero_assumed = df[assumed_stock_cols].sum(axis=1) == 0
 
-        # Step 1: Identify which columns are the assumed stock columns
-        assumed_stock_cols = [col for col in df.columns if col.startswith("assumed_stock_wh_")]
-        
-        # Step 2: Create helper masks
-        landed_zero = df['landed_doi'] == 0
-        all_zero_assumed = df[assumed_stock_cols].sum(axis=1) == 0
-        
-        # Step 3: Initialize the column with default values
-        df['bisa_cover_sampai_custom'] = df['bisa_cover_sampai']
-        df['custom_updated'] = False  # Helper flag to track updates
-        
-        # Step 4: Condition 1 — landed_doi == 0 AND all assumed_stock_wh == 0
-        mask1 = landed_zero & all_zero_assumed
-        df.loc[mask1, 'bisa_cover_sampai_custom'] = "currently OOS WH"
-        df.loc[mask1, 'custom_updated'] = True
-        
-        # Step 5: Condition 2 — landed_doi == 0 AND at least one assumed_stock_wh > 0
-        def find_latest_cycle(row):
-            for cycle in sorted(assumed_stock_cols, reverse=True):  # latest cycle first
-                if row[cycle] > 0:
-                    return f"OOS, order at cycle {cycle.split('_')[-1]}"
-            return None
-        
-        mask2 = landed_zero & ~all_zero_assumed
-        df.loc[mask2, 'bisa_cover_sampai_custom'] = df[mask2].apply(find_latest_cycle, axis=1)
-        df.loc[mask2, 'custom_updated'] = True
-        
-        # Step 6: Condition 3 — Only landed_doi == 0 and not already updated
-        mask3 = landed_zero & ~df['custom_updated']
-        df.loc[mask3, 'bisa_cover_sampai_custom'] = "add coverage/qty"
-        
-        # Optional cleanup
-        df.drop(columns='custom_updated', inplace=True)
+    # Step 3: Initialize the column with default values
+    df['bisa_cover_sampai_custom'] = df['bisa_cover_sampai']
+    df['custom_updated'] = False  # Helper flag to track updates
+
+    # Step 4: Condition 1 — landed_doi == 0 AND all assumed_stock_wh == 0
+    mask1 = landed_zero & all_zero_assumed
+    df.loc[mask1, 'bisa_cover_sampai_custom'] = "currently OOS WH"
+    df.loc[mask1, 'custom_updated'] = True
+
+    # Step 5: Condition 2 — landed_doi == 0 AND at least one assumed_stock_wh > 0
+    def find_latest_cycle(row):
+        for cycle in sorted(assumed_stock_cols, reverse=True):  # latest cycle first
+            if row[cycle] > 0:
+                return f"OOS, order at cycle {cycle.split('_')[-1]}"
+        return None
+
+    mask2 = landed_zero & ~all_zero_assumed
+    df.loc[mask2, 'bisa_cover_sampai_custom'] = df[mask2].apply(find_latest_cycle, axis=1)
+    df.loc[mask2, 'custom_updated'] = True
+
+    # Step 6: Condition 3 — Only landed_doi == 0 and not already updated
+    mask3 = landed_zero & ~df['custom_updated']
+    df.loc[mask3, 'bisa_cover_sampai_custom'] = "add coverage/qty"
+
+    # Optional cleanup
+    df.drop(columns='custom_updated', inplace=True)
+
     assumed_stock_tot = f'assumed_stock_wh_{selected_cycle}'
     assumed_rl = f'rl_qty_amel_{selected_cycle}'
     if assumed_stock_tot in df.columns:
@@ -154,9 +142,8 @@ def calculate_columns(df, cycle):
         total_rl = df[assumed_rl].sum()
         st.metric(f"Total RL Qty ({selected_cycle})", f"{int(total_rl):,}")
 
-    
     return df
-
+    
 # Streamlit Interface
 def main():
     st.title('Supply Chain Data Calculation with Cycles')
