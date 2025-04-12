@@ -32,13 +32,13 @@ def calculate_columns(df, cycle):
     cycle_num = int(match.group(1)) if match else 0
 
     # Future dates
-    df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+    df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.days
     df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
 
     df[f'period_days_{i}'] = (
     (df['future_order_date'] - df['next_order_date']).dt.days
     ).clip(lower=0).fillna(0)
-
+    df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
     # Set base values for Cycle 0 (Current)
     df['assumed_stock_wh_0'] = df['stock_wh'].fillna(0)
     df['assumed_ospo_qty_0'] = df['ospo_qty'].fillna(0)
