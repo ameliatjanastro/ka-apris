@@ -166,7 +166,8 @@ def calculate_columns(df, cycle, frequency_df=None):
 
         detailed_rl_distribution = None
         if frequency_df is not None:
-            merged = df.merge(frequency_df, on='primary_vendor_name', how='left')
+            merge_columns = ['vendor_id', 'primary_vendor_name', 'vendor_frequency']
+            merged = df.merge(frequency_df, on=merge_columns, how='left')
             merged['vendor_frequency'] = merged['vendor_frequency'].fillna(1)
             merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
     
