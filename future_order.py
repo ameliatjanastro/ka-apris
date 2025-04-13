@@ -236,8 +236,8 @@ def calculate_columns(df, cycle, frequency_df=None):
                     .reset_index()
                 )
         
-                # Show result
-                st.dataframe(summary_distribution)
+            # Show result
+            st.dataframe(summary_distribution)
 
     return df
     
