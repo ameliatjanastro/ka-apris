@@ -182,7 +182,7 @@ def calculate_columns(df, cycle, frequency_df=None):
                 # Handle case where selisih_hari is '0' or missing
                 if selisih_days == ['0']:
                     qty_per_day = row['rl_qty_amel']  # full amount to the base date
-                    future_date = pd.to_datetime(row['future_inbound_date']).strftime('%d-%b-%Y')
+                    future_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')#pd.to_datetime(row['future_inbound_date']).strftime('%d-%b-%Y')
                     expanded_rows.append({
                         'primary_vendor_name': row['primary_vendor_name'],
                         'location_id': row['location_id'],
@@ -199,7 +199,12 @@ def calculate_columns(df, cycle, frequency_df=None):
                     for day_offset in selisih_days:
                         try:
                             offset = int(day_offset.strip())
-                            future_date = (pd.to_datetime(row['future_inbound_date']) + pd.Timedelta(days=offset)).strftime('%d-%b-%Y')
+                            base_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
+                            if pd.isna(base_date):
+                                continue  # or log / handle bad date
+                            
+                            future_date = (base_date + pd.Timedelta(days=offset)).strftime('%d-%b-%Y')
+                            #future_date = #(pd.to_datetime(row['future_inbound_date']) + pd.Timedelta(days=offset)).strftime('%d-%b-%Y')
                             expanded_rows.append({
                                 'primary_vendor_name': row['primary_vendor_name'],
                                 'location_id': row['location_id'],
