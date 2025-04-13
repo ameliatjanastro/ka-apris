@@ -43,6 +43,7 @@ def calculate_columns(df, cycle, frequency_df=None):
         df['cycle_coverage_date'] = df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
     
     # Final formatting
+    df['period_days'] = 7  
     df['future_order_date'] = df['cycle_order_date'].dt.strftime('%d-%b-%Y')
     df['future_inbound_date'] = df['cycle_inbound_date'].dt.strftime('%d-%b-%Y')
     df['future_coverage_date'] = df['cycle_coverage_date'].dt.strftime('%d-%b-%Y')
