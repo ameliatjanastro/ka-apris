@@ -178,7 +178,7 @@ def calculate_columns(df, cycle, frequency_df=None):
                 # Handle case where selisih_hari is '0'
                 if selisih_days == ['0']:
                     qty_per_day = row[rl_qty_col]  # all quantity goes to the base date
-                    future_date = pd.to_datetime(row['future_inbound_date']).strftime('%d-%b-%Y')
+                    future_date = pd.to_datetime(row['future_inbound_date']).dt.strftime('%d-%b-%Y')
                     expanded_rows.append({
                         'primary_vendor_name': row['primary_vendor_name'],
                         'location_id': row['location_id'],
