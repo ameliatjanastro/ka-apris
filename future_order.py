@@ -223,8 +223,8 @@ def calculate_columns(df, cycle, frequency_df=None):
                                     'rl_qty_per_day': qty_per_day
                             })
                             #day_counter += 1
-                        else:
-                            break
+                        except Exception:
+                            continue
                     except Exception:
                         continue
         
