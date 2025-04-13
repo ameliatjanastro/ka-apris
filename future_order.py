@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 import re
 
-def calculate_columns(df, cycle):
+def calculate_columns(df, cycle, frequency_df=None):
     # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
@@ -163,6 +163,34 @@ def calculate_columns(df, cycle):
         summary_df['rl_to_mov_ratio'] = summary_df['rl_to_mov_ratio'].clip(upper=1)  # Cap at 1 (100%)
         summary_df['rl_to_mov_ratio'] = (summary_df['rl_to_mov_ratio'] * 100).round(2).astype(str) + '%'  # Convert to % string
         st.dataframe(summary_df)
+
+        detailed_rl_distribution = None
+        if frequency_df is not None:
+            merged = df.merge(frequency_df, on='primary_vendor_name', how='left')
+            merged['vendor_frequency'] = merged['vendor_frequency'].fillna(1)
+            merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
+    
+            expanded_rows = []
+            for _, row in merged.iterrows():
+                selisih_days = str(row['selisih_hari']).split(',')
+                qty_per_day = row[rl_qty_col] / len(selisih_days)
+    
+                for day_offset in selisih_days:
+                    try:
+                        offset = int(day_offset.strip())
+                        future_date = pd.to_datetime(row['future_inbound_date']) + pd.Timedelta(days=offset)
+                        expanded_rows.append({
+                            'primary_vendor_name': row['primary_vendor_name'],
+                            'location_id': row['location_id'],
+                            'future_inbound_date': future_date,
+                            'rl_qty_per_day': qty_per_day
+                        })
+                    except Exception:
+                        continue
+
+        detailed_rl_distribution = pd.DataFrame(expanded_rows)
+        st.dataframe(detailed_rl_distribution)
+
     return df
     
 # Streamlit Interface
@@ -170,9 +198,12 @@ def main():
     st.title('Supply Chain Data Calculation with Cycles')
 
     uploaded_file = st.file_uploader("Upload your Excel file", type="xlsx")
+    freq_file = st.file_uploader("Upload vendor frequency file", type=["csv", "xlsx"])
+
 
     if uploaded_file is not None:
         df = load_data(uploaded_file)
+        frequency_df = pd.read_csv(freq_file) if freq_file and freq_file.name.endswith('.csv') else pd.read_excel(freq_file) if freq_file else None
 
         # Cycle selector
         num_cycles = 12
