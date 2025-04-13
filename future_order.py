@@ -181,6 +181,7 @@ def calculate_columns(df, cycle, frequency_df=None):
                         offset = int(day_offset.strip())
                         future_date = (pd.to_datetime(row['future_inbound_date']) + pd.Timedelta(days=offset)).dt.strftime('%d-%b-%Y')
                         expanded_rows.append({
+                            'primary_vendor_name': row['primary_vendor_name'],
                             'location_id': row['location_id'],
                             'future_inbound_date': future_date,
                             'rl_qty_per_day': qty_per_day
@@ -189,7 +190,16 @@ def calculate_columns(df, cycle, frequency_df=None):
                         continue
 
         detailed_rl_distribution = pd.DataFrame(expanded_rows)
-        st.dataframe(detailed_rl_distribution)
+        # Summarize total RL qty per day per location (no primary vendor)
+        summary_distribution = (
+            detailed_rl_distribution
+            .groupby(['location_id', 'future_inbound_date'])
+            .agg(total_rl_qty_per_day=('rl_qty_per_day', 'sum'))
+            .reset_index()
+        )
+        
+        # Show the summarized table
+        st.dataframe(summary_distribution)
 
     return df
     
