@@ -177,7 +177,7 @@ def calculate_columns(df, cycle, frequency_df=None):
                 
                 # Handle case where selisih_hari is '0'
                 if selisih_days == ['0']:
-                    qty_per_day = row[rl_qty_col]/row['cogs']  # all quantity goes to the base date
+                    qty_per_day = row['rl_qty_amel']  # all quantity goes to the base date
                     future_date = pd.to_datetime(row['future_inbound_date'])#.dt.strftime('%d-%b-%Y')
                     expanded_rows.append({
                         'primary_vendor_name': row['primary_vendor_name'],
@@ -186,7 +186,7 @@ def calculate_columns(df, cycle, frequency_df=None):
                         'rl_qty_per_day': qty_per_day
                     })
                 else:
-                    qty_per_day = row[rl_qty_col] /(row['vendor_frequency']*row['cogs'])
+                    qty_per_day = row['rl_qty_amel'] /row['vendor_frequency']
                     for day_offset in selisih_days:
                         try:
                             offset = int(day_offset.strip())
