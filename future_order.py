@@ -147,17 +147,17 @@ def calculate_columns(df, cycle, frequency_df=None):
         summary_df = (
             df.groupby(['primary_vendor_name', 'location_id'])
             .agg(
-                total_rl_qty=(rl_qty_col, 'sum'),
+                total_rl_value=(rl_qty_col, 'sum'),
                 avg_mov=('mov', 'mean')
             )
             .reset_index()
         )
         summary_df['avg_mov'] = summary_df['avg_mov'].replace(0, 1).fillna(1)  # Avoid division by 0
         summary_df['location_id'] = summary_df['location_id']
-        summary_df['rl_to_mov_ratio'] = summary_df['total_rl_qty'] / summary_df['avg_mov']
+        summary_df['rl_to_mov_ratio'] = summary_df['total_rl_value'] / summary_df['avg_mov']
         summary_df['avg_mov'] = summary_df['avg_mov'].replace(1, 0)
         summary_df['rl_to_mov_ratio'] = summary_df.apply(
-            lambda row: 1 if row['avg_mov'] == 0 else min(row['total_rl_qty'] / row['avg_mov'], 1),
+            lambda row: 1 if row['avg_mov'] == 0 else min(row['total_rl_value'] / row['avg_mov'], 1),
             axis=1
         )
         summary_df['rl_to_mov_ratio'] = summary_df['rl_to_mov_ratio'].clip(upper=1)  # Cap at 1 (100%)
@@ -168,17 +168,19 @@ def calculate_columns(df, cycle, frequency_df=None):
         if frequency_df is not None:
             merge_columns = ['vendor_id', 'primary_vendor_name', 'vendor_frequency']
             merged = df.merge(frequency_df, on=merge_columns, how='left')
+            
             merged['vendor_frequency'] = merged['vendor_frequency'].fillna(1)
             merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
     
             expanded_rows = []
+
             for _, row in merged.iterrows():
                 selisih_days = str(row['selisih_hari']).split(',')
-                
-                # Handle case where selisih_hari is '0'
+        
+                # Handle case where selisih_hari is '0' or missing
                 if selisih_days == ['0']:
-                    qty_per_day = row['rl_qty_amel']  # all quantity goes to the base date
-                    future_date = pd.to_datetime(row['future_inbound_date'])#.dt.strftime('%d-%b-%Y')
+                    qty_per_day = row['rl_qty_amel']  # full amount to the base date
+                    future_date = pd.to_datetime(row['future_inbound_date']).strftime('%d-%b-%Y')
                     expanded_rows.append({
                         'primary_vendor_name': row['primary_vendor_name'],
                         'location_id': row['location_id'],
@@ -186,7 +188,12 @@ def calculate_columns(df, cycle, frequency_df=None):
                         'rl_qty_per_day': qty_per_day
                     })
                 else:
-                    qty_per_day = row['rl_qty_amel'] /row['vendor_frequency']
+                    try:
+                        vendor_freq = float(row['vendor_frequency']) if row['vendor_frequency'] else 1
+                        qty_per_day = row['rl_qty_amel'] / vendor_freq
+                    except ZeroDivisionError:
+                        qty_per_day = row['rl_qty_amel']
+        
                     for day_offset in selisih_days:
                         try:
                             offset = int(day_offset.strip())
@@ -199,17 +206,20 @@ def calculate_columns(df, cycle, frequency_df=None):
                             })
                         except Exception:
                             continue
-        detailed_rl_distribution = pd.DataFrame(expanded_rows)
-        # Summarize total RL qty per day per location (no primary vendor)
-        summary_distribution = (
-            detailed_rl_distribution
-            .groupby(['location_id', 'future_inbound_date'])
-            .agg(total_rl_qty_per_day=('rl_qty_per_day', 'sum'))
-            .reset_index()
-        )
         
-        # Show the summarized table
-        st.dataframe(summary_distribution)
+            detailed_rl_distribution = pd.DataFrame(expanded_rows)
+        
+            # Ensure all rows are included in summary, even if selisih_hari = 0
+            if not detailed_rl_distribution.empty:
+                summary_distribution = (
+                    detailed_rl_distribution
+                    .groupby(['location_id', 'future_inbound_date'])
+                    .agg(total_rl_qty_per_day=('rl_qty_per_day', 'sum'))
+                    .reset_index()
+                )
+        
+                # Show result
+                st.dataframe(summary_distribution)
 
     return df
     
