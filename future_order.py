@@ -203,22 +203,28 @@ def calculate_columns(df, cycle, frequency_df=None):
                         qty_per_day = row['rl_qty_amel'] / vendor_freq
                     except ZeroDivisionError:
                         qty_per_day = row['rl_qty_amel']
-        
+                    
+                    day_counter = 0
                     for day_offset in selisih_days:
                         try:
                             offset = int(day_offset.strip())
                             base_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
                             if pd.isna(base_date):
-                                continue  # or log / handle bad date
-                            
+                                continue
+                
                             future_date = (base_date + pd.Timedelta(days=offset)).strftime('%d-%b-%Y')
-                            #future_date = #(pd.to_datetime(row['future_inbound_date']) + pd.Timedelta(days=offset)).strftime('%d-%b-%Y')
-                            expanded_rows.append({
-                                'primary_vendor_name': row['primary_vendor_name'],
-                                'location_id': row['location_id'],
-                                'future_inbound_date': future_date,
-                                'rl_qty_per_day': qty_per_day
-                            })
+                
+                            # Limit to vendor frequency times only
+                            if day_counter < vendor_freq:
+                                expanded_rows.append({
+                                    'primary_vendor_name': row['primary_vendor_name'],
+                                    'location_id': row['location_id'],
+                                    'future_inbound_date': future_date,
+                                    'rl_qty_per_day': qty_per_day
+                                })
+                                day_counter += 1
+                            else:
+                                break
                         except Exception:
                             continue
         
