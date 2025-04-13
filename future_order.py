@@ -179,7 +179,7 @@ def calculate_columns(df, cycle, frequency_df=None):
                 for day_offset in selisih_days:
                     try:
                         offset = int(day_offset.strip())
-                        future_date = (pd.to_datetime(row['future_inbound_date']) + pd.Timedelta(days=offset)).dt.strftime('%d-%b-%Y')
+                        future_date = (pd.to_datetime(row['future_inbound_date']) + pd.Timedelta(days=offset)).strftime('%d-%b-%Y')
                         expanded_rows.append({
                             'primary_vendor_name': row['primary_vendor_name'],
                             'location_id': row['location_id'],
