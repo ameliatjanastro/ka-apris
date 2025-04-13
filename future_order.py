@@ -152,6 +152,11 @@ def calculate_columns(df, cycle):
         )
         summary_df['avg_mov'] = summary_df['avg_mov'].replace(0, 1).fillna(1)  # Avoid division by 0
         summary_df['rl_to_mov_ratio'] = summary_df['total_rl_qty'] / summary_df['avg_mov']
+        summary_df['avg_mov'] = summary_df['avg_mov'].replace(1, 0)
+        summary_df['rl_to_mov_ratio'] = summary_df.apply(
+            lambda row: 1 if row['avg_mov'] == 0 else min(row['total_rl_qty'] / row['avg_mov'], 1),
+            axis=1
+        )
         summary_df['rl_to_mov_ratio'] = summary_df['rl_to_mov_ratio'].clip(upper=1)  # Cap at 1 (100%)
         summary_df['rl_to_mov_ratio'] = (summary_df['rl_to_mov_ratio'] * 100).round(2).astype(str) + '%'  # Convert to % string
         st.dataframe(summary_df)
