@@ -204,7 +204,7 @@ def calculate_columns(df, cycle, frequency_df=None):
                     except ZeroDivisionError:
                         qty_per_day = row['rl_qty_amel']
                     
-                    day_counter = 0
+                    #day_counter = 0
                     for day_offset in selisih_days:
                         try:
                             offset = int(day_offset.strip())
@@ -215,18 +215,18 @@ def calculate_columns(df, cycle, frequency_df=None):
                             future_date = (base_date + pd.Timedelta(days=offset)).strftime('%d-%b-%Y')
                 
                             # Limit to vendor frequency times only
-                            if day_counter < vendor_freq:
-                                expanded_rows.append({
+                            #if day_counter < vendor_freq:
+                            expanded_rows.append({
                                     'primary_vendor_name': row['primary_vendor_name'],
                                     'location_id': row['location_id'],
                                     'future_inbound_date': future_date,
                                     'rl_qty_per_day': qty_per_day
-                                })
-                                day_counter += 1
-                            else:
-                                break
-                        except Exception:
-                            continue
+                            })
+                            #day_counter += 1
+                        else:
+                            break
+                    except Exception:
+                        continue
         
             detailed_rl_distribution = pd.DataFrame(expanded_rows)
         
