@@ -18,27 +18,34 @@ def calculate_columns(df, cycle, frequency_df=None):
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
     df['next_inbound_date'] = pd.to_datetime(df['next_inbound_date'], errors='coerce')
-
-    # Ensure numeric columns
+    
     for col in ['avg_sales_final', 'doi_policy', 'stock_wh', 'ospo_qty', 'ospr_qty', 'osrl_qty']:
         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
-
-    # JI and max stock
+    
+    # JI and coverage
     df['cov'] = (df['next_coverage_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
-    df['JI'] = 7 #(df['next_inbound_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
-    df['JI'] = pd.to_numeric(df['JI'], errors='coerce')
+    df['JI'] = (df['next_inbound_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
     df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + df['cov'])
-
+    
+    # Get cycle number from string
     match = re.search(r'Cycle\s*(\d+)', cycle)
     cycle_num = int(match.group(1)) if match else 0
-
-    # Future dates
-    df['future_order_date'] = pd.to_datetime((df['next_order_date'] + pd.to_timedelta(df['JI'], unit='D')), errors='coerce')#.dt.strftime('%d-%b-%Y')#*cycle_num
-    df['future_inbound_date'] = pd.to_datetime((df['next_inbound_date'] + pd.to_timedelta(df['JI'], unit='D')), errors='coerce')#.dt.strftime('%d-%b-%Y') #pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
-
-    df['period_days'] = 7  # Default to 7 for period days
-    df['future_order_date'] = (df['future_order_date'] + pd.to_timedelta(df['JI'], unit='D')).dt.strftime('%d-%b-%Y') #pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
-    df['future_inbound_date'] = (df['future_inbound_date'] + pd.to_timedelta(df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+    
+    # Create base columns for current cycle
+    df['cycle_order_date'] = df['next_order_date']
+    df['cycle_inbound_date'] = df['next_inbound_date']# + pd.to_timedelta(df['JI'], unit='D')
+    df['cycle_coverage_date'] = df['next_coverage_date']# + pd.to_timedelta(df['cov'], unit='D')
+    
+    # Now loop to shift the dates by 7 days per cycle number
+    if cycle_num > 0:
+        df['cycle_order_date'] = df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
+        df['cycle_inbound_date'] = df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
+        df['cycle_coverage_date'] = df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
+    
+    # Final formatting
+    df['future_order_date'] = df['cycle_order_date'].dt.strftime('%d-%b-%Y')
+    df['future_inbound_date'] = df['cycle_inbound_date'].dt.strftime('%d-%b-%Y')
+    df['future_coverage_date'] = df['cycle_coverage_date'].dt.strftime('%d-%b-%Y')
     df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
 
     # Set base values for Cycle 0 (Current)
