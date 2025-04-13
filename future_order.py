@@ -26,6 +26,7 @@ def calculate_columns(df, cycle, frequency_df=None):
     # JI and max stock
     df['cov'] = (df['next_coverage_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
     df['JI'] = (df['next_inbound_date'] - df['next_order_date']).dt.days.clip(lower=0, upper=1000)
+    df['JI'] = pd.to_numeric(df['JI'], errors='coerce')
     df['max_stock_wh'] = df['avg_sales_final'] * (df['doi_policy'] + df['cov'])
 
     match = re.search(r'Cycle\s*(\d+)', cycle)
