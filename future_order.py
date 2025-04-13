@@ -32,11 +32,12 @@ def calculate_columns(df, cycle, frequency_df=None):
     cycle_num = int(match.group(1)) if match else 0
 
     # Future dates
-    df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D'))
-    df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+    df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(df['JI'], unit='D')).dt.strftime('%d-%b-%Y')#*cycle_num
+    df['future_inbound_date'] = (df['next_inbound_date'] + pd.to_timedelta(df['JI'], unit='D')).dt.strftime('%d-%b-%Y') #pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
 
     df['period_days'] = 7  # Default to 7 for period days
-    df['future_order_date'] = (df['next_order_date'] + pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+    df['future_order_date'] = (df['future_order_date'] + pd.to_timedelta(df['JI'], unit='D')).dt.strftime('%d-%b-%Y') #pd.to_timedelta(cycle_num * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
+    df['future_inbound_date'] = (df['future_inbound_date'] + pd.to_timedelta(df['JI'], unit='D')).dt.strftime('%d-%b-%Y')
     df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
 
     # Set base values for Cycle 0 (Current)
