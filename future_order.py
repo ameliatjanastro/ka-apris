@@ -150,7 +150,10 @@ def calculate_columns(df, cycle):
             )
             .reset_index()
         )
+        summary_df['avg_mov'] = summary_df['avg_mov'].replace(0, 1).fillna(1)  # Avoid division by 0
         summary_df['rl_to_mov_ratio'] = summary_df['total_rl_qty'] / summary_df['avg_mov']
+        summary_df['rl_to_mov_ratio'] = summary_df['rl_to_mov_ratio'].clip(upper=1)  # Cap at 1 (100%)
+        summary_df['rl_to_mov_ratio'] = (summary_df['rl_to_mov_ratio'] * 100).round(2).astype(str) + '%'  # Convert to % string
         st.dataframe(summary_df)
     return df
     
