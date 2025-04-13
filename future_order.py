@@ -142,8 +142,10 @@ def calculate_columns(df, cycle):
             df['mov'] = 1  # Default to 1 if MOV not available
     
         # Calculate summary by vendor
+        df = df[~df['primary_vendor_name'].astype(str).str.upper().isin(['0', 'TESTING'])]
+        df = df[~df['primary_vendor_name'].astype(str).str.match(r'^\d+$')]
         summary_df = (
-            df.groupby('primary_vendor_name')
+            df.groupby(['primary_vendor_name', 'location_id'])
             .agg(
                 total_rl_qty=(rl_qty_col, 'sum'),
                 avg_mov=('mov', 'mean')
@@ -151,6 +153,7 @@ def calculate_columns(df, cycle):
             .reset_index()
         )
         summary_df['avg_mov'] = summary_df['avg_mov'].replace(0, 1).fillna(1)  # Avoid division by 0
+        summary_df['location_id'] = summary_df['location_id']
         summary_df['rl_to_mov_ratio'] = summary_df['total_rl_qty'] / summary_df['avg_mov']
         summary_df['avg_mov'] = summary_df['avg_mov'].replace(1, 0)
         summary_df['rl_to_mov_ratio'] = summary_df.apply(
