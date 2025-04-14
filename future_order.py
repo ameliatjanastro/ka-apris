@@ -73,20 +73,27 @@ def calculate_columns(df, cycle, frequency_df=None,forecast_df=None):
     end = selected_cycle + 1
 
     # Loop from Cycle 1 up to selected cycle
-    for i in range(start, end+1,7):
-       
+    for i in range(start, end + 1, 7):
         temp = df[['product_id', 'location_id']].copy()
         temp['week'] = i
-        
+    
+        # Merge with forecast for this cycle
         merged = temp.merge(forecast_long, on=['product_id', 'location_id', 'week'], how='left')
+    
+        # Create dynamic column for avg_sales_final for this cycle
+        col_avg_sales = f'avg_sales_final_{i}'
+        col_future_sales = f'avg_sales_future_cycle_{i}'
+    
+        df[col_avg_sales] = df['avg_sales_final']  # default to base avg
+    
+        # Overwrite with forecast value if available
+        df.loc[merged['forecast_value'].notna(), col_avg_sales] = merged['forecast_value'].dropna().values
+    
+        # Now use the correct dynamic column name
+        df[col_future_sales] = df[col_avg_sales]  # or add random noise if needed
         
-        df[f'avg_sales_final_{i}'] = df['avg_sales_final']  # start with original
-
-        # Overwrite with forecast where available
-        df.loc[merged['forecast_value'].notna(), f'avg_sales_final_{i}'] = merged['forecast_value'].dropna().values
-
         # Simulate future sales (can be replaced with actual forecast)
-        df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final_{i}'] #* (1 + np.random.uniform(-0.2, 0.1, len(df)))
+        #df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final_{i}'] #* (1 + np.random.uniform(-0.2, 0.1, len(df)))
 
         # Assumed stock WH: from previous stock + previous RL Qty - estimated sales
         df[f'assumed_stock_wh_{i}'] = (df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - (df[f'avg_sales_future_cycle_{i}'] * df['period_days'])).fillna(0).clip(lower=0).round()
