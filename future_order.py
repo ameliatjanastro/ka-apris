@@ -86,7 +86,7 @@ def calculate_columns(df, cycle, frequency_df=None,forecast_df=None):
         df.loc[merged['forecast_value'].notna(), f'avg_sales_final_{i}'] = merged['forecast_value'].dropna().values
 
         # Simulate future sales (can be replaced with actual forecast)
-        #df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, len(df)))
+        df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final_{i}'] #* (1 + np.random.uniform(-0.2, 0.1, len(df)))
 
         # Assumed stock WH: from previous stock + previous RL Qty - estimated sales
         df[f'assumed_stock_wh_{i}'] = (df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - (df[f'avg_sales_future_cycle_{i}'] * df['period_days'])).fillna(0).clip(lower=0).round()
