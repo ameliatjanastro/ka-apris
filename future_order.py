@@ -77,20 +77,13 @@ def calculate_columns(df, cycle, frequency_df=None,forecast_df=None):
         temp = df[['product_id', 'location_id']].copy()
         temp['week'] = i
     
-        # Merge with forecast for this cycle
         merged = temp.merge(forecast_long, on=['product_id', 'location_id', 'week'], how='left')
+
+        # Use forecast value where available, otherwise fallback to avg_sales_final
+        df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final']  # default
     
-        # Create dynamic column for avg_sales_final for this cycle
-        col_avg_sales = f'avg_sales_final_{i}'
-        col_future_sales = f'avg_sales_future_cycle_{i}'
-    
-        df[col_avg_sales] = df['avg_sales_final']  # default to base avg
-    
-        # Overwrite with forecast value if available
-        df.loc[merged['forecast_value'].notna(), col_avg_sales] = merged['forecast_value'].dropna().values
-    
-        # Now use the correct dynamic column name
-        df[col_future_sales] = df[col_avg_sales]  # or add random noise if needed
+        # Overwrite only where forecast is available
+        df.loc[merged['forecast_value'].notna(), f'avg_sales_future_cycle_{i}'] = merged['forecast_value']
         
         # Simulate future sales (can be replaced with actual forecast)
         #df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final_{i}'] #* (1 + np.random.uniform(-0.2, 0.1, len(df)))
