@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 import re
 
-def calculate_columns(df, cycle, frequency_df=None,forecast_df=None):
+def calculate_columns(df, cycle, frequency_df,forecast_df):
     # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
