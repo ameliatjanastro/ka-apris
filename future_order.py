@@ -73,7 +73,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
     end = selected_cycle + 1
 
     # Loop from Cycle 1 up to selected cycle
-    for i in range(start, end + 1, 7):
+    for i in range(start, end):
         temp = df[['product_id', 'location_id']].copy()
         temp['week'] = i
     
