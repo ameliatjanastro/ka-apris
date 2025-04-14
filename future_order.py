@@ -231,7 +231,7 @@ def calculate_columns(df, cycle, frequency_df=None):
             if not detailed_rl_distribution.empty:
                 summary_distribution = (
                     detailed_rl_distribution
-                    .groupby('product_type')
+                    .groupby('location_id')
                     .agg(total_rl_qty_per_day=('rl_qty_per_day', 'sum'))
                     .reset_index()
                 )
