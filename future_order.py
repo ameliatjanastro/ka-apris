@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 import re
 
-def calculate_columns(df, cycle, frequency_df=None):
+def calculate_columns(df, cycle, frequency_df=None,forecast_df=None):
     # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
@@ -59,15 +59,34 @@ def calculate_columns(df, cycle, frequency_df=None):
     ).fillna(0).clip(lower=0).round()
     df[f'avg_sales_future_cycle_0'] = df['avg_sales_final'].fillna(0)
 
+    forecast_long = forecast_df.melt(
+    id_vars=['product_id', 'location_id'],
+    var_name='week',
+    value_name='forecast_value'
+    )
+
+    forecast_long['week'] = forecast_long['week'].astype(int)
+
     # Choose how many cycles to run based on Streamlit dropdown
     selected_cycle = int(cycle.split()[-1]) if cycle.startswith('Cycle') else 0
     start = 1
     end = selected_cycle + 1
 
     # Loop from Cycle 1 up to selected cycle
-    for i in range(start, end):
+    for i in range(start, end+1,7):
+       
+        temp = df[['product_id', 'location_id']].copy()
+        temp['week'] = i
+        
+        merged = temp.merge(forecast_long, on=['product_id', 'location_id', 'week'], how='left')
+        
+        df[f'avg_sales_final_{i}'] = df['avg_sales_final']  # start with original
+
+        # Overwrite with forecast where available
+        df.loc[merged['forecast_value'].notna(), f'avg_sales_final_{i}'] = merged['forecast_value'].dropna().values
+
         # Simulate future sales (can be replaced with actual forecast)
-        df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, len(df)))
+        #df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final'] * (1 + np.random.uniform(-0.2, 0.1, len(df)))
 
         # Assumed stock WH: from previous stock + previous RL Qty - estimated sales
         df[f'assumed_stock_wh_{i}'] = (df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - (df[f'avg_sales_future_cycle_{i}'] * df['period_days'])).fillna(0).clip(lower=0).round()
@@ -247,14 +266,16 @@ def main():
 
     uploaded_file = st.file_uploader("Upload your Excel file", type="xlsx")
     freq_file = st.file_uploader("Upload vendor frequency file", type=["csv", "xlsx"])
+    forecast_file = st.file_uploader("Upload forecast file", type=["csv", "xlsx"])
 
 
     if uploaded_file is not None:
         df = load_data(uploaded_file)
         frequency_df = pd.read_csv(freq_file) if freq_file and freq_file.name.endswith('.csv') else pd.read_excel(freq_file) if freq_file else None
-
+        forecast_df = pd.read_csv(forecast_file)
+        
         # Cycle selector
-        num_cycles = 12
+        num_cycles = 6
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
