@@ -218,7 +218,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
                 #selisih_days = str(row['selisih_hari']).split(',')
         
                 # Handle case where selisih_hari is '0' or missing
-                if selisih_days == ['0']:
+                #if selisih_days == ['0']:
                     #qty_per_day = row['rl_qty_amel']  # full amount to the base date
                     #future_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')#pd.to_datetime(row['future_inbound_date']).strftime('%d-%b-%Y')
                     #expanded_rows.append({
