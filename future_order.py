@@ -237,7 +237,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
                                     'primary_vendor_name': row['primary_vendor_name'],
                                     'location_id': row['location_id'],
                                     'future_inbound_date': delivery_date,  # This is the actual delivery date
-                                    'rl_qty_per_day': qty_per_day
+                                    'rl_qty_per_day': qty_per_day * vendor_freq
                                 })
                             except Exception:
                                 continue
