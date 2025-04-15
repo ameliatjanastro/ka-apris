@@ -219,7 +219,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
                 else:
                     try:
                         vendor_freq = float(row['vendor_frequency']) if row['vendor_frequency'] else 1
-                        qty_per_day = row['rl_qty_amel'] / vendor_freq
+                        qty_per_day = row['rl_qty_amel'] #/ vendor_freq
                     except ZeroDivisionError:
                         qty_per_day = row['rl_qty_amel']
                 
@@ -237,7 +237,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
                                     'primary_vendor_name': row['primary_vendor_name'],
                                     'location_id': row['location_id'],
                                     'future_inbound_date': delivery_date,  # This is the actual delivery date
-                                    'rl_qty_per_day': qty_per_day * vendor_freq
+                                    'rl_qty_per_cycle': qty_per_day #* vendor_freq
                                 })
                             except Exception:
                                 continue
