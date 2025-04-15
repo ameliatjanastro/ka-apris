@@ -253,7 +253,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
                 summary_distribution = (
                     detailed_rl_distribution
                     .groupby('location_id')
-                    .agg(total_rl_qty_per_day=('rl_qty_per_cycle', 'sum'))
+                    .agg(total_rl_qty_per_cycle=('rl_qty_per_cycle', 'sum'))
                     .reset_index()
                 )
         
