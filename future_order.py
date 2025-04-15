@@ -195,70 +195,71 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
         summary_df['rl_to_mov_ratio'] = (summary_df['rl_to_mov_ratio'] * 100).round(2).astype(str) + '%'  # Convert to % string
         st.dataframe(summary_df)
 
-        detailed_rl_distribution = None
-        if frequency_df is not None:
-            merge_columns = ['vendor_id', 'primary_vendor_name', 'vendor_frequency']
-            merged = df.merge(frequency_df, on=merge_columns, how='left')
-            
-            merged['vendor_frequency'] = merged['vendor_frequency'].fillna(1)
-            merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
-    
-            expanded_rows = []
-
-            for _, row in merged.iterrows():
-                selisih_days = str(row['selisih_hari']).split(',')
-        
-                # Handle case where selisih_hari is '0' or missing
-                if selisih_days == ['0']:
-                    qty_per_day = row['rl_qty_amel']  # full amount to the base date
-                    future_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')#pd.to_datetime(row['future_inbound_date']).strftime('%d-%b-%Y')
-                    expanded_rows.append({
-                        'primary_vendor_name': row['primary_vendor_name'],
-                        'location_id': row['location_id'],
-                        'future_inbound_date': future_date,
-                        'rl_qty_per_cycle': qty_per_day
-                    })
-                else:
-                    try:
-                        vendor_freq = float(row['vendor_frequency']) if row['vendor_frequency'] else 1
-                        qty_per_day = row['rl_qty_amel'] / vendor_freq
-                    except ZeroDivisionError:
-                        qty_per_day = row['rl_qty_amel']
-                
-                    try:
-                        base_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
-                        if pd.isna(base_date):
-                            continue
-                
-                        for day_offset in selisih_days:
-                            try:
-                                offset = int(day_offset.strip())
-                                delivery_date = (base_date + pd.Timedelta(days=offset)).strftime('%d-%b-%Y')
-                
-                                expanded_rows.append({
-                                    'primary_vendor_name': row['primary_vendor_name'],
-                                    'location_id': row['location_id'],
-                                    'future_inbound_date': delivery_date,  # This is the actual delivery date
-                                    'rl_qty_per_cycle': qty_per_day * vendor_freq
-                                })
-                            except Exception:
-                                continue
-                    except Exception:
-                        continue
-        
-            detailed_rl_distribution = pd.DataFrame(expanded_rows)
-        
-            # Ensure all rows are included in summary, even if selisih_hari = 0
-            if not detailed_rl_distribution.empty:
-                summary_distribution = (
-                    detailed_rl_distribution
-                    .groupby('location_id')
-                    .agg(total_rl_qty_per_cycle=('rl_qty_per_cycle', 'sum'))
+        summary_distribution = (
+                    df.groupby('location_id')
+                    .agg(total_rl_qty_per_cycle=('rl_qty_amel', 'sum'))
                     .reset_index()
                 )
         
-            # Show result
-            st.dataframe(summary_distribution)
+        # Show result
+        st.dataframe(summary_distribution)
+
+        #detailed_rl_distribution = None
+        #if frequency_df is not None:
+            #merge_columns = ['vendor_id', 'primary_vendor_name', 'vendor_frequency']
+            #merged = df.merge(frequency_df, on=merge_columns, how='left')
+            
+            #merged['vendor_frequency'] = merged['vendor_frequency'].fillna(1)
+            #merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
+    
+            #expanded_rows = []
+
+            #for _, row in merged.iterrows():
+                #selisih_days = str(row['selisih_hari']).split(',')
+        
+                # Handle case where selisih_hari is '0' or missing
+                if selisih_days == ['0']:
+                    #qty_per_day = row['rl_qty_amel']  # full amount to the base date
+                    #future_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')#pd.to_datetime(row['future_inbound_date']).strftime('%d-%b-%Y')
+                    #expanded_rows.append({
+                        #'primary_vendor_name': row['primary_vendor_name'],
+                        #'location_id': row['location_id'],
+                        #'future_inbound_date': future_date,
+                        #'rl_qty_per_cycle': qty_per_day
+                    #})
+                #else:
+                    #try:
+                        #vendor_freq = float(row['vendor_frequency']) if row['vendor_frequency'] else 1
+                        #qty_per_day = row['rl_qty_amel'] / vendor_freq
+                    #except ZeroDivisionError:
+                        #qty_per_day = row['rl_qty_amel']
+                
+                    #try:
+                        #base_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
+                        #if pd.isna(base_date):
+                            #continue
+                
+                        #for day_offset in selisih_days:
+                            #try:
+                                #offset = int(day_offset.strip())
+                                #delivery_date = (base_date + pd.Timedelta(days=offset)).strftime('%d-%b-%Y')
+                
+                                #expanded_rows.append({
+                                  #  'primary_vendor_name': row['primary_vendor_name'],
+                                  #  'location_id': row['location_id'],
+                                  #  'future_inbound_date': delivery_date,  # This is the actual delivery date
+                                  #  'rl_qty_per_cycle': qty_per_day * vendor_freq
+                                #})
+                            #except Exception:
+                                #continue
+                    #except Exception:
+                        #continue
+        
+            #detailed_rl_distribution = pd.DataFrame(expanded_rows)
+        
+            # Ensure all rows are included in summary, even if selisih_hari = 0
+            #if not detailed_rl_distribution.empty:
+                
 
     return df
     
