@@ -60,7 +60,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
     df[f'avg_sales_future_cycle_0'] = df['avg_sales_final'].fillna(0)
 
     #test
-    df['rl_qty_amel_0'] = df['original_rl_qty'].fillna(0)
+    df['rl_qty_amel_0'] = df['original rl_qty'].fillna(0)
     forecast_long = forecast_df.melt(
     id_vars=['product_id', 'location_id'],
     var_name='week',
