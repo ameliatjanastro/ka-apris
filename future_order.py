@@ -216,7 +216,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
         merged['rl_qty_amel'] = pd.to_numeric(merged['rl_qty_amel'], errors='coerce')
         
         # Calculate base date from future_inbound_date
-        merged['base_date'] = pd.to_datetime(merged['future_inbound_date'], format='%d-%b-%Y', errors='coerce').dt.strftime('%d-%b-%Y')
+        merged['base_date'] = pd.to_datetime(merged['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
         
         # Apply row-wise timedelta and quantity per day
         merged['future_date_freq'] = merged.apply(
@@ -236,7 +236,8 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
         
         # Filter for frequency >= 2
         summary_distribution2 = summary_distribution2[summary_distribution2['vendor_frequency'] >= 2]
-        
+        summary_distribution2['base_date'] = summary_distribution2['base_date'].dt.strftime('%d-%b-%Y')
+        summary_distribution2['qty_per_day_freq'] = summary_distribution2['qty_per_day_freq'].dt.strftime('%d-%b-%Y')
         # Show result
         st.dataframe(summary_distribution2)
 
