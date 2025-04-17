@@ -223,7 +223,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
             lambda row: row['base_date'] + pd.Timedelta(days=int(row['selisih_hari'])),
             axis=1
         )
-        merged['future_date_freq'] = merged['future_date_freq'].dt.strftime('%d-%b-%Y')
+     
         merged['vendor_frequency'] = pd.to_numeric(merged['vendor_frequency'], errors='coerce').fillna(1)
         merged['qty_per_day_freq'] = merged['rl_qty_amel'] / merged['vendor_frequency']
         
