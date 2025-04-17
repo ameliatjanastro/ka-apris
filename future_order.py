@@ -209,9 +209,9 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
         merge_columns = ['vendor_id', 'vendor_frequency']
         merged = df.merge(frequency_df, on=merge_columns, how='left')
         merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
-        selisih_days = str(row['selisih_hari']).split(',')
+        #selisih_days = str(row['selisih_hari']).split(',')
         base_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
-        future_date_freq = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce') + selisih_days
+        future_date_freq = base_date + merged['selisih_hari']
         vendor_freq = float(row['vendor_frequency']) if row['vendor_frequency'] else 1
         qty_per_day_freq = row['rl_qty_amel'] / vendor_freq
 
