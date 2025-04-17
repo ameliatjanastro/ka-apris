@@ -42,38 +42,38 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         df['cycle_inbound_date'] = pd.to_datetime(df['cycle_inbound_date'] + pd.to_timedelta(7 * cycle_num, unit='D')).dt.normalize()
         df['cycle_coverage_date'] = df['cycle_coverage_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
 
-        #holiday
-        # Ensure datetime formats
-        order_holidays_df['future_order_date_new'] = pd.to_datetime(order_holidays_df['future_order_date_new'], errors='coerce')
-        inbound_holidays_df['future_inbound_date_new'] = pd.to_datetime(inbound_holidays_df['future_inbound_date_new'], errors='coerce')
-        order_holidays_df['cycle_order_date'] = pd.to_datetime(order_holidays_df['cycle_order_date'], errors='coerce').dt.normalize()
-        inbound_holidays_df['cycle_inbound_date'] = pd.to_datetime(inbound_holidays_df['cycle_inbound_date'], errors='coerce').dt.normalize()
+    #holiday
+    # Ensure datetime formats
+    order_holidays_df['future_order_date_new'] = pd.to_datetime(order_holidays_df['future_order_date_new'], errors='coerce')
+    inbound_holidays_df['future_inbound_date_new'] = pd.to_datetime(inbound_holidays_df['future_inbound_date_new'], errors='coerce')
+    order_holidays_df['cycle_order_date'] = pd.to_datetime(order_holidays_df['cycle_order_date'], errors='coerce').dt.normalize()
+    inbound_holidays_df['cycle_inbound_date'] = pd.to_datetime(inbound_holidays_df['cycle_inbound_date'], errors='coerce').dt.normalize()
         
-        df['primary_vendor_name'] = df['primary_vendor_name'].astype(str).str.strip().str.upper()
-        order_holidays_df['primary_vendor_name'] = order_holidays_df['primary_vendor_name'].astype(str).str.strip().str.upper()
-        inbound_holidays_df['primary_vendor_name'] = inbound_holidays_df['primary_vendor_name'].astype(str).str.strip().str.upper()
+    df['primary_vendor_name'] = df['primary_vendor_name'].astype(str).str.strip().str.upper()
+    order_holidays_df['primary_vendor_name'] = order_holidays_df['primary_vendor_name'].astype(str).str.strip().str.upper()
+    inbound_holidays_df['primary_vendor_name'] = inbound_holidays_df['primary_vendor_name'].astype(str).str.strip().str.upper()
         
-        # Merge adjusted order dates
-        df = df.merge(
-            order_holidays_df[['primary_vendor_name','future_order_date_new']],
-            on=['primary_vendor_name'],
-            how='left'
-        )
-        st.write("Debug: Any new dates matched?", df[['primary_vendor_name', 'cycle_order_date', 'future_order_date_new']].dropna().head())
-        # Merge adjusted inbound dates
-        df = df.merge(
-            inbound_holidays_df[['primary_vendor_name','cycle_inbound_date', 'future_inbound_date_new']],
-            on=['primary_vendor_name','cycle_inbound_date'],
-            how='left'
-        )
-        df['is_replaced'] = df['future_order_date_new'].notna() & (df['future_order_date_new'] != df['cycle_order_date'])
-        st.write("Sample of replaced rows:", df[df['is_replaced']][['primary_vendor_name', 'cycle_order_date', 'future_order_date_new']].head())
-        # Replace if new values are present
-        df['cycle_order_date'] = pd.to_datetime(df['future_order_date_new'].combine_first(df['cycle_order_date']), errors='coerce')
-        df['cycle_inbound_date'] = pd.to_datetime(df['future_inbound_date_new'].combine_first(df['cycle_inbound_date']), errors='coerce')
+    # Merge adjusted order dates
+    df = df.merge(
+        order_holidays_df[['primary_vendor_name','cycle_order_date', 'future_order_date_new']],
+        on=['primary_vendor_name','cycle_order_date'],
+        how='left'
+    )
+    st.write("Debug: Any new dates matched?", df[['primary_vendor_name', 'cycle_order_date', 'future_order_date_new']].dropna().head())
+    # Merge adjusted inbound dates
+    df = df.merge(
+        inbound_holidays_df[['primary_vendor_name','cycle_inbound_date', 'future_inbound_date_new']],
+        on=['primary_vendor_name','cycle_inbound_date'],
+        how='left'
+    )
+    df['is_replaced'] = df['future_order_date_new'].notna() & (df['future_order_date_new'] != df['cycle_order_date'])
+    st.write("Sample of replaced rows:", df[df['is_replaced']][['primary_vendor_name', 'cycle_order_date', 'future_order_date_new']].head())
+    # Replace if new values are present
+    df['cycle_order_date'] = pd.to_datetime(df['future_order_date_new'].combine_first(df['cycle_order_date']), errors='coerce')
+    df['cycle_inbound_date'] = pd.to_datetime(df['future_inbound_date_new'].combine_first(df['cycle_inbound_date']), errors='coerce')
 
-        # Drop helper columns
-        df.drop(columns=['future_order_date_new', 'future_inbound_date_new'], inplace=True, errors='ignore')
+    # Drop helper columns
+    df.drop(columns=['future_order_date_new', 'future_inbound_date_new'], inplace=True, errors='ignore')
     
     # Final formatting
     df['period_days'] = 7  
