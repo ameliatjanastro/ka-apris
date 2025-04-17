@@ -206,36 +206,50 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
 
         st.dataframe(summary_distribution)
 
-        merge_columns = ['vendor_id', 'primary_vendor_name', 'vendor_frequency']
-        merged = df.merge(frequency_df, on=merge_columns, how='left')
+        frequency_df_clean = frequency_df.drop_duplicates(subset=['vendor_id', 'vendor_frequency'])
+        merged = df.merge(frequency_df_clean, on=['vendor_id', 'vendor_frequency'], how='left')
         
-        # Fill NaNs and ensure selisih_hari is string (in case it's comma-separated later)
-        merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
-        
-        # Ensure rl_qty_amel is numeric
-        merged['rl_qty_amel'] = pd.to_numeric(merged['rl_qty_amel'], errors='coerce')
-        
-        # Calculate base date from future_inbound_date
+        # Step 2: Clean and prep columns
+        merged['vendor_frequency'] = pd.to_numeric(merged['vendor_frequency'], errors='coerce').fillna(1)
+        merged['selisih_hari'] = merged['selisih_hari'].fillna('0').astype(str)
         merged['base_date'] = pd.to_datetime(merged['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
         
-        # Apply row-wise timedelta and quantity per day
-        merged['future_date_freq'] = merged.apply(
-            lambda row: row['base_date'] + pd.Timedelta(days=int(row['selisih_hari'])),
-            axis=1
+        # Step 3: Get the first base_date per vendor
+        first_base_date = (
+            merged.groupby(['vendor_id', 'primary_vendor_name', 'vendor_frequency'])['base_date']
+            .first()
+            .reset_index()
+            .rename(columns={'base_date': 'first_base_date'})
         )
-     
-        merged['vendor_frequency'] = pd.to_numeric(merged['vendor_frequency'], errors='coerce').fillna(1)
+        
+        # Step 4: Merge back to assign the correct base_date per vendor
+        merged = merged.merge(first_base_date, on=['vendor_id', 'primary_vendor_name', 'vendor_frequency'], how='left')
+        
+        # Step 5: Calculate future date freq using first base date
+        def compute_future_date(row):
+            try:
+                base = row['first_base_date']
+                days = int(row['selisih_hari'])
+                if pd.notnull(base):
+                    return (base + pd.Timedelta(days=days)).strftime('%d-%b-%Y')
+                else:
+                    return None
+            except:
+                return None
+        
+        merged['future_date_freq'] = merged.apply(compute_future_date, axis=1)
+        
+        # Step 6: Calculate qty per frequency
         merged['qty_per_day_freq'] = merged['rl_qty_amel'] / merged['vendor_frequency']
-        merged_new = merged.drop_duplicates(subset=['vendor_id', 'vendor_frequency'])
-
-        # Group and filter
+        
+        # Step 7: Final grouping - one row per vendor
         summary_distribution2 = (
-            merged_new.groupby(['primary_vendor_name', 'vendor_frequency','base_date','future_date_freq'])
+            merged.groupby(['primary_vendor_name', 'vendor_frequency', 'first_base_date', 'future_date_freq'])
             .agg(total_rl_qty_per_cycle2=('qty_per_day_freq', 'sum'))
             .reset_index()
         )
         
-        # Filter for frequency >= 2
+        # Step 8: Optional filtering
         summary_distribution2 = summary_distribution2[summary_distribution2['vendor_frequency'] >= 2]
         summary_distribution2['base_date'] = summary_distribution2['base_date'].dt.strftime('%d-%b-%Y')
         summary_distribution2['future_date_freq'] = summary_distribution2['future_date_freq'].dt.strftime('%d-%b-%Y')
