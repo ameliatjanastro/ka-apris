@@ -216,13 +216,13 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
         merged['rl_qty_amel'] = pd.to_numeric(merged['rl_qty_amel'], errors='coerce')
         
         # Calculate base date from future_inbound_date
-        merged['base_date'] = pd.to_datetime(merged['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
+        merged['base_date'] = pd.to_datetime(merged['future_inbound_date'], format='%d-%b-%Y', errors='coerce').strftime('%d-%b-%Y')
         
         # Apply row-wise timedelta and quantity per day
         merged['future_date_freq'] = merged.apply(
             lambda row: row['base_date'] + pd.Timedelta(days=int(row['selisih_hari'])),
             axis=1
-        )
+        ).strftime('%d-%b-%Y')
         
         merged['vendor_frequency'] = pd.to_numeric(merged['vendor_frequency'], errors='coerce').fillna(1)
         merged['qty_per_day_freq'] = merged['rl_qty_amel'] / merged['vendor_frequency']
