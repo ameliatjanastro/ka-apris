@@ -63,7 +63,8 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
             on=['primary_vendor_name','cycle_inbound_date'],
             how='left'
         )
-        
+        df['is_replaced'] = df['future_order_date_new'].notna() & (df['future_order_date_new'] != df['cycle_order_date'])
+        st.write("Sample of replaced rows:", df[df['is_replaced']][['primary_vendor_name', 'cycle_order_date', 'future_order_date_new']].head())
         # Replace if new values are present
         df['cycle_order_date'] = pd.to_datetime(df['future_order_date_new'].combine_first(df['cycle_order_date']), errors='coerce')
         df['cycle_inbound_date'] = pd.to_datetime(df['future_inbound_date_new'].combine_first(df['cycle_inbound_date']), errors='coerce')
