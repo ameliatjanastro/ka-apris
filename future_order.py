@@ -13,12 +13,12 @@ import pandas as pd
 import numpy as np
 import re
 
-def calculate_columns(df, cycle, frequency_df,forecast_df):
+def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, inbound_holidays_df):
     # Convert date columns
     df['next_coverage_date'] = pd.to_datetime(df['next_coverage_date'], errors='coerce')
     df['next_order_date'] = pd.to_datetime(df['next_order_date'], errors='coerce')
     df['next_inbound_date'] = pd.to_datetime(df['next_inbound_date'], errors='coerce')
-    
+
     for col in ['avg_sales_final', 'doi_policy', 'stock_wh', 'ospo_qty', 'ospr_qty', 'osrl_qty']:
         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
     
@@ -48,6 +48,32 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
     df['future_inbound_date'] = df['cycle_inbound_date'].dt.strftime('%d-%b-%Y')
     df['future_coverage_date'] = df['cycle_coverage_date'].dt.strftime('%d-%b-%Y')
     df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
+
+    #holiday
+    # Ensure datetime formats
+    order_holidays_df['future_order_date_new'] = pd.to_datetime(order_holidays_df['future_order_date_new'], errors='coerce')
+    inbound_holidays_df['future_inbound_date_new'] = pd.to_datetime(inbound_holidays_df['future_inbound_date_new'], errors='coerce')
+    
+    # Merge adjusted order dates
+    df = df.merge(
+        order_holidays_df[['primary_vendor_name', 'future_order_date_new']],
+        on=['primary_vendor_name'],
+        how='left'
+    )
+    
+    # Merge adjusted inbound dates
+    df = df.merge(
+        inbound_holidays_df[['primary_vendor_name', 'future_order_date_new']],
+        on=['primary_vendor_name'],
+        how='left'
+    )
+    
+    # Replace if new values are present
+    df['future_order_date'] = df['future_order_date_new'].combine_first(df['future_order_date'])
+    df['future_inbound_date'] = df['future_inbound_date_new'].combine_first(df['future_inbound_date'])
+
+    # Drop helper columns
+    df.drop(columns=['future_order_date_new', 'future_inbound_date_new'], inplace=True, errors='ignore')
 
     # Set base values for Cycle 0 (Current)
     df['assumed_stock_wh_0'] = df['stock_wh'].fillna(0)
@@ -314,19 +340,23 @@ def main():
     uploaded_file = st.file_uploader("Upload your Excel file", type="xlsx")
     freq_file = st.file_uploader("Upload vendor frequency file", type=["csv", "xlsx"])
     forecast_file = st.file_uploader("Upload forecast file", type=["csv", "xlsx"])
-
+    order_holiday_file = st.file_uploader("Upload Order Holiday File", type=["csv", "xlsx"])
+    inbound_holiday_file = st.file_uploader("Upload Inbound Holiday File", type=["csv", "xlsx"])
 
     if uploaded_file is not None:
         df = load_data(uploaded_file)
         frequency_df = pd.read_csv(freq_file) if freq_file and freq_file.name.endswith('.csv') else pd.read_excel(freq_file) if freq_file else None
         forecast_df = pd.read_csv(forecast_file)
+        order_holidays_df = pd.read_csv(order_holiday_file) if order_holiday_file else pd.DataFrame(columns=['vendor_id', 'holiday_date'])
+        inbound_holidays_df = pd.read_csv(inbound_holiday_file) if inbound_holiday_file else pd.DataFrame(columns=['vendor_id', 'holiday_date'])
+
         
         # Cycle selector
         num_cycles = 6
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
-        result_df = calculate_columns(df.copy(), selected_cycle, frequency_df,forecast_df)
+        result_df = calculate_columns(df.copy(), selected_cycle, frequency_df, forecast_df, order_holidays_df, inbound_holidays_df)
 
         # Show only selected columns
         cols_to_show = [
