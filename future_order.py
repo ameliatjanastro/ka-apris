@@ -65,9 +65,9 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         )
         
         # Replace if new values are present
-        df['cycle_order_date'] = df['future_order_date_new'].combine_first(df['cycle_order_date']).dt.strftime('%d-%b-%Y')
-        df['cycle_inbound_date'] = df['future_inbound_date_new'].combine_first(df['cycle_inbound_date']).dt.strftime('%d-%b-%Y')
-    
+        df['cycle_order_date'] = pd.to_datetime(df['future_order_date_new'].combine_first(df['cycle_order_date']), errors='coerce')
+        df['cycle_inbound_date'] = pd.to_datetime(df['future_inbound_date_new'].combine_first(df['cycle_inbound_date']), errors='coerce')
+
         # Drop helper columns
         df.drop(columns=['future_order_date_new', 'future_inbound_date_new'], inplace=True, errors='ignore')
     
