@@ -226,10 +226,11 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
      
         merged['vendor_frequency'] = pd.to_numeric(merged['vendor_frequency'], errors='coerce').fillna(1)
         merged['qty_per_day_freq'] = merged['rl_qty_amel'] / merged['vendor_frequency']
-        
+        merged_new = merged.drop_duplicates(subset=['vendor_id', 'vendor_frequency'])
+
         # Group and filter
         summary_distribution2 = (
-            merged.groupby(['primary_vendor_name', 'vendor_frequency','base_date','future_date_freq'])
+            merged_new.groupby(['primary_vendor_name', 'vendor_frequency','base_date','future_date_freq'])
             .agg(total_rl_qty_per_cycle2=('qty_per_day_freq', 'sum'))
             .reset_index()
         )
