@@ -40,7 +40,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     if cycle_num > 0:
         df['cycle_order_date'] = pd.to_datetime(df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')).dt.normalize()
         df['cycle_inbound_date'] = pd.to_datetime(df['cycle_inbound_date'] + pd.to_timedelta(7 * cycle_num, unit='D')).dt.normalize()
-        df['cycle_coverage_date'] = df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
+        df['cycle_coverage_date'] = df['cycle_coverage_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
 
         #holiday
         # Ensure datetime formats
