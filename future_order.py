@@ -229,7 +229,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
         
         # Group and filter
         summary_distribution2 = (
-            merged.groupby(['primary_vendor_name', 'vendor_frequency'])
+            merged.groupby(['primary_vendor_name', 'vendor_frequency','base_date','future_date_freq'])
             .agg(total_rl_qty_per_cycle2=('qty_per_day_freq', 'sum'))
             .reset_index()
         )
