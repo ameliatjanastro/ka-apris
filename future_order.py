@@ -221,7 +221,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
                 )
         
         # Show result
-        summary_distribution2 = summary_distribution[summary_distribution2['vendor_frequency'] >= 2]
+        summary_distribution2 = summary_distribution2[summary_distribution2['vendor_frequency'] >= 2]
         
         st.dataframe(summary_distribution2)
 
