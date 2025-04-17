@@ -207,7 +207,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
         st.dataframe(summary_distribution)
 
         frequency_df_clean = frequency_df.drop_duplicates(subset=['vendor_id', 'primary_vendor_name', 'vendor_frequency'])
-        merged = df.merge(frequency_df_clean, on=['vendor_id', 'vendor_frequency'], how='left')
+        merged = df.merge(frequency_df_clean, on=['vendor_id', 'primary_vendor_name', 'vendor_frequency'], how='left')
         
         # Step 2: Clean and prep columns
         merged['vendor_frequency'] = pd.to_numeric(merged['vendor_frequency'], errors='coerce').fillna(1)
