@@ -56,7 +56,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
             on=['primary_vendor_name','cycle_order_date'],
             how='left'
         )
-        
+        st.write("Debug: Any new dates matched?", df[['primary_vendor_name', 'cycle_order_date', 'future_order_date_new']].dropna().head())
         # Merge adjusted inbound dates
         df = df.merge(
             inbound_holidays_df[['primary_vendor_name','cycle_inbound_date', 'future_inbound_date_new']],
