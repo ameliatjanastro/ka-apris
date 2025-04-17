@@ -63,7 +63,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     
     # Merge adjusted inbound dates
     df = df.merge(
-        inbound_holidays_df[['primary_vendor_name', 'future_order_date_new']],
+        inbound_holidays_df[['primary_vendor_name', 'future_inbound_date_new']],
         on=['primary_vendor_name'],
         how='left'
     )
