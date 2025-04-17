@@ -38,8 +38,8 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     
     # Now loop to shift the dates by 7 days per cycle number
     if cycle_num > 0:
-        df['cycle_order_date'] = (df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')).dt.normalize()
-        df['cycle_inbound_date'] = (df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')).dt.normalize()
+        df['cycle_order_date'] = pd.to_datetime(df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')).dt.normalize()
+        df['cycle_inbound_date'] = pd.to_datetime(df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')).dt.normalize()
         df['cycle_coverage_date'] = df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
 
         #holiday
