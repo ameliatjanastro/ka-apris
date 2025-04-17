@@ -208,22 +208,36 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
 
         merge_columns = ['vendor_id', 'vendor_frequency']
         merged = df.merge(frequency_df, on=merge_columns, how='left')
-        merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
-        #selisih_days = str(row['selisih_hari']).split(',')
-        base_date = pd.to_datetime(merged['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
-        future_date_freq = base_date + pd.Timedelta(days=int(merged['selisih_hari']))
-        vendor_freq = float(merged['vendor_frequency']) if merged['vendor_frequency'] else 1
-        qty_per_day_freq = merged['rl_qty_amel'] / vendor_freq
-
-        summary_distribution2 = (
-                    df.groupby(['primary_vendor_name','vendor_frequency'])
-                    .agg(total_rl_qty_per_cycle2=('qty_per_day_freq', 'sum'))
-                    .reset_index()
-                )
         
-        # Show result
+        # Fill NaNs and ensure selisih_hari is string (in case it's comma-separated later)
+        merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
+        
+        # Ensure rl_qty_amel is numeric
+        merged['rl_qty_amel'] = pd.to_numeric(merged['rl_qty_amel'], errors='coerce')
+        
+        # Calculate base date from future_inbound_date
+        merged['base_date'] = pd.to_datetime(merged['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
+        
+        # Apply row-wise timedelta and quantity per day
+        merged['future_date_freq'] = merged.apply(
+            lambda row: row['base_date'] + pd.Timedelta(days=int(row['selisih_hari'])),
+            axis=1
+        )
+        
+        merged['vendor_frequency'] = pd.to_numeric(merged['vendor_frequency'], errors='coerce').fillna(1)
+        merged['qty_per_day_freq'] = merged['rl_qty_amel'] / merged['vendor_frequency']
+        
+        # Group and filter
+        summary_distribution2 = (
+            merged.groupby(['primary_vendor_name', 'vendor_frequency'])
+            .agg(total_rl_qty_per_cycle2=('qty_per_day_freq', 'sum'))
+            .reset_index()
+        )
+        
+        # Filter for frequency >= 2
         summary_distribution2 = summary_distribution2[summary_distribution2['vendor_frequency'] >= 2]
         
+        # Show result
         st.dataframe(summary_distribution2)
 
         #detailed_rl_distribution = None
