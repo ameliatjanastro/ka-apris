@@ -41,6 +41,32 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         df['cycle_order_date'] = df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
         df['cycle_inbound_date'] = df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
         df['cycle_coverage_date'] = df['cycle_order_date'] + pd.to_timedelta(7 * cycle_num, unit='D')
+
+        #holiday
+        # Ensure datetime formats
+        order_holidays_df['future_order_date_new'] = pd.to_datetime(order_holidays_df['future_order_date_new'], errors='coerce')
+        inbound_holidays_df['future_inbound_date_new'] = pd.to_datetime(inbound_holidays_df['future_inbound_date_new'], errors='coerce')
+        
+        # Merge adjusted order dates
+        df = df.merge(
+            order_holidays_df[['primary_vendor_name','cycle_order_date', 'future_order_date_new']],
+            on=['primary_vendor_name','cycle_order_date'],
+            how='left'
+        )
+        
+        # Merge adjusted inbound dates
+        df = df.merge(
+            inbound_holidays_df[['primary_vendor_name','cycle_inbound_date', 'future_inbound_date_new']],
+            on=['primary_vendor_name','cycle_inbound_date'],
+            how='left'
+        )
+        
+        # Replace if new values are present
+        df['cycle_order_date'] = df['future_order_date_new'].combine_first(df['cycle_order_date']).dt.strftime('%d-%b-%Y')
+        df['cycle_inbound_date'] = df['future_inbound_date_new'].combine_first(df['cycle_inbound_date']).dt.strftime('%d-%b-%Y')
+    
+        # Drop helper columns
+        df.drop(columns=['future_order_date_new', 'future_inbound_date_new'], inplace=True, errors='ignore')
     
     # Final formatting
     df['period_days'] = 7  
@@ -48,32 +74,6 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     df['future_inbound_date'] = df['cycle_inbound_date'].dt.strftime('%d-%b-%Y')
     df['future_coverage_date'] = df['cycle_coverage_date'].dt.strftime('%d-%b-%Y')
     df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
-
-    #holiday
-    # Ensure datetime formats
-    order_holidays_df['future_order_date_new'] = pd.to_datetime(order_holidays_df['future_order_date_new'], errors='coerce')
-    inbound_holidays_df['future_inbound_date_new'] = pd.to_datetime(inbound_holidays_df['future_inbound_date_new'], errors='coerce')
-    
-    # Merge adjusted order dates
-    df = df.merge(
-        order_holidays_df[['primary_vendor_name', 'future_order_date_new']],
-        on=['primary_vendor_name'],
-        how='left'
-    )
-    
-    # Merge adjusted inbound dates
-    df = df.merge(
-        inbound_holidays_df[['primary_vendor_name', 'future_inbound_date_new']],
-        on=['primary_vendor_name'],
-        how='left'
-    )
-    
-    # Replace if new values are present
-    df['future_order_date'] = df['future_order_date_new'].combine_first(df['future_order_date']).dt.strftime('%d-%b-%Y')
-    df['future_inbound_date'] = df['future_inbound_date_new'].combine_first(df['future_inbound_date']).dt.strftime('%d-%b-%Y')
-
-    # Drop helper columns
-    df.drop(columns=['future_order_date_new', 'future_inbound_date_new'], inplace=True, errors='ignore')
 
     # Set base values for Cycle 0 (Current)
     df['assumed_stock_wh_0'] = df['stock_wh'].fillna(0)
