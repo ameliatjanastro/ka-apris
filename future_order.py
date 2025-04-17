@@ -206,7 +206,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
 
         st.dataframe(summary_distribution)
 
-        merge_columns = ['vendor_id', 'primary_vendor_name', 'vendor_frequency']
+        merge_columns = ['vendor_id', 'vendor_frequency']
         merged = df.merge(frequency_df, on=merge_columns, how='left')
         merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
         selisih_days = str(row['selisih_hari']).split(',')
