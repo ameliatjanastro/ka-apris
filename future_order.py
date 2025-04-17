@@ -237,7 +237,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
         # Filter for frequency >= 2
         summary_distribution2 = summary_distribution2[summary_distribution2['vendor_frequency'] >= 2]
         summary_distribution2['base_date'] = summary_distribution2['base_date'].dt.strftime('%d-%b-%Y')
-        summary_distribution2['qty_per_day_freq'] = summary_distribution2['qty_per_day_freq'].dt.strftime('%d-%b-%Y')
+        summary_distribution2['future_date_freq'] = summary_distribution2['future_date_freq'].dt.strftime('%d-%b-%Y')
         # Show result
         st.dataframe(summary_distribution2)
 
