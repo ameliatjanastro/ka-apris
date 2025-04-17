@@ -32,8 +32,8 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     cycle_num = int(match.group(1)) if match else 0
     
     # Create base columns for current cycle
-    df['cycle_order_date'] = df['next_order_date']
-    df['cycle_inbound_date'] = df['next_inbound_date']# + pd.to_timedelta(df['JI'], unit='D')
+    df['cycle_order_date'] = df['next_order_date'].dt.normalize()
+    df['cycle_inbound_date'] = df['next_inbound_date'].dt.normalize()# + pd.to_timedelta(df['JI'], unit='D')
     df['cycle_coverage_date'] = df['next_coverage_date']# + pd.to_timedelta(df['cov'], unit='D')
     
     # Now loop to shift the dates by 7 days per cycle number
@@ -46,8 +46,8 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         # Ensure datetime formats
         order_holidays_df['future_order_date_new'] = pd.to_datetime(order_holidays_df['future_order_date_new'], errors='coerce')
         inbound_holidays_df['future_inbound_date_new'] = pd.to_datetime(inbound_holidays_df['future_inbound_date_new'], errors='coerce')
-        order_holidays_df['cycle_order_date'] = pd.to_datetime(order_holidays_df['cycle_order_date'], errors='coerce')
-        inbound_holidays_df['cycle_inbound_date'] = pd.to_datetime(inbound_holidays_df['cycle_inbound_date'], errors='coerce')
+        order_holidays_df['cycle_order_date'] = pd.to_datetime(order_holidays_df['cycle_order_date'], errors='coerce').dt.normalize()
+        inbound_holidays_df['cycle_inbound_date'] = pd.to_datetime(inbound_holidays_df['cycle_inbound_date'], errors='coerce').dt.normalize()
         
         
         # Merge adjusted order dates
