@@ -206,6 +206,25 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
 
         st.dataframe(summary_distribution)
 
+        merged = df.merge(frequency_df, on=merge_columns, how='left')
+        merged['selisih_hari'] = merged['selisih_hari'].fillna('0')
+        selisih_days = str(row['selisih_hari']).split(',')
+        base_date = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
+        future_date_freq = pd.to_datetime(row['future_inbound_date'], format='%d-%b-%Y', errors='coerce') + selisih_days
+        vendor_freq = float(row['vendor_frequency']) if row['vendor_frequency'] else 1
+        qty_per_day_freq = row['rl_qty_amel'] / vendor_freq
+
+        summary_distribution2 = (
+                    df.groupby(['primary_vendor_name','vendor_frequency'])
+                    .agg(total_rl_qty_per_cycle2=('qty_per_day_freq', 'sum'))
+                    .reset_index()
+                )
+        
+        # Show result
+        summary_distribution2 = summary_distribution[summary_distribution2['vendor_frequency'] >= 2]
+        
+        st.dataframe(summary_distribution2)
+
         #detailed_rl_distribution = None
         #if frequency_df is not None:
             #merge_columns = ['vendor_id', 'primary_vendor_name', 'vendor_frequency']
