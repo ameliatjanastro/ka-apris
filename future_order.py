@@ -46,6 +46,9 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         # Ensure datetime formats
         order_holidays_df['future_order_date_new'] = pd.to_datetime(order_holidays_df['future_order_date_new'], errors='coerce')
         inbound_holidays_df['future_inbound_date_new'] = pd.to_datetime(inbound_holidays_df['future_inbound_date_new'], errors='coerce')
+        order_holidays_df['cycle_order_date'] = pd.to_datetime(order_holidays_df['cycle_order_date'], errors='coerce')
+        inbound_holidays_df['cycle_inbound_date'] = pd.to_datetime(inbound_holidays_df['cycle_inbound_date'], errors='coerce')
+        
         
         # Merge adjusted order dates
         df = df.merge(
