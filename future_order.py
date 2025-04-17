@@ -211,7 +211,7 @@ def calculate_columns(df, cycle, frequency_df,forecast_df):
         merged['selisih_hari'] = int(merged['selisih_hari']).fillna('0')
         #selisih_days = str(row['selisih_hari']).split(',')
         base_date = pd.to_datetime(merged['future_inbound_date'], format='%d-%b-%Y', errors='coerce')
-        future_date_freq = base_date + pd.Timedelta(days=merged['selisih_hari']))
+        future_date_freq = base_date + pd.Timedelta(days=merged['selisih_hari'])
         vendor_freq = float(merged['vendor_frequency']) if merged['vendor_frequency'] else 1
         qty_per_day_freq = merged['rl_qty_amel'] / vendor_freq
 
