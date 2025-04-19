@@ -45,7 +45,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     # Final formatting
     df['period_days'] = 7  
     df['future_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')#.dt.strftime('%d-%b-%Y')
-    df['future_inbound_date'] = df['cycle_inbound_date']#.dt.strftime('%d-%b-%Y')
+    df['future_inbound_date'] =  pd.to_datetime(df['cycle_inbound_date'], errors='coerce')#.dt.strftime('%d-%b-%Y')
     df['future_coverage_date'] = df['cycle_coverage_date'].dt.strftime('%d-%b-%Y')
     df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
 
@@ -88,7 +88,61 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         df['future_order_date'] = col_data.combine_first(df['cycle_order_date'])
     else:
         df['future_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')
+        
+    df['future_order_date'] = pd.to_datetime(df['future_order_date'], errors='coerce')
 
+
+    #INBOUND
+    inbound_shift = inbound_holidays_df.melt(
+    id_vars=['primary_vendor_name'],
+    var_name='week',
+    value_name='inbound_shift_week'
+    )
+
+    inbound_shift['week'] = pd.to_numeric(inbound_shift['week'], errors='coerce').fillna(0).astype(int)
+    
+    # Choose how many cycles to run based on Streamlit dropdown
+    selected_cycle2 = int(cycle.split()[-1]) if cycle.startswith('Cycle') else 0
+    start2 = 1
+    end2 = selected_cycle2 + 1
+
+    # Loop from Cycle 1 up to selected cycle
+    for i in range(start2, end2):
+        temp = df[['primary_vendor_name']].copy()
+        temp['week'] = i
+    
+        merged = temp.merge(inbound_shift, on=['primary_vendor_name', 'week'], how='left')
+
+    
+        # Overwrite only where forecast is available
+        df.loc[merged['inbound_shift_week'].notna(), f'future_inbound_date_{i}'] = merged['inbound_shift_week']
+        
+    col_name2 = f'future_inbound_date_{selected_cycle1}'
+
+    if col_name2 in df.columns:
+        col_data2 = pd.to_datetime(df[col_name2], errors='coerce')
+        st.write("Sample values in future_inbound_date column:")
+        st.write(col_data2.head())
+        st.write("Column dtype:", col_data2.dtype)
+    
+        df['cycle_inbound_date'] = pd.to_datetime(df['cycle_inbound_date'], errors='coerce')
+        df['future_inbound_date'] = col_data2.combine_first(df['cycle_inbound_date'])
+    else:
+        df['future_inbound_date'] = pd.to_datetime(df['cycle_inbound_date'], errors='coerce')
+        
+    df['future_inbound_date'] = pd.to_datetime(df['future_inbound_date'], errors='coerce')
+
+
+
+
+
+
+
+
+
+
+
+    
 
     #holiday
     # Ensure datetime formats
