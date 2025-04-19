@@ -133,18 +133,6 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         
     df['future_inbound_date'] = pd.to_datetime(df['future_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
 
-
-
-
-
-
-
-
-
-
-
-    
-
     #holiday
     # Ensure datetime formats
 
