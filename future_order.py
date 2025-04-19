@@ -67,7 +67,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
 
     # Loop from Cycle 1 up to selected cycle
     for i in range(start1, end1):
-        temp = df['primary_vendor_name'].copy()
+        temp = df[['primary_vendor_name']].copy()
         temp['week'] = i
     
         merged = temp.merge(order_shift, on=['primary_vendor_name', 'week'], how='left')
