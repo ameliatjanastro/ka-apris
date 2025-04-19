@@ -149,6 +149,8 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         # Simulate future sales (can be replaced with actual forecast)
         #df[f'avg_sales_future_cycle_{i}'] = df['avg_sales_final_{i}'] #* (1 + np.random.uniform(-0.2, 0.1, len(df)))
 
+        df[f'cycle_number_{i}'] = i
+
         # Assumed stock WH: from previous stock + previous RL Qty - estimated sales
         df[f'assumed_stock_wh_{i}'] = (df[f'assumed_stock_wh_{i-1}'] + df[f'assumed_ospo_qty_{i-1}'] - (df[f'avg_sales_future_cycle_{i}'] * df['period_days'])).fillna(0).clip(lower=0).round()
 
@@ -192,7 +194,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         df['bisa_cover_sampai'] = df.get(f'bisa_cover_sampai_{selected_cycle}', ((df['next_order_date'] + pd.to_timedelta(2 * df['JI'], unit='D')).dt.strftime('%d-%b-%Y')))  # Adding the coverage date column
 
     # Add a helper column for the cycle group
-    df['cycle_number'] = df['future_order_date'].str.extract(r'(\d+)').astype(float)
+    #df['cycle_number'] = df['future_order_date'].str.extract(r'(\d+)').astype(float)
     
     # Backup original value for landed_doi for logic comparison
     df['landed_doi_original'] = df['landed_doi']
