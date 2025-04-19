@@ -488,7 +488,7 @@ def main():
 
         
         # Cycle selector
-        num_cycles = 13
+        num_cycles = 14
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
