@@ -431,7 +431,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     
     summary_rows = []
     
-    for i in range(1, 13):
+    for i in range(1, 100):
         rl_col = f'rl_qty_amel_{i}'
         date_col = f'future_inbound_date_{i}'
     
