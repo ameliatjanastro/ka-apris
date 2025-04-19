@@ -78,8 +78,9 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         
     # After the for loop over i:
     col_name = f'future_order_date_{selected_cycle1}'
+    pd.to_datetime(df[col_name], errors='coerce')
     st.write("Sample values in future_order_date column:")
-    st.write(pd.to_datetime(df[col_name]).head())
+    st.write(df[col_name].head())
     st.write("Column dtype:", df[col_name].dtype)
     df['cycle_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')
     if col_name in df.columns:
