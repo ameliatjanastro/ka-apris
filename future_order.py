@@ -46,7 +46,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     df['period_days'] = 7  
     df['future_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')#.dt.strftime('%d-%b-%Y')
     df['future_inbound_date'] =  pd.to_datetime(df['cycle_inbound_date'], errors='coerce')#.dt.strftime('%d-%b-%Y')
-    df['future_coverage_date'] = df['cycle_coverage_date']#.dt.strftime('%d-%b-%Y')
+    df['future_coverage_date'] = df['cycle_coverage_date'].dt.strftime('%d-%b-%Y')
     df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
 
     #order_holidays_df['future_order_date_new'] = pd.to_datetime(order_holidays_df['future_order_date_new'], errors='coerce')
@@ -84,12 +84,13 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         st.write(col_data.head())
         st.write("Column dtype:", col_data.dtype)
     
-        df['cycle_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')
-        df['future_order_date'] = col_data.combine_first(df['cycle_order_date'])
+        df['cycle_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce').dt.strftime('%d-%b-%Y')
+        df['future_order_date'] = col_data.combine_first(df['cycle_order_date']).dt.strftime('%d-%b-%Y')
     else:
-        df['future_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')
+        df['future_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce').dt.strftime('%d-%b-%Y')
         
-    df['future_order_date'] = pd.to_datetime(df['future_order_date'], errors='coerce')
+    df['future_order_date'] = pd.to_datetime(df['future_order_date'], errors='coerce').dt.strftime('%d-%b-%Y')
+        
 
 
     #INBOUND
@@ -126,16 +127,12 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         st.write("Column dtype:", col_data2.dtype)
     
         df['cycle_inbound_date'] = pd.to_datetime(df['cycle_inbound_date'], errors='coerce')
-        df['future_inbound_date'] = col_data2.combine_first(df['cycle_inbound_date'])
+        df['future_inbound_date'] = col_data2.combine_first(df['cycle_inbound_date']).dt.strftime('%d-%b-%Y')
     else:
-        df['future_inbound_date'] = pd.to_datetime(df['cycle_inbound_date'], errors='coerce')
+        df['future_inbound_date'] = pd.to_datetime(df['cycle_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
         
-    df['future_inbound_date'] = pd.to_datetime(df['future_inbound_date'], errors='coerce')
+    df['future_inbound_date'] = pd.to_datetime(df['future_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
 
-
-    df['future_order_date'] = (df['cycle_order_date']).dt.strftime('%d-%b-%Y')
-    df['future_inbound_date'] =  (df['cycle_inbound_date']).dt.strftime('%d-%b-%Y')
-    df['future_coverage_date'] = (df['cycle_coverage_date']).dt.strftime('%d-%b-%Y')
 
 
 
