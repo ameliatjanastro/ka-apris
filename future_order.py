@@ -432,8 +432,8 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         rl_col = f'rl_qty_amel_{i}'
         date_col = f'future_inbound_date_{i}'
     
-        if rl_col in result_df.columns and date_col in result_df.columns:
-            temp = result_df[['product_id', 'product_name', 'location_id', 'primary_vendor_name', rl_col, date_col]].copy()
+        if rl_col in df.columns and date_col in df.columns:
+            temp = df[['product_id', 'product_name', 'location_id', 'primary_vendor_name', rl_col, date_col]].copy()
             temp = temp.rename(columns={
                 rl_col: 'rl_qty_amel',
                 date_col: 'future_inbound_date'
@@ -443,7 +443,6 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     
         # Combine all cycles
         rl_long = pd.concat(summary_rows, ignore_index=True)
-        
         
         # Clean up
         rl_long['future_inbound_date'] = pd.to_datetime(rl_long['future_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
