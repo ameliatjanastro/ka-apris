@@ -441,28 +441,28 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
             temp['cycle'] = i
             summary_rows.append(temp)
     
-    # Combine all cycles
-    rl_long = pd.concat(summary_rows, ignore_index=True)
-    
-    
-    # Clean up
-    rl_long['future_inbound_date'] = pd.to_datetime(rl_long['future_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
-    rl_long['rl_qty_amel'] = pd.to_numeric(rl_long['rl_qty_amel'], errors='coerce').fillna(0)
-    rl_long = rl_long.drop_duplicates()
-    
-    # Pivot: Dates as columns, no summing
-    pivot_df = rl_long.pivot_table(
-        index=['product_id', 'product_name', 'location_id', 'primary_vendor_name'],
-        columns='future_inbound_date',
-        values='rl_qty_amel',
-        aggfunc='first'  # 👈 no summing
-    ).fillna(0).reset_index()
-    
-    pivot_df.columns.name = None  # Clean column names
-    
-    # Show it
-    st.subheader("RL Qty by Future Inbound Date (No Aggregation)")
-    st.dataframe(pivot_df)
+        # Combine all cycles
+        rl_long = pd.concat(summary_rows, ignore_index=True)
+        
+        
+        # Clean up
+        rl_long['future_inbound_date'] = pd.to_datetime(rl_long['future_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
+        rl_long['rl_qty_amel'] = pd.to_numeric(rl_long['rl_qty_amel'], errors='coerce').fillna(0)
+        rl_long = rl_long.drop_duplicates()
+        
+        # Pivot: Dates as columns, no summing
+        pivot_df = rl_long.pivot_table(
+            index=['product_id', 'product_name', 'location_id', 'primary_vendor_name'],
+            columns='future_inbound_date',
+            values='rl_qty_amel',
+            aggfunc='first'  # 👈 no summing
+        ).fillna(0).reset_index()
+        
+        pivot_df.columns.name = None  # Clean column names
+        
+        # Show it
+        st.subheader("RL Qty by Future Inbound Date (No Aggregation)")
+        st.dataframe(pivot_df)
 
     return df
     
