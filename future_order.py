@@ -431,7 +431,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     
     summary_rows = []
     
-    for i in range(1, selected_cycle+1):
+    for i in range(10, selected_cycle+1):
         rl_col = f'rl_qty_amel_{i}'
         date_col = f'future_inbound_date_{i}'
     
@@ -488,7 +488,7 @@ def main():
 
         
         # Cycle selector
-        num_cycles = 12
+        num_cycles = 13
         cycle_options = ['Current'] + [f'Cycle {i}' for i in range(1, num_cycles + 1)]
         selected_cycle = st.selectbox("Select Cycle", cycle_options)
 
