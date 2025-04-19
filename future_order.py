@@ -421,7 +421,46 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         
             # Ensure all rows are included in summary, even if selisih_hari = 0
             #if not detailed_rl_distribution.empty:
-                
+
+
+    rl_columns = [col for col in df.columns if col.startswith('rl_qty_amel_')]
+    future_dates = [col for col in df.columns if col.startswith('future_inbound_date_')]
+    
+    summary_rows = []
+    
+    for i in range(1, selected_cycle + 1):  # Loop through each cycle
+        rl_col = f'rl_qty_amel_{i}'
+        date_col = f'future_inbound_date_{i}'
+        
+        if rl_col in df.columns and date_col in df.columns:
+            temp = df[['product_id', 'product_name', 'location_id', 'primary_vendor_name', rl_col, date_col]].copy()
+            temp = temp.rename(columns={
+                rl_col: 'rl_qty_amel',
+                date_col: 'future_inbound_date'
+            })
+            temp['cycle'] = i
+            summary_rows.append(temp)
+    
+        # Combine all into one DataFrame
+        if summary_rows:
+            rl_summary_all_cycles = pd.concat(summary_rows, ignore_index=True)
+            
+            # Convert future_inbound_date to datetime for proper grouping
+            rl_summary_all_cycles['future_inbound_date'] = pd.to_datetime(rl_summary_all_cycles['future_inbound_date'], errors='coerce')
+            
+            # Group by dimensions and date
+            rl_summary_grouped = (
+                rl_summary_all_cycles
+                .groupby(['product_id', 'product_name', 'location_id', 'primary_vendor_name', 'future_inbound_date'])
+                .agg(total_rl_qty_amel=('rl_qty_amel', 'sum'))
+                .reset_index()
+            )
+            
+            rl_summary_grouped['future_inbound_date'] = rl_summary_grouped['future_inbound_date'].dt.strftime('%d-%b-%Y')
+        
+            # Display in Streamlit
+            st.subheader("Overall RL Qty Amel Summary by Future Inbound Date")
+            st.dataframe(rl_summary_grouped)
 
     return df
     
