@@ -423,8 +423,8 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
             #if not detailed_rl_distribution.empty:
 
     # Then build the pivot
-    rl_columns = [col for col in result_df.columns if col.startswith('rl_qty_amel_')]
-    future_dates = [col for col in result_df.columns if col.startswith('future_inbound_date_')]
+    rl_columns = [col for col in df.columns if col.startswith('rl_qty_amel_')]
+    future_dates = [col for col in df.columns if col.startswith('future_inbound_date_')]
     
     summary_rows = []
     
