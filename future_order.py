@@ -448,6 +448,7 @@ for i in range(1, selected_cycle + 1):
 
 # Combine all cycles
 rl_long = pd.concat(summary_rows, ignore_index=True)
+rl_long = rl_long.drop_duplicates()
 
 # Clean up
 rl_long['future_inbound_date'] = pd.to_datetime(rl_long['future_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
