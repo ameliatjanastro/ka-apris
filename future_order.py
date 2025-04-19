@@ -58,7 +58,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     value_name='order_shift_week'
     )
 
-    order_shift['week'] = pd.to_datetime(order_shift['week'], errors='coerce')
+    order_shift['week'] = pd.to_numeric(order_shift['week'], errors='coerce').fillna(0).astype(int)
     
     # Choose how many cycles to run based on Streamlit dropdown
     selected_cycle1 = int(cycle.split()[-1]) if cycle.startswith('Cycle') else 0
