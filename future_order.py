@@ -422,53 +422,54 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
             # Ensure all rows are included in summary, even if selisih_hari = 0
             #if not detailed_rl_distribution.empty:
 
+    # Call the main function
+    result_df = calculate_columns(df.copy(), selected_cycle, frequency_df, forecast_df, order_holidays_df, inbound_holidays_df)
+    
+    # Then build the pivot
+    rl_columns = [col for col in result_df.columns if col.startswith('rl_qty_amel_')]
+    future_dates = [col for col in result_df.columns if col.startswith('future_inbound_date_')]
+    
+    summary_rows = []
+    
+    for i in range(1, selected_cycle + 1):
+        rl_col = f'rl_qty_amel_{i}'
+        date_col = f'future_inbound_date_{i}'
+    
+        if rl_col in result_df.columns and date_col in result_df.columns:
+            temp = result_df[['product_id', 'product_name', 'location_id', 'primary_vendor_name', rl_col, date_col]].copy()
+            temp = temp.rename(columns={
+                rl_col: 'rl_qty_amel',
+                date_col: 'future_inbound_date'
+            })
+            temp['cycle'] = i
+            summary_rows.append(temp)
+    
+    # Combine all cycles
+    rl_long = pd.concat(summary_rows, ignore_index=True)
+    
+    
+    # Clean up
+    rl_long['future_inbound_date'] = pd.to_datetime(rl_long['future_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
+    rl_long['rl_qty_amel'] = pd.to_numeric(rl_long['rl_qty_amel'], errors='coerce').fillna(0)
+    rl_long = rl_long.drop_duplicates()
+    
+    # Pivot: Dates as columns, no summing
+    pivot_df = rl_long.pivot_table(
+        index=['product_id', 'product_name', 'location_id', 'primary_vendor_name'],
+        columns='future_inbound_date',
+        values='rl_qty_amel',
+        aggfunc='first'  # 👈 no summing
+    ).fillna(0).reset_index()
+    
+    pivot_df.columns.name = None  # Clean column names
+    
+    # Show it
+    st.subheader("RL Qty by Future Inbound Date (No Aggregation)")
+    st.dataframe(pivot_df)
+
     return df
     
-# Call the main function
-result_df = calculate_columns(df.copy(), selected_cycle, frequency_df, forecast_df, order_holidays_df, inbound_holidays_df)
 
-# Then build the pivot
-rl_columns = [col for col in result_df.columns if col.startswith('rl_qty_amel_')]
-future_dates = [col for col in result_df.columns if col.startswith('future_inbound_date_')]
-
-summary_rows = []
-
-for i in range(1, selected_cycle + 1):
-    rl_col = f'rl_qty_amel_{i}'
-    date_col = f'future_inbound_date_{i}'
-
-    if rl_col in result_df.columns and date_col in result_df.columns:
-        temp = result_df[['product_id', 'product_name', 'location_id', 'primary_vendor_name', rl_col, date_col]].copy()
-        temp = temp.rename(columns={
-            rl_col: 'rl_qty_amel',
-            date_col: 'future_inbound_date'
-        })
-        temp['cycle'] = i
-        summary_rows.append(temp)
-
-# Combine all cycles
-rl_long = pd.concat(summary_rows, ignore_index=True)
-
-
-# Clean up
-rl_long['future_inbound_date'] = pd.to_datetime(rl_long['future_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
-rl_long['rl_qty_amel'] = pd.to_numeric(rl_long['rl_qty_amel'], errors='coerce').fillna(0)
-rl_long = rl_long.drop_duplicates()
-
-# Pivot: Dates as columns, no summing
-pivot_df = rl_long.pivot_table(
-    index=['product_id', 'product_name', 'location_id', 'primary_vendor_name'],
-    columns='future_inbound_date',
-    values='rl_qty_amel',
-    aggfunc='first'  # 👈 no summing
-).fillna(0).reset_index()
-
-pivot_df.columns.name = None  # Clean column names
-
-# Show it
-st.subheader("RL Qty by Future Inbound Date (No Aggregation)")
-st.dataframe(pivot_df)
-    
 # Streamlit Interface
 def main():
     st.title('Supply Chain Data Calculation with Cycles')
