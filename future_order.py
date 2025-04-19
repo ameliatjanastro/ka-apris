@@ -44,7 +44,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
 
     # Final formatting
     df['period_days'] = 7  
-    df['future_order_date'] = df['cycle_order_date']#.dt.strftime('%d-%b-%Y')
+    df['future_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')#.dt.strftime('%d-%b-%Y')
     df['future_inbound_date'] = df['cycle_inbound_date']#.dt.strftime('%d-%b-%Y')
     df['future_coverage_date'] = df['cycle_coverage_date'].dt.strftime('%d-%b-%Y')
     df['future_order_date2'] = pd.to_datetime(df['future_order_date'], errors='coerce')
@@ -58,7 +58,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     value_name='order_shift_week'
     )
 
-    order_shift['week'] = pd.to_numeric(order_shift['week'], errors='coerce').fillna(0).astype(int)
+    order_shift['week'] = pd.to_datetime(order_shift['week'], errors='coerce')#.fillna(0).astype(int)
     
     # Choose how many cycles to run based on Streamlit dropdown
     selected_cycle1 = int(cycle.split()[-1]) if cycle.startswith('Cycle') else 0
