@@ -75,6 +75,8 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     
         # Overwrite only where forecast is available
         df.loc[merged['order_shift_week'].notna(), f'future_order_date_{i}'] = merged['order_shift_week']
+        # After the for loop over i:
+        df['future_order_date'] = df.get(f'future_order_date_{selected_cycle1}', df['cycle_order_date'])
 
     #holiday
     # Ensure datetime formats
