@@ -426,12 +426,13 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
     rl_columns = [col for col in df.columns if col.startswith('rl_qty_amel_')]
     future_dates = [col for col in df.columns if col.startswith('future_inbound_date_')]
     
+    # 1. Collect RL qty + dates across all cycles
     summary_rows = []
     
-    for i in range(1, selected_cycle + 1):  # Loop through each cycle
+    for i in range(1, selected_cycle + 1):
         rl_col = f'rl_qty_amel_{i}'
         date_col = f'future_inbound_date_{i}'
-        
+    
         if rl_col in df.columns and date_col in df.columns:
             temp = df[['product_id', 'product_name', 'location_id', 'primary_vendor_name', rl_col, date_col]].copy()
             temp = temp.rename(columns={
@@ -441,43 +442,26 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
             temp['cycle'] = i
             summary_rows.append(temp)
     
-        # Combine all into one DataFrame
-        if summary_rows:
-            rl_summary_all_cycles = pd.concat(summary_rows, ignore_index=True)
-        
-            # Convert inbound date to datetime and then to string format
-            rl_summary_all_cycles['future_inbound_date'] = pd.to_datetime(
-                rl_summary_all_cycles['future_inbound_date'], errors='coerce'
-            )
-            rl_summary_all_cycles['future_inbound_date_str'] = rl_summary_all_cycles['future_inbound_date'].dt.strftime('%d-%b-%Y')
-        
-            # Ensure uniqueness per row to avoid duplicate index errors in pivot
-            rl_summary_all_cycles['row_id'] = rl_summary_all_cycles.groupby(
-                ['product_id', 'product_name', 'location_id', 'primary_vendor_name']
-            ).cumcount()
-        
-            # Pivot WITHOUT aggregation
-            pivot_df = rl_summary_all_cycles.pivot(
-                index=['product_id', 'product_name', 'location_id', 'primary_vendor_name', 'row_id'],
-                columns='future_inbound_date_str',
-                values='rl_qty_amel'
-            ).reset_index()
-        
-            # Drop row_id if not needed in final display
-            pivot_df.drop(columns='row_id', inplace=True)
-        
-            # Optional: Sort date columns
-            date_cols = sorted(
-                [str(col) for col in pivot_df.columns if re.match(r'\d{2}-\w{3}-\d{4}', str(col))],
-                key=lambda x: pd.to_datetime(x, format='%d-%b-%Y')
-            )
-
-            ordered_cols = ['product_id', 'product_name', 'location_id', 'primary_vendor_name'] + date_cols
-            pivot_df = pivot_df[ordered_cols]
-        
-            st.subheader("📅 RL Qty Amel by Future Inbound Date (Pivoted, No Aggregation)")
-            st.dataframe(pivot_df)
-
+    # 2. Combine all
+    rl_long = pd.concat(summary_rows, ignore_index=True)
+    
+    # 3. Ensure proper dtypes
+    rl_long['future_inbound_date'] = pd.to_datetime(rl_long['future_inbound_date'], errors='coerce').dt.strftime('%d-%b-%Y')
+    rl_long['rl_qty_amel'] = pd.to_numeric(rl_long['rl_qty_amel'], errors='coerce').fillna(0)
+    
+    # 4. Pivot — this is key
+    pivot_df = rl_long.pivot_table(
+        index=['product_id', 'product_name', 'location_id', 'primary_vendor_name'],
+        columns='future_inbound_date',
+        values='rl_qty_amel',
+        aggfunc='first'  # 👈 this avoids summing!
+    ).fillna(0).reset_index()
+    
+    # 5. Flatten column names (if needed)
+    pivot_df.columns.name = None
+    
+    # 6. Show in Streamlit
+    st.dataframe(pivot_df)
 
     return df
     
