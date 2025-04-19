@@ -445,28 +445,37 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         if summary_rows:
             rl_summary_all_cycles = pd.concat(summary_rows, ignore_index=True)
         
-            # Convert date column to datetime for sorting, then format for display
-            rl_summary_all_cycles['future_inbound_date'] = pd.to_datetime(rl_summary_all_cycles['future_inbound_date'], errors='coerce')
+            # Convert inbound date to datetime and then to string format
+            rl_summary_all_cycles['future_inbound_date'] = pd.to_datetime(
+                rl_summary_all_cycles['future_inbound_date'], errors='coerce'
+            )
             rl_summary_all_cycles['future_inbound_date_str'] = rl_summary_all_cycles['future_inbound_date'].dt.strftime('%d-%b-%Y')
         
-            # Pivot the table: each inbound date becomes a column
-            rl_pivot = rl_summary_all_cycles.pivot_table(
-                index=['product_id', 'product_name', 'location_id', 'primary_vendor_name'],
+            # Ensure uniqueness per row to avoid duplicate index errors in pivot
+            rl_summary_all_cycles['row_id'] = rl_summary_all_cycles.groupby(
+                ['product_id', 'product_name', 'location_id', 'primary_vendor_name']
+            ).cumcount()
+        
+            # Pivot WITHOUT aggregation
+            pivot_df = rl_summary_all_cycles.pivot(
+                index=['product_id', 'product_name', 'location_id', 'primary_vendor_name', 'row_id'],
                 columns='future_inbound_date_str',
-                values='rl_qty_amel',
-                aggfunc='sum',
-                fill_value=0
+                values='rl_qty_amel'
             ).reset_index()
         
-            # Optional: sort columns so dates go left to right
-            date_cols = sorted([col for col in rl_pivot.columns if re.match(r'\d{2}-\w{3}-\d{4}', col)],
-                               key=lambda x: pd.to_datetime(x, format='%d-%b-%Y'))
+            # Drop row_id if not needed in final display
+            pivot_df.drop(columns='row_id', inplace=True)
         
+            # Optional: Sort date columns
+            date_cols = sorted(
+                [col for col in pivot_df.columns if re.match(r'\d{2}-\w{3}-\d{4}', col)],
+                key=lambda x: pd.to_datetime(x, format='%d-%b-%Y')
+            )
             ordered_cols = ['product_id', 'product_name', 'location_id', 'primary_vendor_name'] + date_cols
-            rl_pivot = rl_pivot[ordered_cols]
+            pivot_df = pivot_df[ordered_cols]
         
-            st.subheader("📅 RL Qty Amel by Future Inbound Date (Pivoted View)")
-            st.dataframe(rl_pivot)
+            st.subheader("📅 RL Qty Amel by Future Inbound Date (Pivoted, No Aggregation)")
+            st.dataframe(pivot_df)
 
     return df
     
