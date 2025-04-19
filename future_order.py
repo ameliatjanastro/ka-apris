@@ -463,8 +463,9 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         pivot_df.columns.name = None  # Clean column names
             
         # Show it
-    st.subheader("RL Qty by Future Inbound Date (No Aggregation)")
-    st.dataframe(pivot_df)
+        #st.subheader("RL Qty by Future Inbound Date (No Aggregation)")
+        st.dataframe(pivot_df)
+    
     return df
     
 
