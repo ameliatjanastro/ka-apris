@@ -76,17 +76,19 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         # Overwrite only where forecast is available
         df.loc[merged['order_shift_week'].notna(), f'future_order_date_{i}'] = merged['order_shift_week']
         
-    # After the for loop over i:
     col_name = f'future_order_date_{selected_cycle1}'
-    col_name = pd.to_datetime(df[col_name], errors='coerce')
-    st.write("Sample values in future_order_date column:")
-    st.write(df[col_name].head())
-    st.write("Column dtype:", df[col_name].dtype)
-    df['cycle_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')
+
     if col_name in df.columns:
-        df['future_order_date'] = pd.to_datetime(df[col_name], errors='coerce').combine_first(df['cycle_order_date'])
+        col_data = pd.to_datetime(df[col_name], errors='coerce')
+        st.write("Sample values in future_order_date column:")
+        st.write(col_data.head())
+        st.write("Column dtype:", col_data.dtype)
+    
+        df['cycle_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')
+        df['future_order_date'] = col_data.combine_first(df['cycle_order_date'])
     else:
-        df['future_order_date'] = df['cycle_order_date']
+        df['future_order_date'] = pd.to_datetime(df['cycle_order_date'], errors='coerce')
+
 
     #holiday
     # Ensure datetime formats
