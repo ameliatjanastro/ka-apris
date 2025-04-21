@@ -277,13 +277,15 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         st.metric(f"Total RL Qty ({selected_cycle})", f"{int(total_rl):,}")
 
         rl_qty_col = 'rl_qty_amel' if selected_cycle == 'Current' else f'rl_qty_amel_{selected_cycle}'
-        rl_qty_col2 = df[rl_qty_col].copy()
-        # Safely create rl_qty_col if missing
+
         if rl_qty_col in df.columns:
-            df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)*df['cogs']
-            df[rl_qty_col2] = pd.to_numeric(df[rl_qty_col2], errors='coerce').fillna(0)
+            # Convert to numeric and fill NaNs
+            df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)
+            # Optionally create a multiplied value column
+            df[f'{rl_qty_col}_cogs'] = df[rl_qty_col] * df['cogs']
         else:
-            df[rl_qty_col] = 0  # Create a column of zeros
+            df[rl_qty_col] = 0
+            df[f'{rl_qty_col}_cogs'] = 0
     
         # Safely create 'mov' column if missing
         if 'mov' in df.columns:
@@ -297,8 +299,8 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         summary_df = (
             df.groupby(['primary_vendor_name', 'location_id'])
             .agg(
-                total_rl_value=(rl_qty_col, 'sum'),
-                total_rl_qty=(rl_qty_col_QTY, 'sum'),
+                total_rl_value=(f'{rl_qty_col}_cogs', 'sum'),
+                total_rl_qty=(rl_qty_col, 'sum'),
                 avg_mov=('mov', 'mean')
             )
             .reset_index()
