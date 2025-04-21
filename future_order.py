@@ -281,6 +281,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         # Safely create rl_qty_col if missing
         if rl_qty_col in df.columns:
             df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)*df['cogs']
+            df[rl_qty_col_QTY] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)
         else:
             df[rl_qty_col] = 0  # Create a column of zeros
     
@@ -297,6 +298,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
             df.groupby(['primary_vendor_name', 'location_id'])
             .agg(
                 total_rl_value=(rl_qty_col, 'sum'),
+                total_rl_qty=(rl_qty_col_QTY, 'sum'),
                 avg_mov=('mov', 'mean')
             )
             .reset_index()
