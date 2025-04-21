@@ -301,6 +301,7 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
             .agg(
                 total_rl_value=(f'{rl_qty_col}_cogs', 'sum'),
                 total_rl_qty=(rl_qty_col, 'sum'),
+                total_assumed_stock=(total_assumed_stock, 'sum'),
                 avg_mov=('mov', 'mean')
             )
             .reset_index()
