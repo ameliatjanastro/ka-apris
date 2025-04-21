@@ -277,11 +277,11 @@ def calculate_columns(df, cycle, frequency_df, forecast_df, order_holidays_df, i
         st.metric(f"Total RL Qty ({selected_cycle})", f"{int(total_rl):,}")
 
         rl_qty_col = 'rl_qty_amel' if selected_cycle == 'Current' else f'rl_qty_amel_{selected_cycle}'
-        l_qty_col2 = 'rl_qty_amel' if selected_cycle == 'Current' else f'rl_qty_amel_{selected_cycle}'
+        rl_qty_col2 = df[rl_qty_col].copy()
         # Safely create rl_qty_col if missing
         if rl_qty_col in df.columns:
             df[rl_qty_col] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)*df['cogs']
-            df[rl_qty_col2] = pd.to_numeric(df[rl_qty_col], errors='coerce').fillna(0)
+            df[rl_qty_col2] = pd.to_numeric(df[rl_qty_col2], errors='coerce').fillna(0)
         else:
             df[rl_qty_col] = 0  # Create a column of zeros
     
