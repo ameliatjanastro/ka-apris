@@ -103,3 +103,4 @@ st.subheader("📊 Daily Allocation Summary")
 st.dataframe(summary_df)
 
 
+
