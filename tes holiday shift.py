@@ -88,3 +88,18 @@ sku_df['adjusted_inbound_date'] = sku_df['inbound_date'].apply(shift_if_holiday)
 st.subheader("Adjusted Inbound Dates")
 st.dataframe(sku_df[['product_id','primary_vendor_name', 'location_id', 'inbound_date', 'adjusted_inbound_date']])
 
+summary_data = []
+
+for (alloc_date, location_id), total_qty in daily_totals.items():
+    summary_data.append({
+        'Date': alloc_date.strftime("%Y-%m-%d"),
+        'Warehouse (location_id)': location_id,
+        'Total Allocated Qty': total_qty
+    })
+
+summary_df = pd.DataFrame(summary_data).sort_values(by=['Date', 'Warehouse (location_id)'])
+
+st.subheader("📊 Daily Allocation Summary")
+st.dataframe(summary_df)
+
+
