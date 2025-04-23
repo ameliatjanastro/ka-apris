@@ -72,7 +72,19 @@ if holiday_file and sku_file:
                 })
                 break
 
-    # Merge allocation back to SKU level
-    allocation_df = pd.DataFrame(allocations)
-    result = pd
+# Ensure inbound_date is datetime
+sku_df['inbound_date'] = pd.to_datetime(sku_df['inbound_date'])
+
+# Function to shift date if it's a holiday
+def shift_if_holiday(date):
+    while date in holidays or date.weekday() > 5:  # skip weekends too
+        date += timedelta(days=1)
+    return date
+
+# Apply shifting logic
+sku_df['adjusted_inbound_date'] = sku_df['inbound_date'].apply(shift_if_holiday)
+
+# Show result
+st.subheader("Adjusted Inbound Dates")
+st.dataframe(sku_df[['primary_vendor_name', 'location_id', 'inbound_date', 'adjusted_inbound_date']])
 
