@@ -86,5 +86,5 @@ sku_df['adjusted_inbound_date'] = sku_df['inbound_date'].apply(shift_if_holiday)
 
 # Show result
 st.subheader("Adjusted Inbound Dates")
-st.dataframe(sku_df[['primary_vendor_name', 'location_id', 'inbound_date', 'adjusted_inbound_date']])
+st.dataframe(sku_df[['product_id','primary_vendor_name', 'location_id', 'inbound_date', 'adjusted_inbound_date']])
 
