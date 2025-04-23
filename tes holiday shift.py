@@ -54,7 +54,7 @@ if holiday_file and sku_file:
     for _, row in vendor_group.iterrows():
         vendor_name = row['primary_vendor_name']
         vendor_wh = row['location_id']
-        qty = row['qty']
+        qty = row['rl_qty']
         max_cap = 115000 if vendor_wh == '40' else 165000
 
         for i in range(6):  # Monday to Saturday
