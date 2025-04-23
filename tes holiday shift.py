@@ -62,7 +62,7 @@ if holiday_file and sku_file:
             if candidate_day in holidays or candidate_day.weekday() > 5:
                 continue
 
-            current_total = daily_totals.get((candidate_day, vendor_type), 0)
+            current_total = daily_totals.get((candidate_day, vendor_wh), 0)
             if current_total + qty <= max_cap:
                 # Assign this day to the vendor
                 daily_totals[(candidate_day, vendor_wh)] = current_total + qty
