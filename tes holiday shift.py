@@ -30,8 +30,7 @@ if holiday_file and sku_file:
     sku_df['stock_wh'] = sku_df['stock_wh'].astype(float)
     sku_df['sales_avg'] = sku_df['sales_avg'].replace(0, 0.01)  # Avoid division by zero
     sku_df['rl_qty'] = sku_df['rl_qty'].astype(int)
-    sku_df['doi_policy'] = sku_df['doi_policy'].astype(int)
-    
+
     # Calculate aggregated per vendor
     vendor_group = sku_df.groupby(['primary_vendor_name', 'location_id']).agg({
         'stock_wh': 'sum',
@@ -69,7 +68,7 @@ if holiday_file and sku_file:
         vendor_name = row['primary_vendor_name']
         vendor_wh = row['location_id']
         qty_original = row['rl_qty']
-        qty_revised = row['revised_rl_qty']
+        qty_revised = row['revised_rl_qty']  # Access the revised RL quantity correctly
         max_cap = 115000 if str(vendor_wh) == '40' else 165000
 
         # Original allocation attempt
