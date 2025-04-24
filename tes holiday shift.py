@@ -35,11 +35,23 @@ if holiday_file and sku_file:
     vendor_group = sku_df.groupby(['primary_vendor_name', 'location_id']).agg({
         'stock_wh': 'sum',
         'sales_avg': 'sum',
-        'rl_qty': 'sum'
+        'rl_qty': 'sum',
+        'doi_policy': 'mean'  # DOI policy for vendor
     }).reset_index()
 
     vendor_group['doi_left'] = vendor_group['stock_wh'] / vendor_group['sales_avg']
     vendor_group = vendor_group.sort_values(by='rl_qty', ascending=False)
+
+    # Add original and revised DOI and RL qty for all vendors
+    sku_df['original_doi'] = sku_df['doi_policy']
+    sku_df['revised_doi'] = sku_df['doi_policy'].apply(lambda x: x - 1 if x > 3 else x)
+
+    # Recalculate RL qty using the revised DOI
+    sku_df['original_rl_qty'] = sku_df['rl_qty']
+    sku_df['revised_rl_qty'] = sku_df.apply(
+        lambda row: int(row['rl_qty'] * (row['revised_doi'] / row['doi_policy'])) if row['doi_policy'] > 3 else row['rl_qty'],
+        axis=1
+    )
 
     # Base Monday of the current week
     today = datetime.today()
@@ -49,36 +61,66 @@ if holiday_file and sku_file:
     allocations = []
     daily_totals = {}
     vendor_alloc_map = {}
-    unallocated_vendors = []
+    unallocated_vendors_original = []
+    unallocated_vendors_revised = []
 
     for _, row in vendor_group.iterrows():
         vendor_name = row['primary_vendor_name']
         vendor_wh = row['location_id']
-        qty = row['rl_qty']
-        max_cap = 15000 if str(vendor_wh) == '40' else 165000
+        qty_original = row['rl_qty']
+        qty_revised = row['revised_rl_qty']
+        max_cap = 115000 if str(vendor_wh) == '40' else 165000
 
-        allocated = False
+        # Original allocation attempt
+        allocated_original = False
         for i in range(6):  # Monday to Saturday
             candidate_day = base_monday + timedelta(days=i)
             if candidate_day in holidays or candidate_day.weekday() > 5:
                 continue
 
             current_total = daily_totals.get((candidate_day, vendor_wh), 0)
-            if current_total + qty <= max_cap:
-                daily_totals[(candidate_day, vendor_wh)] = current_total + qty
+            if current_total + qty_original <= max_cap:
+                daily_totals[(candidate_day, vendor_wh)] = current_total + qty_original
                 vendor_alloc_map[(vendor_name, vendor_wh)] = candidate_day
                 allocations.append({
                     'vendor_name': vendor_name,
                     'allocated_date': candidate_day
                 })
-                allocated = True
+                allocated_original = True
                 break
 
-        if not allocated:
-            unallocated_vendors.append({
+        if not allocated_original:
+            unallocated_vendors_original.append({
                 'vendor_name': vendor_name,
                 'location_id': vendor_wh,
-                'rl_qty': qty
+                'original_rl_qty': qty_original,
+                'original_doi': row['doi_policy']
+            })
+
+        # Revised allocation attempt
+        allocated_revised = False
+        for i in range(6):  # Monday to Saturday
+            candidate_day = base_monday + timedelta(days=i)
+            if candidate_day in holidays or candidate_day.weekday() > 5:
+                continue
+
+            current_total = daily_totals.get((candidate_day, vendor_wh), 0)
+            if current_total + qty_revised <= max_cap:
+                daily_totals[(candidate_day, vendor_wh)] = current_total + qty_revised
+                vendor_alloc_map[(vendor_name, vendor_wh)] = candidate_day
+                allocations.append({
+                    'vendor_name': vendor_name,
+                    'allocated_date': candidate_day
+                })
+                allocated_revised = True
+                break
+
+        if not allocated_revised:
+            unallocated_vendors_revised.append({
+                'vendor_name': vendor_name,
+                'location_id': vendor_wh,
+                'revised_rl_qty': qty_revised,
+                'revised_doi': row['revised_doi']
             })
 
     # Map allocated date to each SKU
@@ -95,29 +137,49 @@ if holiday_file and sku_file:
 
     sku_df['adjusted_inbound_date'] = sku_df['allocated_date'].apply(shift_if_holiday)
 
-    # Show result with adjusted dates
-    st.subheader("Adjusted Inbound Dates")
-    st.dataframe(sku_df[['product_id', 'primary_vendor_name', 'location_id', 'rl_qty', 'allocated_date', 'adjusted_inbound_date']])
+    # Show result with adjusted dates, original and revised RL qtys
+    st.subheader("Adjusted Inbound Dates with Original & Revised RL Qty and DOI")
+    st.dataframe(sku_df[['product_id', 'primary_vendor_name', 'location_id', 'original_rl_qty', 'revised_rl_qty', 'original_doi', 'revised_doi', 'allocated_date', 'adjusted_inbound_date']])
 
     # Summary by adjusted date and warehouse
-    summary_df = sku_df.groupby(['adjusted_inbound_date', 'location_id'])['rl_qty'].sum().reset_index()
+    summary_df = sku_df.groupby(['adjusted_inbound_date', 'location_id'])[['original_rl_qty', 'revised_rl_qty']].sum().reset_index()
     summary_df.rename(columns={
         'adjusted_inbound_date': 'Date',
         'location_id': 'Warehouse (location_id)',
-        'rl_qty': 'Total Allocated Qty'
+        'original_rl_qty': 'Total Original RL Qty',
+        'revised_rl_qty': 'Total Revised RL Qty'
     }, inplace=True)
 
     summary_df['Date'] = summary_df['Date'].dt.strftime('%Y-%m-%d')
     summary_df = summary_df.sort_values(by=['Date', 'Warehouse (location_id)'])
 
-    st.subheader("📊 Daily Allocation Summary (Adjusted)")
+    st.subheader("📊 Daily Allocation Summary (Original & Revised RL Qty)")
     st.dataframe(summary_df)
 
-    # Show unallocated vendors
-    if unallocated_vendors:
-        st.subheader("⚠️ Unallocated Vendors (Exceeded Capacity)")
-        unallocated_df = pd.DataFrame(unallocated_vendors)
-        st.dataframe(unallocated_df)
+    # Show unallocated vendors for original RL qty
+    if unallocated_vendors_original:
+        st.subheader("⚠️ Unallocated Vendors (Original RL Qty and DOI)")
+        unallocated_df_original = pd.DataFrame(unallocated_vendors_original)
+        unallocated_df_original = unallocated_df_original.rename(columns={
+            'vendor_name': 'Vendor Name',
+            'location_id': 'Warehouse',
+            'original_rl_qty': 'Original RL Qty',
+            'original_doi': 'Original DOI'
+        })
+        st.dataframe(unallocated_df_original)
+
+    # Show unallocated vendors for revised RL qty
+    if unallocated_vendors_revised:
+        st.subheader("⚠️ Unallocated Vendors (Revised RL Qty and DOI)")
+        unallocated_df_revised = pd.DataFrame(unallocated_vendors_revised)
+        unallocated_df_revised = unallocated_df_revised.rename(columns={
+            'vendor_name': 'Vendor Name',
+            'location_id': 'Warehouse',
+            'revised_rl_qty': 'Revised RL Qty',
+            'revised_doi': 'Revised DOI'
+        })
+        st.dataframe(unallocated_df_revised)
+
     else:
         st.success("🎉 All vendors were successfully allocated within capacity limits.")
 
