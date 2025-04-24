@@ -55,7 +55,7 @@ if holiday_file and sku_file:
         vendor_name = row['primary_vendor_name']
         vendor_wh = row['location_id']
         qty = row['rl_qty']
-        max_cap = 115000 if str(vendor_wh) == '40' else 165000
+        max_cap = 15000 if str(vendor_wh) == '40' else 165000
 
         allocated = False
         for i in range(6):  # Monday to Saturday
