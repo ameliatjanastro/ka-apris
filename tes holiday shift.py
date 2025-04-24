@@ -30,7 +30,8 @@ if holiday_file and sku_file:
     sku_df['stock_wh'] = sku_df['stock_wh'].astype(float)
     sku_df['sales_avg'] = sku_df['sales_avg'].replace(0, 0.01)  # Avoid division by zero
     sku_df['rl_qty'] = sku_df['rl_qty'].astype(int)
-
+    sku_df['doi_policy'] = sku_df['doi_policy'].astype(int)
+    
     # Calculate aggregated per vendor
     vendor_group = sku_df.groupby(['primary_vendor_name', 'location_id']).agg({
         'stock_wh': 'sum',
