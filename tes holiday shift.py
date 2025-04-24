@@ -43,12 +43,12 @@ if holiday_file and sku_file:
     vendor_group = vendor_group.sort_values(by='rl_qty', ascending=False)
 
     # Add original and revised DOI and RL qty for all vendors
-    sku_df['original_doi'] = sku_df['doi_policy']
-    sku_df['revised_doi'] = sku_df['doi_policy'].apply(lambda x: x - 1 if x > 3 else x)
+    vendor_group['original_doi'] = vendor_group['doi_policy']
+    vendor_group['revised_doi'] = vendor_group['doi_policy'].apply(lambda x: x - 1 if x > 3 else x)
 
     # Recalculate RL qty using the revised DOI
-    sku_df['original_rl_qty'] = sku_df['rl_qty']
-    sku_df['revised_rl_qty'] = sku_df.apply(
+    vendor_group['original_rl_qty'] = vendor_group['rl_qty']
+    vendor_group['revised_rl_qty'] = vendor_group.apply(
         lambda row: int(row['rl_qty'] * (row['revised_doi'] / row['doi_policy'])) if row['doi_policy'] > 3 else row['rl_qty'],
         axis=1
     )
@@ -67,8 +67,8 @@ if holiday_file and sku_file:
     for _, row in vendor_group.iterrows():
         vendor_name = row['primary_vendor_name']
         vendor_wh = row['location_id']
-        qty_original = row['rl_qty']
-        qty_revised = row['revised_rl_qty']  # Access the revised RL quantity correctly
+        qty_original = row['original_rl_qty']  # Correct reference to the original RL qty
+        qty_revised = row['revised_rl_qty']  # Correct reference to the revised RL qty
         max_cap = 115000 if str(vendor_wh) == '40' else 165000
 
         # Original allocation attempt
@@ -94,7 +94,7 @@ if holiday_file and sku_file:
                 'vendor_name': vendor_name,
                 'location_id': vendor_wh,
                 'original_rl_qty': qty_original,
-                'original_doi': row['doi_policy']
+                'original_doi': row['original_doi']
             })
 
         # Revised allocation attempt
@@ -179,6 +179,7 @@ if holiday_file and sku_file:
             'revised_doi': 'Revised DOI'
         })
         st.dataframe(unallocated_df_revised)
+
 
     else:
         st.success("🎉 All vendors were successfully allocated within capacity limits.")
