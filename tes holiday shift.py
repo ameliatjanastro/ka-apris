@@ -49,6 +49,7 @@ if holiday_file and sku_file:
     allocations = []
     daily_totals = {}
     vendor_alloc_map = {}
+    unallocated_vendors = []
 
     for _, row in vendor_group.iterrows():
         vendor_name = row['primary_vendor_name']
@@ -56,6 +57,7 @@ if holiday_file and sku_file:
         qty = row['rl_qty']
         max_cap = 115000 if str(vendor_wh) == '40' else 165000
 
+        allocated = False
         for i in range(6):  # Monday to Saturday
             candidate_day = base_monday + timedelta(days=i)
             if candidate_day in holidays or candidate_day.weekday() > 5:
@@ -69,7 +71,15 @@ if holiday_file and sku_file:
                     'vendor_name': vendor_name,
                     'allocated_date': candidate_day
                 })
+                allocated = True
                 break
+
+        if not allocated:
+            unallocated_vendors.append({
+                'vendor_name': vendor_name,
+                'location_id': vendor_wh,
+                'rl_qty': qty
+            })
 
     # Map allocated date to each SKU
     sku_df['allocated_date'] = sku_df.apply(
@@ -102,6 +112,14 @@ if holiday_file and sku_file:
 
     st.subheader("📊 Daily Allocation Summary (Adjusted)")
     st.dataframe(summary_df)
+
+    # Show unallocated vendors
+    if unallocated_vendors:
+        st.subheader("⚠️ Unallocated Vendors (Exceeded Capacity)")
+        unallocated_df = pd.DataFrame(unallocated_vendors)
+        st.dataframe(unallocated_df)
+    else:
+        st.success("🎉 All vendors were successfully allocated within capacity limits.")
 
 
 
