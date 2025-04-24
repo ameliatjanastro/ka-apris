@@ -39,7 +39,7 @@ if holiday_file and sku_file:
     }).reset_index()
 
     vendor_group['doi_left'] = vendor_group['stock_wh'] / vendor_group['sales_avg']
-    vendor_group = vendor_group.sort_values(by='doi_left')
+    vendor_group = vendor_group.sort_values(by='rl_qty', ascending=False)
 
     # Base Monday of the current week
     today = datetime.today()
