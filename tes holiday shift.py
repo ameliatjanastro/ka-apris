@@ -53,6 +53,10 @@ if holiday_file and sku_file:
         axis=1
     )
 
+    # Merge the calculated values back into the SKU dataframe
+    sku_df = pd.merge(sku_df, vendor_group[['primary_vendor_name', 'location_id', 'original_rl_qty', 'revised_rl_qty', 'original_doi', 'revised_doi']],
+                      on=['primary_vendor_name', 'location_id'], how='left')
+
     # Base Monday of the current week
     today = datetime.today()
     base_monday = today - timedelta(days=today.weekday())
@@ -179,6 +183,7 @@ if holiday_file and sku_file:
             'revised_doi': 'Revised DOI'
         })
         st.dataframe(unallocated_df_revised)
+
 
 
     else:
