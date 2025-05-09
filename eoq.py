@@ -50,7 +50,7 @@ if uploaded_file:
         safety_factor = 1.65
         df["adjusted_forecast_demand"] = df["forecast_demand"] + (safety_factor * df["demand_std_dev"])
 
-        df["DOI"] = ((df["EOQ"]+df["STOCK"]) / (df["adjusted_forecast_demand"]/365)).apply(
+        df["DOI"] = ((df["EOQ"]) / (df["adjusted_forecast_demand"]/365)).apply(
     lambda x: int(x) if pd.notnull(x) and not np.isinf(x) else 0
         )
         df = df.dropna(subset=["EOQ", "forecast_demand"])
