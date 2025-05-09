@@ -20,7 +20,7 @@ def calculate_dynamic_eoq(
     if adjusted_holding_cost == 0:
         return 0
 
-    eoq = math.sqrt((2 * adjusted_demand * adjusted_order_cost) / adjusted_holding_cost)*7
+    eoq = math.sqrt((2 * adjusted_demand * adjusted_order_cost) / adjusted_holding_cost)
     return round(eoq, 2)
 
 st.title("📦 EOQ Calculator (CSV Input, Safety Factor = 1.65)")
