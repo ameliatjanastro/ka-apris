@@ -13,7 +13,7 @@ def calculate_dynamic_eoq(
     holding_cost
 ):
     safety_factor = 1.65  # Fixed
-    adjusted_demand = forecast_demand + (safety_factor * demand_std_dev)
+    adjusted_demand = (forecast_demand + (safety_factor * demand_std_dev))*365
     adjusted_order_cost = (cost_per_minute) * time_minute
     adjusted_holding_cost = cogs * holding_cost
 
