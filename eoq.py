@@ -47,7 +47,7 @@ if uploaded_file:
             row["holding_cost"]
         ), axis=1)
 
-        df["DOI"] = (int(df["EOQ"]) / int(df["forecast_demand"]/365)).apply(
+        df["DOI"] = ((df["EOQ"]) / int(df["forecast_demand"]/365)).apply(
     lambda x: int(x) if pd.notnull(x) and not np.isinf(x) else 0
         )
         df = df.dropna(subset=["EOQ", "forecast_demand"])
