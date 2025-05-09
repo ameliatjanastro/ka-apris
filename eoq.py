@@ -49,7 +49,9 @@ if uploaded_file:
 
         df["DOI"] = ((df["EOQ"]+df["STOCK"]) / df["forecast_demand"]).apply(
     lambda x: int(x) if pd.notnull(x) and not np.isinf(x) else 0
-)
+        )
+        df = df.dropna(subset=["EOQ", "forecast_demand"])
+
         st.success("✅ EOQ calculated successfully!")
         st.dataframe(df[["vendor_id", "product_id", "EOQ","DOI"]])
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv", mime="text/csv")
