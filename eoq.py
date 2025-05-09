@@ -13,7 +13,7 @@ def calculate_dynamic_eoq(
     holding_cost
 ):
     safety_factor = 1.65  # Fixed
-    adjusted_demand = (forecast_demand + (safety_factor * demand_std_dev))*365
+    adjusted_demand = (forecast_demand + (safety_factor * demand_std_dev))*7
     adjusted_order_cost = (cost_per_minute) * time_minute
     adjusted_holding_cost = cogs * holding_cost
 
@@ -47,7 +47,7 @@ if uploaded_file:
             row["holding_cost"]
         ), axis=1)
 
-        df["DOI"] = ((df["EOQ"]+df["STOCK"]) / (df["forecast_demand"]*365)).apply(
+        df["DOI"] = ((df["EOQ"]+df["STOCK"]) / (df["forecast_demand"]*7)).apply(
     lambda x: int(x) if pd.notnull(x) and not np.isinf(x) else 0
         )
         df = df.dropna(subset=["EOQ", "forecast_demand"])
