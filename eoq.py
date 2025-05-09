@@ -33,7 +33,7 @@ if uploaded_file:
 
     required_columns = [
         "vendor_id", "product_id", "forecast_demand", "demand_std_dev",
-        "cost_per_minute", "time_minute", "cogs", "holding_cost"
+        "cost_per_minute", "time_minute", "cogs", "holding_cost","STOCK"
     ]
 
     if all(col in df.columns for col in required_columns):
@@ -47,7 +47,7 @@ if uploaded_file:
             row["holding_cost"]
         ), axis=1)
 
-        df["DOI"] = (df["EOQ"] / df["forecast_demand"]).apply(
+        df["DOI"] = ((df["EOQ"]+df["STOCK"]) / df["forecast_demand"]).apply(
     lambda x: int(x) if pd.notnull(x) and not np.isinf(x) else 0
 )
         st.success("✅ EOQ calculated successfully!")
