@@ -46,8 +46,9 @@ if uploaded_file:
             row["holding_cost"]
         ), axis=1)
 
+        df["DOI"] = int(df["EOQ"]/df["forecast_demand"])
         st.success("✅ EOQ calculated successfully!")
-        st.dataframe(df[["vendor_id", "product_id", "EOQ"]])
+        st.dataframe(df[["vendor_id", "product_id", "EOQ","DOI"]])
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv", mime="text/csv")
     else:
         st.error(f"CSV is missing one or more of the required columns: {', '.join(required_columns)}")
