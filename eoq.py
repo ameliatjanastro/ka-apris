@@ -36,11 +36,10 @@ if st.button("Calculate EOQ"):
         forecast_demand,
         demand_std_dev,
         safety_factor,
-        base_order_cost,
         labor_cost_per_hour,
         time_per_order_hours,
         cogs,
-        holding_cost_rate
+        holding_cost
     )
 
     st.success(f"📊 Dynamic EOQ: {eoq} units")
