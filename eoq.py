@@ -29,7 +29,7 @@ labor_cost_per_hour = st.sidebar.number_input("Labor Cost per Hour (IDR)", value
 time_per_order_hours = st.sidebar.number_input("Time Required per Order (hours)", value=1.0, step=0.1)
 
 cogs = st.sidebar.number_input("Cost of Goods Sold per Unit (USD)", value=50.0, step=1.0)
-holding_cost_rate = st.sidebar.slider("Annual Holding Cost Rate (% of COGS)", min_value=0.01, max_value=0.50, value=0.18, step=0.01)
+holding_cost = st.sidebar.slider("Annual Holding Cost Rate (% of COGS)", min_value=0.01, max_value=0.50, value=0.18, step=0.01)
 
 if st.button("Calculate EOQ"):
     eoq = calculate_dynamic_eoq(
