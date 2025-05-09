@@ -1,47 +1,56 @@
 import streamlit as st
+import pandas as pd
 import math
 
+# EOQ calculation function with fixed safety factor
 def calculate_dynamic_eoq(
     forecast_demand,
     demand_std_dev,
-    safety_factor,
-    labor_cost_per_hour,
-    time_per_order_hours,
+    cost_per_minute,
+    time_minute,
     cogs,
     holding_cost
 ):
+    safety_factor = 1.65  # Fixed
     adjusted_demand = forecast_demand + (safety_factor * demand_std_dev)
-    adjusted_order_cost = (labor_cost_per_hour * time_per_order_hours)
+    adjusted_order_cost = cost_per_minute * time_minute
     adjusted_holding_cost = cogs * holding_cost
-    
+
+    if adjusted_holding_cost == 0:
+        return 0
+
     eoq = math.sqrt((2 * adjusted_demand * adjusted_order_cost) / adjusted_holding_cost)
     return round(eoq, 2)
 
-st.title("📦 Dynamic EOQ Calculator")
+st.title("📦 EOQ Calculator (CSV Input, Safety Factor = 1.65)")
 
-st.sidebar.header("Input Parameters")
+# Upload CSV
+uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 
-forecast_demand = st.sidebar.number_input("Forecasted Annual Demand (units)", value=10000, step=100)
-demand_std_dev = st.sidebar.number_input("Demand Standard Deviation (units)", value=1200, step=100)
-safety_factor = st.sidebar.slider("Safety Factor (Z-score)", min_value=0.0, max_value=3.0, value=1.65, step=0.05)
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
 
-labor_cost_per_hour = st.sidebar.number_input("Labor Cost per Hour (IDR)", value=15000, step=1000)
-time_per_order_hours = st.sidebar.number_input("Time Required per Order (hours)", value=1.0, step=0.1)
+    required_columns = [
+        "vendor_id", "product_id", "forecast_demand", "demand_std_dev",
+        "cost_per_minute", "time_minute", "cogs", "holding_cost"
+    ]
 
-cogs = st.sidebar.number_input("Cost of Goods Sold per Unit (USD)", value=50.0, step=1.0)
-holding_cost = st.sidebar.slider("Annual Holding Cost Rate (% of COGS)", min_value=0.01, max_value=0.50, value=0.18, step=0.01)
+    if all(col in df.columns for col in required_columns):
+        # Calculate EOQ for each row
+        df["EOQ"] = df.apply(lambda row: calculate_dynamic_eoq(
+            row["forecast_demand"],
+            row["demand_std_dev"],
+            row["cost_per_minute"],
+            row["time_minute"],
+            row["cogs"],
+            row["holding_cost"]
+        ), axis=1)
 
-if st.button("Calculate EOQ"):
-    eoq = calculate_dynamic_eoq(
-        forecast_demand,
-        demand_std_dev,
-        safety_factor,
-        labor_cost_per_hour,
-        time_per_order_hours,
-        cogs,
-        holding_cost
-    )
-
-    st.success(f"📊 Dynamic EOQ: {eoq} units")
+        st.success("✅ EOQ calculated successfully!")
+        st.dataframe(df[["vendor_id", "product_id", "EOQ"]])
+        st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv", mime="text/csv")
+    else:
+        st.error(f"CSV is missing one or more of the required columns: {', '.join(required_columns)}")
 else:
-    st.info("Enter parameters and click 'Calculate EOQ' to get the result.")
+    st.info("Please upload a CSV file with the required EOQ input columns.")
+
