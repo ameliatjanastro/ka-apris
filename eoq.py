@@ -46,7 +46,7 @@ if uploaded_file:
             row["holding_cost"]
         ), axis=1)
 
-        df["DOI"] = (df["EOQ"]/df["forecast_demand"]).astype(int) 
+        df["DOI"] = (df["EOQ"] / df["forecast_demand"]).fillna(0).astype(int)
         st.success("✅ EOQ calculated successfully!")
         st.dataframe(df[["vendor_id", "product_id", "EOQ","DOI"]])
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv", mime="text/csv")
