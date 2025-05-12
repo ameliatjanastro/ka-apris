@@ -3,61 +3,58 @@ import pandas as pd
 import numpy as np
 import math
 
-# EOQ calculation function with fixed safety factor
-def calculate_dynamic_eoq(
-    forecast_demand,
-    demand_std_dev,
-    cost_per_minute,
-    time_minute,
-    cogs,
-    holding_cost
-):
-    safety_factor = 1.65  # Fixed
-    adjusted_demand = (forecast_demand + (safety_factor * demand_std_dev))
-    adjusted_order_cost = (cost_per_minute) * time_minute
-    adjusted_holding_cost = holding_cost*365
+st.title("📦 EOQ Calculator with Dual CSV Upload")
 
-    if adjusted_holding_cost == 0:
-        return 0
+# User Inputs
+monthly_salary = st.number_input("💰 Monthly Salary (IDR)", value=8000000)
+safety_factor = st.number_input("🛡️ Safety Factor (Z)", value=1.65)
 
-    eoq = math.sqrt((2 * adjusted_demand * adjusted_order_cost) / adjusted_holding_cost)
-    return round(eoq, 2)
+cost_per_minute = monthly_salary / (22 * 8 * 60)  # 22 workdays × 8 hours/day × 60 min
 
-st.title("📦 EOQ Calculator (CSV Input, Safety Factor = 1.65)")
+# File Uploads
+uploaded_demand = st.file_uploader("📄 Upload Demand & Order Time CSV", type=["csv"])
+uploaded_holding = st.file_uploader("🏢 Upload Holding Cost CSV", type=["csv"])
 
-# Upload CSV
-uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
+if uploaded_demand and uploaded_holding:
+    try:
+        df_demand = pd.read_csv(uploaded_demand)
+        df_holding = pd.read_csv(uploaded_holding)
 
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
+        # Clean and standardize keys
+        for df in [df_demand, df_holding]:
+            df['product_id'] = df['product_id'].astype(str).str.strip()
+            df['location_id'] = df['location_id'].astype(str).str.strip()
 
-    required_columns = [
-        "vendor_id", "product_id", "forecast_demand", "demand_std_dev",
-        "cost_per_minute", "time_minute", "cogs", "holding_cost","STOCK"
-    ]
+        # Clean holding cost (remove 'Rp', commas)
+        df_holding['holding_cost'] = df_holding['holding_cost'].astype(str).replace('[^0-9.]', '', regex=True).astype(float)
 
-    if all(col in df.columns for col in required_columns):
-        # Calculate EOQ for each row
-        df["EOQ"] = df.apply(lambda row: calculate_dynamic_eoq(
-            row["forecast_demand"],
-            row["demand_std_dev"],
-            row["cost_per_minute"],
-            row["time_minute"],
-            row["cogs"],
-            row["holding_cost"]
-        ), axis=1)
+        # Merge on product_id and location_id
+        df = pd.merge(df_demand, df_holding, on=['product_id', 'location_id'], how='inner')
 
-        safety_factor = 1.65
-        df["adjusted_forecast_demand"] = df["forecast_demand"] + (safety_factor * df["demand_std_dev"])
+        # Calculate adjusted annual demand
+        df['adjusted_demand'] = df['avg_sales_final'] * 365 + safety_factor * df['demand_std_dev']
+        df['ordering_cost'] = df['time_(mins)'] * cost_per_minute
+        df['annual_holding_cost'] = df['holding_cost'] * 365
 
-        df["DOI"] = ((df["EOQ"]) / (df["adjusted_forecast_demand"]/365)).apply(
-    lambda x: int(x) if pd.notnull(x) and not np.isinf(x) else 0
-        )
-        df = df.dropna(subset=["EOQ", "forecast_demand"])
+        # EOQ formula
+        df['EOQ'] = np.sqrt((2 * df['adjusted_demand'] * df['ordering_cost']) / df['annual_holding_cost'])
+        df['EOQ'] = df['EOQ'].fillna(0).round(2)
 
-        st.success("✅ EOQ calculated successfully!")
-        st.dataframe(df[["vendor_id", "product_id", "EOQ","DOI"]])
-        st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv", mime="text/csv")
+        # DOI calculation
+        df['DOI'] = (df['EOQ'] / (df['adjusted_demand'] / 365)).replace([np.inf, -np.inf], 0).fillna(0).round(0).astype(int)
+
+        # Show results
+        st.success("✅ EOQ Calculated")
+        st.dataframe(df[['product_id', 'location_id', 'EOQ', 'DOI']])
+
+        # Download
+        st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
+
+    except Exception as e:
+        st.error(f"❌ Error processing files: {e}")
+else:
+    st.info("Upload both CSV files to proceed.")
+
     else:
         st.error(f"CSV is missing one or more of the required columns: {', '.join(required_columns)}")
 else:
