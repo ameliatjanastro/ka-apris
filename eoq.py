@@ -55,8 +55,6 @@ if uploaded_demand and uploaded_holding:
 else:
     st.info("Upload both CSV files to proceed.")
 
-    else:
-        st.error(f"CSV is missing one or more of the required columns: {', '.join(required_columns)}")
 else:
     st.info("Please upload a CSV file with the required EOQ input columns.")
 
