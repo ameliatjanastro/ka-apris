@@ -48,7 +48,7 @@ if uploaded_demand and uploaded_holding:
 
         # Calculate adjusted annual demand
         df['adjusted_demand'] = df['avg_sales_final'] * 365 + safety_factor * df['demand_std_dev']
-        df['ordering_cost'] = df['vendor_frequency'] * df['time_(mins)'] * cost_per_minute
+        df['ordering_cost'] = df['vendor_frequency'] * df['time_(mins)'] * cost_per_minute * 52
         df['annual_holding_cost'] = df['holding_cost'] * 365
 
         # EOQ formula
