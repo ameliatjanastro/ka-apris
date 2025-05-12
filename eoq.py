@@ -28,6 +28,12 @@ if uploaded_demand and uploaded_holding:
         # Clean holding cost (remove 'Rp', commas)
         df_holding['holding_cost'] = df_holding['holding_cost'].astype(str).replace('[^0-9.]', '', regex=True).astype(float)
 
+        st.subheader("Preview Uploaded Files")
+        st.write("Demand File:")
+        st.dataframe(df_demand.head())
+        st.write("Holding Cost File:")
+        st.dataframe(df_holding.head())
+
         # Merge on product_id and location_id
         df = pd.merge(df_demand, df_holding, on=['product_id', 'location_id'], how='inner')
 
