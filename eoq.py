@@ -54,7 +54,3 @@ if uploaded_demand and uploaded_holding:
         st.error(f"❌ Error processing files: {e}")
 else:
     st.info("Upload both CSV files to proceed.")
-
-else:
-    st.info("Please upload a CSV file with the required EOQ input columns.")
-
