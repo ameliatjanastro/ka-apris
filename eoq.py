@@ -65,7 +65,7 @@ if uploaded_demand and uploaded_holding:
         df["daily_demand"] = df["adjusted_demand"] / 365
 
         df["DOI"] = df.apply(
-            lambda row: snap_doi(row["EOQ"], row["daily_demand"], valid_dois=available_dois), axis=1
+            lambda row: snap_doi(row["EOQ"], row["daily_demand"], valid_dois=valid_dois), axis=1
         )
         #df['DOI'] = (df['EOQ'] / (df['avg_sales_final'] / 365)).replace([np.inf, -np.inf], 0).fillna(0).round(0).astype(int)
 
