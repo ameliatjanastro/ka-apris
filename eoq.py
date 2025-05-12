@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import math
 
-def snap_doi(eoq, daily_demand, valid_dois=[4, 7, 14, 21, 28]):
+def snap_doi(eoq, daily_demand, valid_dois):
     if daily_demand <= 0 or eoq <= 0:
         return 0
     raw_doi = eoq / daily_demand
@@ -63,7 +63,8 @@ if uploaded_demand and uploaded_holding:
 
         # DOI calculation
         df["daily_demand"] = df["adjusted_demand"] / 365
-
+        
+        valid_dois = [7, 14, 21, 28]
         df["DOI"] = df.apply(
             lambda row: snap_doi(row["EOQ"], row["daily_demand"], valid_dois=valid_dois), axis=1
         )
