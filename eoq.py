@@ -21,9 +21,18 @@ if uploaded_demand and uploaded_holding:
         df_holding = pd.read_csv(uploaded_holding)
 
         # Clean and standardize keys
+
+        def clean_id(val):
+            val = str(val).strip()
+            return val.replace(".0", "") if val.endswith(".0") else val
+        
+        # Apply to both dataframes
         for df in [df_demand, df_holding]:
-            df['product_id'] = df['product_id'].astype(str).str.strip()
-            df['location_id'] = df['location_id'].astype(str).str.strip()
+            df['product_id'] = df['product_id'].apply(clean_id)
+            df['location_id'] = df['location_id'].apply(clean_id)
+        #for df in [df_demand, df_holding]:
+            #df['product_id'] = df['product_id'].astype(str).str.strip()
+            #df['location_id'] = df['location_id'].astype(str).str.strip()
 
         # Clean holding cost (remove 'Rp', commas)
         df_holding['holding_cost'] = df_holding['holding_cost'].astype(str).replace('[^0-9.]', '', regex=True).astype(float)
