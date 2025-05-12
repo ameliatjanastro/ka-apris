@@ -2,12 +2,15 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import math
+import altair as alt
 
-#def snap_doi(eoq, daily_demand, valid_dois):
-    #if daily_demand <= 0 or eoq <= 0:
-        #return 0
-    #raw_doi = eoq / daily_demand
-    #return min(valid_dois, key=lambda x: abs(x - raw_doi))
+
+def calculate_clipped_doi(eoq, daily_demand, vendor_freq):
+    if daily_demand <= 0 or eoq <= 0:
+        return 0
+    raw_doi = eoq / daily_demand
+    min_doi = 4 if vendor_freq == 2 else 7
+    return round(min(max(raw_doi, min_doi), 28), 1)
 
 st.title("📦 EOQ Calculator with Dual CSV Upload")
 
@@ -66,9 +69,9 @@ if uploaded_demand and uploaded_holding:
         
         #valid_dois = min(max(doi_raw, 4), 28)
         df["DOI"] = df.apply(
-            lambda row: min(max((row["EOQ"] / row["daily_demand"]), 4), 28) if row["daily_demand"] > 0 else 0,
+            lambda row: calculate_clipped_doi(row["EOQ"], row["daily_demand"], row["vendor_frequency"]),
             axis=1
-        ).round(1)
+        )
         #df['DOI'] = (df['EOQ'] / (df['avg_sales_final'] / 365)).replace([np.inf, -np.inf], 0).fillna(0).round(0).astype(int)
 
         # Show results
