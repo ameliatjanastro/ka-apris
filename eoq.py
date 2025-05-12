@@ -3,11 +3,11 @@ import pandas as pd
 import numpy as np
 import math
 
-def snap_doi(eoq, daily_demand, valid_dois):
-    if daily_demand <= 0 or eoq <= 0:
-        return 0
-    raw_doi = eoq / daily_demand
-    return min(valid_dois, key=lambda x: abs(x - raw_doi))
+#def snap_doi(eoq, daily_demand, valid_dois):
+    #if daily_demand <= 0 or eoq <= 0:
+        #return 0
+    #raw_doi = eoq / daily_demand
+    #return min(valid_dois, key=lambda x: abs(x - raw_doi))
 
 st.title("📦 EOQ Calculator with Dual CSV Upload")
 
@@ -64,10 +64,11 @@ if uploaded_demand and uploaded_holding:
         # DOI calculation
         df["daily_demand"] = df["adjusted_demand"] / 365
         
-        valid_dois = [7, 14, 21, 28]
+        #valid_dois = min(max(doi_raw, 4), 28)
         df["DOI"] = df.apply(
-            lambda row: snap_doi(row["EOQ"], row["daily_demand"], valid_dois=valid_dois), axis=1
-        )
+            lambda row: min(max((row["EOQ"] / row["daily_demand"]), 4), 28) if row["daily_demand"] > 0 else 0,
+            axis=1
+        ).round(1)
         #df['DOI'] = (df['EOQ'] / (df['avg_sales_final'] / 365)).replace([np.inf, -np.inf], 0).fillna(0).round(0).astype(int)
 
         # Show results
@@ -78,7 +79,7 @@ if uploaded_demand and uploaded_holding:
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
 
         st.subheader("📊 EOQ vs. DOI Visualization")
-        chart_data = merged_df[["product_id", "EOQ", "DOI"]].dropna()
+        chart_data = df[["product_id", "EOQ", "DOI"]].dropna()
         chart = alt.Chart(chart_data).mark_circle(size=60).encode(
             x=alt.X("EOQ", title="Economic Order Quantity"),
             y=alt.Y("DOI", title="Snapped DOI (Days)"),
