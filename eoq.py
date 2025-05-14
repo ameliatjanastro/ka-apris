@@ -56,7 +56,7 @@ if uploaded_demand and uploaded_holding:
         df = pd.merge(df_demand, df_holding, on=['product_id', 'location_id'], how='inner')
 
         # Calculate adjusted annual demand
-        df['adjusted_demand'] = df['avg_sales_final'] * 365 + safety_factor * df['demand_std_dev']
+        df['adjusted_demand'] = (df['avg_sales_final']  + safety_factor * df['demand_std_dev'])* 365
         df['ordering_cost'] = df['vendor_frequency'] * df['time_(mins)'] * cost_per_minute * 52
         df['annual_holding_cost'] = df['holding_cost'] * 365
 
