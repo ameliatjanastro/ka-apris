@@ -48,7 +48,7 @@ if uploaded_demand and uploaded_holding:
 
         st.subheader("Preview Uploaded Files")
         st.write("Demand File:")
-        st.dataframe(df_demand.head())
+        st.dataframe(df_demand.head(5000))
         st.write("Holding Cost File:")
         st.dataframe(df_holding.head())
 
