@@ -84,6 +84,9 @@ if uploaded_demand and uploaded_holding:
         # Recalculate DOI with EOQ_final
         df["DOI_final"] = df["EOQ_final"] / df["daily_demand"]
 
+        df = df.dropna()
+
+
         st.success("✅ EOQ Calculated")
         #st.dataframe(df[['product_id', 'location_id', 'EOQ', 'opt_freq', 'DOI']])
         st.dataframe(df[['product_id', 'location_id', 'EOQ', 'EOQ_final', 'opt_freq_capped', 'DOI_final']])
