@@ -12,7 +12,13 @@ def calculate_clipped_doi(eoq, daily_demand, vendor_freq):
     min_doi = 4 if vendor_freq == 2 else 7
     return round(min(max(raw_doi, min_doi), 28), 1)
 
-st.title("📦 EOQ Calculator with Dual CSV Upload")
+
+def clean_id(val):
+    val = str(val).strip()
+    return val.replace(".0", "") if val.endswith(".0") else val
+
+
+st.title("📦 EOQ Calculator with Dual & Triple CSV Upload")
 
 # User Inputs
 monthly_salary = st.number_input("💰 Monthly Salary (IDR)", value=8000000)
@@ -30,20 +36,11 @@ if uploaded_demand and uploaded_holding:
         df_holding = pd.read_csv(uploaded_holding)
 
         # Clean and standardize keys
-
-        def clean_id(val):
-            val = str(val).strip()
-            return val.replace(".0", "") if val.endswith(".0") else val
-        
-        # Apply to both dataframes
         for df in [df_demand, df_holding]:
             df['product_id'] = df['product_id'].apply(clean_id)
             df['location_id'] = df['location_id'].apply(clean_id)
-        #for df in [df_demand, df_holding]:
-            #df['product_id'] = df['product_id'].astype(str).str.strip()
-            #df['location_id'] = df['location_id'].astype(str).str.strip()
 
-        # Clean holding cost (remove 'Rp', commas)
+        # Clean holding cost (remove 'Rp', commas, etc)
         df_holding['holding_cost'] = df_holding['holding_cost'].astype(str).replace('[^0-9.]', '', regex=True).astype(float)
 
         st.subheader("Preview Uploaded Files")
@@ -56,7 +53,7 @@ if uploaded_demand and uploaded_holding:
         df = pd.merge(df_demand, df_holding, on=['product_id', 'location_id'], how='inner')
 
         # Calculate adjusted annual demand
-        df['adjusted_demand'] = (df['avg_sales_final']  + safety_factor * df['demand_std_dev'])* 365
+        df['adjusted_demand'] = (df['avg_sales_final'] + safety_factor * df['demand_std_dev']) * 365
         df['ordering_cost'] = df['vendor_frequency'] * df['time_(mins)'] * cost_per_minute * 52
         df['annual_holding_cost'] = df['holding_cost'] * 365
 
@@ -66,21 +63,18 @@ if uploaded_demand and uploaded_holding:
 
         # DOI calculation
         df["daily_demand"] = df["adjusted_demand"] / 365
-        
-        #valid_dois = min(max(doi_raw, 4), 28)
         df["DOI"] = df.apply(
             lambda row: calculate_clipped_doi(row["EOQ"], row["daily_demand"], row["vendor_frequency"]),
             axis=1
         )
-        #df['DOI'] = (df['EOQ'] / (df['avg_sales_final'] / 365)).replace([np.inf, -np.inf], 0).fillna(0).round(0).astype(int)
 
-        # Show results
         st.success("✅ EOQ Calculated")
         st.dataframe(df[['product_id', 'location_id', 'EOQ', 'DOI']])
 
-        # Download
+        # Download EOQ results
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
 
+        # EOQ vs DOI Visualization
         st.subheader("📊 EOQ vs. DOI Visualization")
         chart_data = df[["product_id", "EOQ", "DOI"]].dropna()
         chart = alt.Chart(chart_data).mark_circle(size=60).encode(
@@ -90,7 +84,50 @@ if uploaded_demand and uploaded_holding:
         ).interactive().properties(height=400)
         st.altair_chart(chart, use_container_width=True)
 
+        # --- Additional: Upload Pcs per Carton & COGS ---
+        uploaded_cogs = st.file_uploader("📦 Upload Pcs per Carton & COGS CSV", type=["csv"])
+
+        if uploaded_cogs:
+            df_cogs = pd.read_csv(uploaded_cogs)
+            df_cogs['product_id'] = df_cogs['product_id'].apply(clean_id)
+
+            st.write("COGS File:")
+            st.dataframe(df_cogs.head())
+
+            # Merge with main dataframe
+            df = pd.merge(df, df_cogs[['product_id', 'pcs_per_carton', 'cogs']], on='product_id', how='left')
+
+            # Round EOQ up to nearest carton size
+            df['EOQ_rounded'] = np.ceil(df['EOQ'] / df['pcs_per_carton']) * df['pcs_per_carton']
+
+            st.subheader("🎚️ Adjust EOQ Multiplier and See COGS Impact")
+            multiplier = st.slider("EOQ Multiplier (simulate volume discount)", 0.5, 3.0, 1.0, step=0.05)
+
+            # Adjust EOQ with multiplier and round again
+            df['EOQ_adj'] = np.ceil(df['EOQ_rounded'] * multiplier / df['pcs_per_carton']) * df['pcs_per_carton']
+
+            # Adjust COGS assuming linear discount: x% EOQ increase = x% COGS decrease, minimum COGS 0
+            def adjust_cogs(row):
+                if pd.isna(row['cogs']) or row['EOQ_rounded'] == 0:
+                    return row['cogs']
+                increase_ratio = (row['EOQ_adj'] - row['EOQ_rounded']) / row['EOQ_rounded']
+                adjusted = row['cogs'] * max(1 - increase_ratio, 0)
+                return adjusted
+
+            df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
+
+            st.success("✅ EOQ Multiplier & COGS Adjusted")
+            st.dataframe(df[['product_id', 'location_id', 'EOQ', 'EOQ_rounded', 'EOQ_adj', 'cogs', 'cogs_adj']])
+
+            # Download adjusted results
+            st.download_button("📥 Download Adjusted EOQ & COGS", df.to_csv(index=False), file_name="eoq_cogs_adjusted.csv")
+
+        else:
+            st.info("Upload Pcs per Carton & COGS CSV to continue.")
+
     except Exception as e:
         st.error(f"❌ Error processing files: {e}")
+
 else:
-    st.info("Upload both CSV files to proceed.")
+    st.info("Upload both Demand & Holding Cost CSV files to proceed.")
+
