@@ -86,7 +86,7 @@ if uploaded_demand and uploaded_holding:
 
         st.success("✅ EOQ Calculated")
         #st.dataframe(df[['product_id', 'location_id', 'EOQ', 'opt_freq', 'DOI']])
-        st.dataframe(df[['product_id', 'location_id', 'EOQ', 'EOQ_final', 'opt_freq', 'DOI_final']])
+        st.dataframe(df[['product_id', 'location_id', 'EOQ', 'EOQ_final', 'opt_freq_capped', 'DOI_final']])
 
         # Download EOQ results
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
