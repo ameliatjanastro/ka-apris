@@ -100,7 +100,7 @@ if uploaded_demand and uploaded_holding:
         chart = alt.Chart(chart_data).mark_circle(size=60).encode(
             x=alt.X("EOQ", title="Economic Order Quantity"),
             y=alt.Y("DOI", title="Snapped DOI (Days)"),
-            tooltip=["product_id", "EOQ", "DOI"]
+            tooltip=["product_id", "EOQ_final", "DOI_final"]
         ).interactive().properties(height=400)
         st.altair_chart(chart, use_container_width=True)
 
