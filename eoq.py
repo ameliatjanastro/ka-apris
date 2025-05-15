@@ -63,13 +63,14 @@ if uploaded_demand and uploaded_holding:
 
         # DOI calculation
         df["daily_demand"] = df["adjusted_demand"] / 30
+        df["opt_freq"] = df["adjusted_demand"]/df['EOQ']
         df["DOI"] = df['EOQ']/df["daily_demand"] #df.apply(
             #lambda row: calculate_clipped_doi(row["EOQ"], row["daily_demand"], row["vendor_frequency"]),
             #axis=1
         #)
 
         st.success("✅ EOQ Calculated")
-        st.dataframe(df[['product_id', 'location_id', 'EOQ', 'DOI']])
+        st.dataframe(df[['product_id', 'location_id', 'EOQ', 'opt_freq', 'DOI']])
 
         # Download EOQ results
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
