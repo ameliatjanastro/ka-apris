@@ -82,7 +82,7 @@ if uploaded_demand and uploaded_holding:
         df["EOQ_final"] = df["EOQ"] * (1 + df["freq_reduction_pct"])
         
         # Recalculate DOI with EOQ_final
-        df["DOI_final"] = df["EOQ_final"] / df["daily_demand"]
+        df["DOI_final"] = df["EOQ_final"] / df["avg_sales_final"]
 
         st.success("✅ EOQ Calculated")
         #st.dataframe(df[['product_id', 'location_id', 'EOQ', 'opt_freq', 'DOI']])
