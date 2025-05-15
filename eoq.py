@@ -80,9 +80,19 @@ if uploaded_demand and uploaded_holding:
         
         # Increase EOQ by the same % as the reduction
         df["EOQ_final"] = df["EOQ"] * (1 + df["freq_reduction_pct"])
+
+        # Step 4: Calculate preliminary DOI_final
+        df["DOI_final_pre_cap"] = df["EOQ_final"] / df["daily_demand"]
         
-        # Recalculate DOI with EOQ_final
+        # Step 5: Calculate delta days needed to meet minimum of 3 days
+        df["doi_delta"] = np.where(df["DOI_final_pre_cap"] < 3, 3 - df["DOI_final_pre_cap"], 0)
+        
+        # Step 6: Convert DOI delta to EOQ delta and add to EOQ_final
+        df["EOQ_final"] += df["doi_delta"] * df["daily_demand"]
+        
+        # Step 7: Recalculate final DOI after bump
         df["DOI_final"] = df["EOQ_final"] / df["daily_demand"]
+
 
         df = df.dropna()
 
