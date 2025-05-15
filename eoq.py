@@ -9,8 +9,8 @@ def calculate_clipped_doi(eoq, daily_demand, vendor_freq):
     if daily_demand <= 0 or eoq <= 0:
         return 0
     raw_doi = eoq / daily_demand
-    min_doi = 4 if vendor_freq == 2 else 7
-    return round(min(max(raw_doi, min_doi), 28), 1)
+    min_doi = 3 if vendor_freq == 2 else 7
+    return round(min(max(raw_doi, min_doi), 28), 2)
 
 
 def clean_id(val):
