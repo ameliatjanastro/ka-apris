@@ -95,14 +95,17 @@ if uploaded_demand and uploaded_holding:
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
 
         # EOQ vs DOI Visualization
-        st.subheader("📊 EOQ vs. DOI Visualization")
-        chart_data = df[["product_id", "EOQ_final", "DOI_final"]].dropna()
-        chart = alt.Chart(chart_data).mark_circle(size=60).encode(
-            x=alt.X("EOQ_final", title="Economic Order Quantity"),
-            y=alt.Y("DOI_final", title="Snapped DOI (Days)"),
-            tooltip=["product_id", "EOQ_final", "DOI_final"]
-        ).interactive().properties(height=400)
-        st.altair_chart(chart, use_container_width=True)
+        if "EOQ_final" in df.columns and "DOI_final" in df.columns:
+            chart_data = df[["product_id", "EOQ_final", "DOI_final"]].dropna()
+            chart = alt.Chart(chart_data).mark_circle(size=60).encode(
+                x=alt.X("EOQ_final:Q", title="Economic Order Quantity"),
+                y=alt.Y("DOI_final:Q", title="Snapped DOI (Days)"),
+                tooltip=["product_id", "EOQ_final", "DOI_final"]
+            ).interactive().properties(height=400)
+        
+            st.altair_chart(chart, use_container_width=True)
+        else:
+            st.warning("EOQ_final or DOI_final columns not found.")
 
         # --- Additional: Upload Pcs per Carton & COGS ---
         uploaded_cogs = st.file_uploader("📦 Upload Pcs per Carton & COGS CSV", type=["csv"])
