@@ -96,7 +96,7 @@ if uploaded_demand and uploaded_holding:
 
         # EOQ vs DOI Visualization
         st.subheader("📊 EOQ vs. DOI Visualization")
-        chart_data = df[["product_id", "EOQ", "DOI"]].dropna()
+        chart_data = df[["product_id", "EOQ_final", "DOI_final"]].dropna()
         chart = alt.Chart(chart_data).mark_circle(size=60).encode(
             x=alt.X("EOQ", title="Economic Order Quantity"),
             y=alt.Y("DOI", title="Snapped DOI (Days)"),
