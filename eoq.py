@@ -58,7 +58,7 @@ if uploaded_demand and uploaded_holding:
         df['annual_holding_cost'] = df['holding_cost'] * 365
 
         # EOQ formula
-        df['EOQ'] = (np.sqrt((2 * df['adjusted_demand'] * df['ordering_cost']) / df['annual_holding_cost'])*14)
+        df['EOQ'] = (np.sqrt((2 * df['adjusted_demand'] * df['ordering_cost']) / df['annual_holding_cost'])*14/df["vendor_frequency"])
         df['EOQ'] = df['EOQ'].fillna(0).round(2)
 
         # DOI calculation
