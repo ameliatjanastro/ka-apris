@@ -63,10 +63,10 @@ if uploaded_demand and uploaded_holding:
 
         # DOI calculation
         df["daily_demand"] = df["adjusted_demand"] / 30
-        df["DOI"] = df.apply(
-            lambda row: calculate_clipped_doi(row["EOQ"], row["daily_demand"], row["vendor_frequency"]),
-            axis=1
-        )
+        df["DOI"] = df['EOQ']/df["daily_demand"] #df.apply(
+            #lambda row: calculate_clipped_doi(row["EOQ"], row["daily_demand"], row["vendor_frequency"]),
+            #axis=1
+        #)
 
         st.success("✅ EOQ Calculated")
         st.dataframe(df[['product_id', 'location_id', 'EOQ', 'DOI']])
