@@ -41,7 +41,7 @@ if uploaded_demand and uploaded_holding:
             df['location_id'] = df['location_id'].apply(clean_id)
 
         # Clean holding cost (remove 'Rp', commas, etc)
-        df_holding['holding_cost'] = df_holding['holding_cost'].astype(str).replace('[^0-9.]', '', regex=True).astype(float)
+        df_holding['holding_cost'] = df_holding['holding_cost'].astype(float)
 
         st.subheader("Preview Uploaded Files")
         st.write("Demand File:")
