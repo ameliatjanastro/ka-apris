@@ -53,9 +53,9 @@ if uploaded_demand and uploaded_holding:
         df = pd.merge(df_demand, df_holding, on=['product_id', 'location_id'], how='inner')
 
         # Calculate adjusted annual demand
-        df['adjusted_demand'] = (df['avg_sales_final'] + safety_factor * df['demand_std_dev']) * 365
-        df['ordering_cost'] = df['vendor_frequency'] * df['time_(mins)'] * cost_per_minute * 52
-        df['annual_holding_cost'] = df['holding_cost'] * 365
+        df['adjusted_demand'] = (df['avg_sales_final'] + safety_factor * df['demand_std_dev']) * 30
+        df['ordering_cost'] = df['vendor_frequency'] * df['time_(mins)'] * cost_per_minute 
+        df['annual_holding_cost'] = df['holding_cost'] * 30
 
         # EOQ formula
         df['EOQ'] = (np.sqrt((2 * df['adjusted_demand'] * df['ordering_cost']) / df['annual_holding_cost'])*14/df["vendor_frequency"])
