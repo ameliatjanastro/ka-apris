@@ -25,7 +25,7 @@ monthly_salary = st.number_input("💰 Monthly Salary (IDR)", value=8000000)
 safety_factor = st.number_input("🛡️ Safety Factor (Z)", value=1.65)
 
 cost_per_minute = monthly_salary / (22 * 8 * 60)  # 22 workdays × 8 hours/day × 60 min
-
+st.dataframe(cost_per_minute)
 # File Uploads
 uploaded_demand = st.file_uploader("📄 Upload Demand & Order Time CSV", type=["csv"])
 uploaded_holding = st.file_uploader("🏢 Upload Holding Cost CSV", type=["csv"])
@@ -54,7 +54,7 @@ if uploaded_demand and uploaded_holding:
 
         # Calculate adjusted annual demand
         df['adjusted_demand'] = (df['avg_sales_final'] + safety_factor * df['demand_std_dev']) * 30
-        df['ordering_cost'] = df['vendor_frequency'] * df['time_(mins)'] * cost_per_minute 
+        df['ordering_cost'] = df['vendor_frequency'] * df['time_(mins)'] * cost_per_minute * 4
         df['annual_holding_cost'] = df['holding_cost'] * 30
 
         # EOQ formula
