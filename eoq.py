@@ -69,8 +69,24 @@ if uploaded_demand and uploaded_holding:
             #axis=1
         #)
 
+        df["opt_freq_capped"] = df["opt_freq"].apply(lambda x: min(x, 12))
+
+        # Calculate frequency reduction ratio where opt_freq > 12
+        df["freq_reduction_pct"] = np.where(
+            df["opt_freq"] > 12,
+            (df["opt_freq"] - 12) / df["opt_freq"],
+            0
+        )
+        
+        # Increase EOQ by the same % as the reduction
+        df["EOQ_final"] = df["EOQ"] * (1 + df["freq_reduction_pct"])
+        
+        # Recalculate DOI with EOQ_final
+        df["DOI_final"] = df["EOQ_final"] / df["daily_demand"]
+
         st.success("✅ EOQ Calculated")
-        st.dataframe(df[['product_id', 'location_id', 'EOQ', 'opt_freq', 'DOI']])
+        #st.dataframe(df[['product_id', 'location_id', 'EOQ', 'opt_freq', 'DOI']])
+        st.dataframe(df[['product_id', 'location_id', 'EOQ', 'EOQ_final', 'opt_freq', 'DOI_final']])
 
         # Download EOQ results
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
