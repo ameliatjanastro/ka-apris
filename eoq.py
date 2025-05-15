@@ -101,7 +101,7 @@ if uploaded_demand and uploaded_holding:
             df['EOQ_rounded'] = np.ceil(df['EOQ'] / df['pcs_per_carton']) * df['pcs_per_carton']
 
             st.subheader("🎚️ Adjust EOQ Multiplier and See COGS Impact")
-            multiplier = st.slider("EOQ Multiplier (simulate volume discount)", 0.8, 1.0, 0.9, step=0.05)
+            multiplier = st.slider("EOQ Multiplier (simulate volume discount)", 1.0, 1.1, 1.2, step=0.05)
 
             # Adjust EOQ with multiplier and round again
             df['EOQ_adj'] = np.ceil(df['EOQ_rounded'] * multiplier / df['pcs_per_carton']) * df['pcs_per_carton']
