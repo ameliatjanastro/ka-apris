@@ -23,6 +23,8 @@ st.title("📦 EOQ Calculator with Dual & Triple CSV Upload")
 # User Inputs
 monthly_salary = st.number_input("💰 Monthly Salary (IDR)", value=8000000)
 safety_factor = st.number_input("🛡️ Safety Factor (Z)", value=1.65)
+default_lead_time = st.number_input("📦 Default Lead Time (days)", value=2)
+
 
 cost_per_minute = monthly_salary / (22 * 8 * 60)  # 22 workdays × 8 hours/day × 60 min
 
@@ -93,13 +95,24 @@ if uploaded_demand and uploaded_holding:
         # Step 7: Recalculate final DOI after bump
         df["DOI_final"] = df["EOQ_final"] / df["daily_demand"]
 
+        if 'demand_std_dev' in df.columns:
+            df['safety_stock'] = safety_factor * df['demand_std_dev'] * np.sqrt(default_lead_time)
+        else:
+            df['safety_stock'] = 0
+
+        df['ROP'] = df['daily_demand'] * default_lead_time + df['safety_stock']
+        df['ROP'] = df['ROP'].round(2)
+        df['safety_stock'] = df['safety_stock'].round(2)
+        df['warning'] = np.where(df['opt_freq'] > 12, '⚠️ Over weekly inbound', '')
 
         df = df.dropna()
 
-
         st.success("✅ EOQ Calculated")
-        #st.dataframe(df[['product_id', 'location_id', 'EOQ', 'opt_freq', 'DOI']])
         st.dataframe(df[['product_id', 'location_id', 'EOQ', 'EOQ_final', 'opt_freq_capped', 'DOI_final']])
+
+        st.subheader("📍 Reorder Metrics")
+        st.dataframe(df[['product_id', 'location_id', 'daily_demand', 'safety_stock', 'ROP', 'warning']])
+
 
         # Download EOQ results
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
