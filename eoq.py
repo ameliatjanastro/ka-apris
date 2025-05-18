@@ -189,7 +189,7 @@ if uploaded_demand and uploaded_holding:
             st.dataframe(df_cogs.head())
 
             # Merge with main dataframe
-            df = pd.merge(df, df_cogs[['product_id', 'pcs_per_carton', 'cogs']], on='product_id', how='left')
+            df = pd.merge(df, df_cogs[['product_id', 'pcs_per_carton', 'cogs']], on=['product_id','cogs'], how='left')
 
             # Round EOQ up to nearest carton size
             df['EOQ_rounded'] = np.ceil(df['EOQ'] / df['pcs_per_carton']) * df['pcs_per_carton']
