@@ -206,8 +206,9 @@ if uploaded_demand and uploaded_holding:
                 if pd.isna(row['cogs']) or row['EOQ_rounded'] == 0:
                     return row['cogs']
                 increase_ratio = (row['EOQ_adj'] - row['EOQ_rounded']) / row['EOQ_rounded']
-                adjusted = row['cogs'] * max(1 - increase_ratio, 0)
+                adjusted = row['cogs'] * (1 - increase_ratio)
                 return adjusted
+
 
             df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
 
