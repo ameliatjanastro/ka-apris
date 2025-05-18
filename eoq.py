@@ -156,7 +156,7 @@ if uploaded_demand and uploaded_holding:
                 df['DOI_final3'] = df['eoq_adjusted'] / df['daily_demand']
                 df['DOI_final3'] = df['DOI_final3'].round(2)
                 df['add_qty'] = df['add_qty'].fillna(0).round(2)
-        
+                df['shortfall_pct'] = ddf['shortfall_pct']*100
                 st.subheader("📦 MOV Adjustment Table")
                 st.dataframe(df[['product_id', 'location_id', 'primary_vendor_name', 'eoq_adjusted', 'shortfall_pct', 'add_qty', 'DOI_final3', 'remark']])
         
