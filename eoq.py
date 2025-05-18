@@ -169,7 +169,7 @@ if uploaded_demand and uploaded_holding:
                 df['DOI_final3'] = df['eoq_adjusted'] / df['daily_demand']
                 df['DOI_final3'] = df['DOI_final3'].round(2)
                 df['add_qty'] = df['add_qty'].fillna(0).round(2)
-                df['shortfall_pct'] = df['shortfall_pct'].fillna(0).round(2)
+                df['shortfall_ratio'] = df['shortfall_ratio'].fillna(0).round(2)
         
                 # Display results
                 st.subheader("📦 MOV Adjustment Table")
