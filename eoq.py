@@ -192,7 +192,8 @@ if uploaded_demand and uploaded_holding:
             df = pd.merge(df, df_cogs[['product_id', 'pcs_per_carton', 'cogs']], on=['product_id','cogs'], how='left')
 
             # Round EOQ up to nearest carton size
-            df['EOQ_rounded'] = np.ceil(df['EOQ'] / df['pcs_per_carton']) * df['pcs_per_carton']
+            df['EOQ + SS'] = (df["EOQ_final"]+df['safety_stock'])
+            df['EOQ_rounded'] = np.ceil(df['EOQ + SS'] / df['pcs_per_carton']) * df['pcs_per_carton']
 
             st.subheader("🎚️ Adjust EOQ Multiplier and See COGS Impact")
             multiplier = st.slider("EOQ Multiplier (simulate volume discount)", min_value=0.95, max_value=1.1, value=1.0, step=0.05)
@@ -211,7 +212,7 @@ if uploaded_demand and uploaded_holding:
             df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
 
             st.success("✅ EOQ Multiplier & COGS Adjusted")
-            st.dataframe(df[['product_id', 'location_id', 'EOQ', 'pcs_per_carton', 'EOQ_rounded', 'EOQ_adj', 'cogs', 'cogs_adj']])
+            st.dataframe(df[['product_id', 'location_id', 'EOQ + SS', 'pcs_per_carton', 'EOQ_rounded', 'EOQ_adj', 'cogs', 'cogs_adj']])
 
             # Download adjusted results
             st.download_button("📥 Download Adjusted EOQ & COGS", df.to_csv(index=False), file_name="eoq_cogs_adjusted.csv")
