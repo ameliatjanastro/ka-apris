@@ -123,7 +123,8 @@ if uploaded_demand and uploaded_holding:
             try:
                 df_mov = pd.read_csv(uploaded_mov)
                 df_mov['primary_vendor_name'] = df_mov['primary_vendor_name'].astype(str).str.strip()
-        
+                df_mov['MOV'] = pd.to_numeric(df_mov['MOV'], errors='coerce')
+                
                 # Merge with EOQ dataframe
                 df['primary_vendor_name'] = df['primary_vendor_name'].astype(str).str.strip()
                 df = pd.merge(df, df_mov[['primary_vendor_name', 'MOV']], on='primary_vendor_name', how='left')
