@@ -143,7 +143,7 @@ if uploaded_demand and uploaded_holding:
                     vendor_totals['eoq_total'] < vendor_totals['MOV'],
                     (vendor_totals['MOV'] - vendor_totals['eoq_total']) / vendor_totals['eoq_total'],
                     0
-                ).fillna(0)
+                )
         
                 # Merge shortfall % back to main df
                 df = pd.merge(df, vendor_totals[['location_id', 'primary_vendor_name', 'shortfall_pct', 'remark']], on=['primary_vendor_name','location_id'], how='left')
