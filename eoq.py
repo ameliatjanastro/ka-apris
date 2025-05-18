@@ -178,20 +178,6 @@ if uploaded_demand and uploaded_holding:
             except Exception as e:
                 st.error(f"❌ Error processing MOV CSV: {e}")
 
-
-        # EOQ vs DOI Visualization
-        if "EOQ_final" in df.columns and "DOI_final" in df.columns:
-            chart_data = df[["product_id", "EOQ_final", "DOI_final"]].dropna()
-            chart = alt.Chart(chart_data).mark_circle(size=60).encode(
-                x=alt.X("EOQ_final:Q", title="Economic Order Quantity"),
-                y=alt.Y("DOI_final:Q", title="Snapped DOI (Days)"),
-                tooltip=["product_id", "EOQ_final", "DOI_final"]
-            ).interactive().properties(height=400)
-        
-            st.altair_chart(chart, use_container_width=True)
-        else:
-            st.warning("EOQ_final or DOI_final columns not found.")
-
         # --- Additional: Upload Pcs per Carton & COGS ---
         uploaded_cogs = st.file_uploader("📦 Upload Pcs per Carton & COGS CSV", type=["csv"])
 
@@ -209,7 +195,7 @@ if uploaded_demand and uploaded_holding:
             df['EOQ_rounded'] = np.ceil(df['EOQ'] / df['pcs_per_carton']) * df['pcs_per_carton']
 
             st.subheader("🎚️ Adjust EOQ Multiplier and See COGS Impact")
-            multiplier = st.slider("EOQ Multiplier (simulate volume discount)", 1.0, 1.1, 1.2, step=0.05)
+            multiplier = st.slider("EOQ Multiplier (simulate volume discount)", 0.9,0.95,1, 1.05, 1.1, step=0.05)
 
             # Adjust EOQ with multiplier and round again
             df['EOQ_adj'] = np.ceil(df['EOQ_rounded'] * multiplier / df['pcs_per_carton']) * df['pcs_per_carton']
