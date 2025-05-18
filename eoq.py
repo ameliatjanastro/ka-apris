@@ -117,6 +117,51 @@ if uploaded_demand and uploaded_holding:
         # Download EOQ results
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
 
+        uploaded_mov = st.file_uploader("🏷️ Upload MOV CSV (by primary_vendor_name)", type=["csv"])
+        
+        if uploaded_mov:
+            try:
+                df_mov = pd.read_csv(uploaded_mov)
+                df_mov['primary_vendor_name'] = df_mov['primary_vendor_name'].astype(str).str.strip()
+        
+                # Merge with EOQ dataframe
+                df['primary_vendor_name'] = df['primary_vendor_name'].astype(str).str.strip()
+                df = pd.merge(df, df_mov[['primary_vendor_name', 'MOV']], on='primary_vendor_name', how='left')
+        
+                # Compute EOQ + safety stock
+                df['eoq_total'] = df['EOQ_final'] + df['safety_stock']
+        
+                # Group by vendor and sum EOQ + safety stock
+                vendor_totals = df.groupby('primary_vendor_name')['eoq_total'].sum().reset_index()
+                vendor_totals = pd.merge(vendor_totals, df_mov, on='primary_vendor_name', how='left')
+        
+                # Determine if total meets MOV
+                vendor_totals['remark'] = np.where(vendor_totals['eoq_total'] >= vendor_totals['MOV'], '✅ Safe', '⚠️ Below MOV')
+                vendor_totals['shortfall_pct'] = np.where(
+                    vendor_totals['eoq_total'] < vendor_totals['MOV'],
+                    (vendor_totals['MOV'] - vendor_totals['eoq_total']) / vendor_totals['eoq_total'],
+                    0
+                )
+        
+                # Merge shortfall % back to main df
+                df = pd.merge(df, vendor_totals[['primary_vendor_name', 'shortfall_pct', 'remark']], on='primary_vendor_name', how='left')
+        
+                # Apply shortfall as additional qty only if below MOV
+                df['add_qty'] = df['eoq_total'] * df['shortfall_pct']
+                df['eoq_adjusted'] = df['eoq_total'] + df['add_qty']
+        
+                # Recalculate DOI_final3
+                df['DOI_final3'] = df['eoq_adjusted'] / df['daily_demand']
+                df['DOI_final3'] = df['DOI_final3'].round(2)
+                df['add_qty'] = df['add_qty'].fillna(0).round(2)
+        
+                st.subheader("📦 MOV Adjustment Table")
+                st.dataframe(df[['product_id', 'location_id', 'primary_vendor_name', 'EOQ_final', 'safety_stock', 'add_qty', 'DOI_final3', 'remark']])
+        
+            except Exception as e:
+                st.error(f"❌ Error processing MOV CSV: {e}")
+
+
         # EOQ vs DOI Visualization
         if "EOQ_final" in df.columns and "DOI_final" in df.columns:
             chart_data = df[["product_id", "EOQ_final", "DOI_final"]].dropna()
