@@ -21,9 +21,9 @@ def clean_id(val):
 st.title("📦 EOQ Calculator with Dual & Triple CSV Upload")
 
 # User Inputs
-monthly_salary = st.number_input("💰 Monthly Salary (IDR)", value=8000000)
+# monthly_salary = st.number_input("💰 Monthly Salary (IDR)", value=8000000)
 safety_factor = st.number_input("🛡️ Safety Factor (Z)", value=1.65)
-default_lead_time = st.number_input("📦 Default Lead Time (days)", value=2)
+default_lead_time = st.number_input("📦 Internal Lead Time (SC+comful)", value=2)
 
 
 cost_per_minute = monthly_salary / (22 * 8 * 60)  # 22 workdays × 8 hours/day × 60 min
@@ -45,17 +45,19 @@ if uploaded_demand and uploaded_holding:
         # Clean holding cost (remove 'Rp', commas, etc)
         df_holding['holding_cost'] = df_holding['holding_cost'].astype(float)
 
-        st.subheader("Preview Uploaded Files")
-        st.write("Demand File:")
-        st.dataframe(df_demand.head(5000))
-        st.write("Holding Cost File:")
-        st.dataframe(df_holding.head())
+        st.write("Assumptions: EOQ is calculated based on monthly demand and cost due to rapid growth rate")
+        st.write("Holding Cost is based on 5% of COGS")
+        st.write("Ordering Cost is based on Revenue by WH/Count SKUs * (COGS contribution vs Total)")
+        #st.write("Demand File:")
+        #st.dataframe(df_demand.head(5000))
+        #st.write("Holding Cost File:")
+        #st.dataframe(df_holding.head())
 
         # Merge on product_id and location_id
         df = pd.merge(df_demand, df_holding, on=['product_id', 'location_id'], how='inner')
 
         # Calculate adjusted annual demand
-        df['adjusted_demand'] = (df['avg_sales_final'])*30# + safety_factor * df['demand_std_dev']) * 30
+        df['adjusted_demand'] = (df['avg_sales_final'])*30 # + safety_factor * df['demand_std_dev']) * 30
         df['ordering_cost'] = 101539.972 * (1+(df['cogs_contr']*100))
         df['monthly_holding_cost'] = df['holding_cost'] * 30
 
