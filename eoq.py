@@ -127,14 +127,14 @@ if uploaded_demand and uploaded_holding:
                 
                 # Merge with EOQ dataframe
                 df['primary_vendor_name'] = df['primary_vendor_name'].astype(str).str.strip()
-                df = pd.merge(df, df_mov[['primary_vendor_name', 'MOV']], on='primary_vendor_name', how='left')
+                df = pd.merge(df, df_mov[['primary_vendor_name','location_id', 'MOV']], on=['primary_vendor_name','location_id'], how='left')
         
                 # Compute EOQ + safety stock
                 df['eoq_total'] = df['EOQ_final'] + df['safety_stock']
         
                 # Group by vendor and sum EOQ + safety stock
-                vendor_totals = df.groupby('primary_vendor_name')['eoq_total'].sum().reset_index()
-                vendor_totals = pd.merge(vendor_totals, df_mov, on='primary_vendor_name', how='left')
+                vendor_totals = df.groupby(['primary_vendor_name','location_id'])['eoq_total'].sum().reset_index()
+                vendor_totals = pd.merge(vendor_totals, df_mov, on=['primary_vendor_name','location_id'], how='left')
         
                 # Determine if total meets MOV
                 vendor_totals['remark'] = np.where(vendor_totals['eoq_total'] >= vendor_totals['MOV'], '✅ Safe', '⚠️ Below MOV')
@@ -142,10 +142,10 @@ if uploaded_demand and uploaded_holding:
                     vendor_totals['eoq_total'] < vendor_totals['MOV'],
                     (vendor_totals['MOV'] - vendor_totals['eoq_total']) / vendor_totals['eoq_total'],
                     0
-                )
+                ).fillna(0)
         
                 # Merge shortfall % back to main df
-                df = pd.merge(df, vendor_totals[['primary_vendor_name', 'shortfall_pct', 'remark']], on='primary_vendor_name', how='left')
+                df = pd.merge(df, vendor_totals[['location_id', 'primary_vendor_name', 'shortfall_pct', 'remark']], on=['primary_vendor_name','location_id'], how='left')
         
                 # Apply shortfall as additional qty only if below MOV
                 df['add_qty'] = df['eoq_total'] * df['shortfall_pct']
