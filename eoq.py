@@ -156,7 +156,7 @@ if uploaded_demand and uploaded_holding:
         
                 df = pd.merge(
                     df,
-                    vendor_totals[['primary_vendor_name', 'location_id', 'shortfall_ratio', 'shortfall_pct', 'remark']],
+                    vendor_totals[['primary_vendor_name', 'location_id', 'shortfall_ratio', 'remark']],
                     on=['primary_vendor_name', 'location_id'],
                     how='left'
                 )
