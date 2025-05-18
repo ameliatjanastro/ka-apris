@@ -141,7 +141,7 @@ if uploaded_demand and uploaded_holding:
                 vendor_totals['remark'] = np.where(vendor_totals['value_total'] >= vendor_totals['MOV'], '✅ Safe', '⚠️ Below MOV')
                 vendor_totals['shortfall_pct'] = np.where(
                     vendor_totals['value_total'] < vendor_totals['MOV'],
-                    (vendor_totals['MOV'] - vendor_totals['value_total']) / vendor_totals['value_total'],
+                    (vendor_totals['MOV'] - vendor_totals['value_total']),
                     0
                 )
         
