@@ -149,7 +149,7 @@ if uploaded_demand and uploaded_holding:
                 df = pd.merge(df, vendor_totals[['location_id', 'primary_vendor_name', 'shortfall_pct', 'remark']], on=['primary_vendor_name','location_id'], how='left')
         
                 # Apply shortfall as additional qty only if below MOV
-                df['add_qty'] = df['eoq_total'] * (1+df['shortfall_pct'])
+                df['add_qty'] = (df["EOQ_final"]+df['safety_stock']) +((df["EOQ_final"]+df['safety_stock'])*(1+df['shortfall_pct']))
                 df['eoq_adjusted'] = (df["EOQ_final"]+df['safety_stock']) + df['add_qty']
         
                 # Recalculate DOI_final3
