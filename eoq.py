@@ -104,14 +104,14 @@ if uploaded_demand and uploaded_holding:
         df['ROP'] = df['ROP'].round(2)
         df['safety_stock'] = df['safety_stock'].round(2)
         df['warning'] = np.where(df['opt_freq'] > 12, '⚠️ Over weekly inbound', '')
-
+        df["DOI_final2"] = (df["EOQ_final"]+df['safety_stock']) / df["daily_demand"]
         df = df.dropna()
 
         st.success("✅ EOQ Calculated")
         st.dataframe(df[['product_id', 'location_id', 'EOQ', 'EOQ_final', 'opt_freq_capped', 'DOI_final']])
 
         st.subheader("📍 Reorder Metrics")
-        st.dataframe(df[['product_id', 'location_id', 'daily_demand', 'safety_stock', 'ROP', 'warning']])
+        st.dataframe(df[['product_id', 'location_id', 'daily_demand', 'safety_stock', 'DOI_final2']])
 
 
         # Download EOQ results
