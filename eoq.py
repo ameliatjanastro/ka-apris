@@ -212,7 +212,7 @@ if uploaded_demand and uploaded_holding:
             df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
 
             st.success("✅ EOQ Multiplier & COGS Adjusted")
-            st.dataframe(df[['product_id', 'location_id', 'EOQ + SS', 'pcs_per_carton', 'EOQ_rounded', 'EOQ_adj', 'cogs', 'cogs_adj']])
+            st.dataframe(df[['product_id', 'location_id', 'EOQ + SS', 'EOQ_rounded', 'EOQ_adj', 'cogs', 'cogs_adj']])
 
             # Download adjusted results
             st.download_button("📥 Download Adjusted EOQ & COGS", df.to_csv(index=False), file_name="eoq_cogs_adjusted.csv")
