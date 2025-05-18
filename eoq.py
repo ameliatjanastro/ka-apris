@@ -203,8 +203,8 @@ if uploaded_demand and uploaded_holding:
                     return row['cogs']
                 
                 # Calculate adjusted EOQ and ratio
-                eoq_adj = row['EOQ_rounded'] * multiplier
-                increase_ratio = (eoq_adj - row['EOQ_rounded']) / row['EOQ_rounded']
+                eoq_adj = row['EOQ + SS'] * multiplier
+                increase_ratio = (eoq_adj - row['EOQ + SS']) / row['EOQ + SS']
                 
                 # Adjust COGS based on ratio (allows increase if EOQ decreases)
                 adjusted = row['cogs'] * (1 - increase_ratio)
@@ -212,7 +212,7 @@ if uploaded_demand and uploaded_holding:
                 return round(adjusted, 2)
             
             # Apply the function
-            df['EOQ_adj'] = df['EOQ_rounded'] * multiplier
+            df['EOQ_adj'] = df['EOQ + SS'] * multiplier
             df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
             st.success("✅ EOQ Multiplier & COGS Adjusted")
             st.dataframe(df[['product_id', 'location_id', 'EOQ + SS', 'EOQ_rounded', 'EOQ_adj', 'cogs', 'cogs_adj']])
