@@ -121,30 +121,38 @@ if uploaded_demand and uploaded_holding:
         
         if uploaded_mov:
             try:
+                # Read and clean MOV CSV
                 df_mov = pd.read_csv(uploaded_mov)
                 df_mov['primary_vendor_name'] = df_mov['primary_vendor_name'].astype(str).str.strip()
-                df_mov['location_id'] = df_mov['location_id'].astype(str).str.strip()  # Ensure string
+                df_mov['location_id'] = df_mov['location_id'].astype(str).str.strip()
                 df_mov['MOV'] = pd.to_numeric(df_mov['MOV'], errors='coerce')
-                
-                # Merge with EOQ dataframe
+        
+                # Clean df
                 df['primary_vendor_name'] = df['primary_vendor_name'].astype(str).str.strip()
                 df['location_id'] = df['location_id'].astype(str).str.strip()
-                df = pd.merge(df, df_mov[['primary_vendor_name','location_id', 'MOV']], on=['primary_vendor_name','location_id'], how='left')
-                
-                # Compute EOQ + safety stock
-                df['value_total'] = (df['EOQ_final'] + df['safety_stock'])*df['cogs']
-
-                # Group by vendor and sum EOQ + safety stock
-                vendor_totals = df.groupby(['primary_vendor_name','location_id'])['value_total'].sum().reset_index()
-                vendor_totals = pd.merge(vendor_totals, df_mov, on=['primary_vendor_name','location_id'], how='left')
-                st.dataframe(vendor_totals)
-                # Determine if total meets MOV
-                vendor_totals['remark'] = np.where(vendor_totals['value_total'] >= vendor_totals['MOV'], '✅ Safe', '⚠️ Below MOV')
-                vendor_totals['shortfall_pct'] = np.where(
-                    vendor_totals['value_total'] < vendor_totals['MOV'],
-                    (vendor_totals['MOV'] - vendor_totals['value_total']),
+        
+                # Compute value_total
+                df['value_total'] = (df['EOQ_final'] + df['safety_stock']) * df['cogs']
+        
+                # Group by vendor & location
+                vendor_totals = df.groupby(['primary_vendor_name', 'location_id'])['value_total'].sum().reset_index()
+        
+                # Merge MOV info
+                vendor_totals = pd.merge(vendor_totals, df_mov, on=['primary_vendor_name', 'location_id'], how='left')
+        
+                # Calculate shortfall %
+                vendor_totals['shortfall_ratio'] = np.where(
+                    (vendor_totals['value_total'] < vendor_totals['MOV']) & (vendor_totals['value_total'] > 0),
+                    (vendor_totals['MOV'] - vendor_totals['value_total']) / vendor_totals['value_total'],
                     0
                 )
+        
+                vendor_totals['remark'] = np.where(vendor_totals['shortfall_ratio'] > 0, '⚠️ Below MOV', '✅ Safe')
+                vendor_totals['shortfall_pct'] = vendor_totals['shortfall_ratio'] * 100
+        
+                # Display vendor totals
+                st.subheader("📊 Vendor Totals vs MOV")
+                st.dataframe(vendor_totals)
         
                 # Merge shortfall % back to main df
                 df = pd.merge(df, vendor_totals[['location_id', 'primary_vendor_name', 'shortfall_pct', 'remark']], on=['primary_vendor_name','location_id'], how='left')
