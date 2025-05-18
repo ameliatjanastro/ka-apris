@@ -132,7 +132,7 @@ if uploaded_demand and uploaded_holding:
                 
                 # Compute EOQ + safety stock
                 df['value_total'] = (df['EOQ_final'] + df['safety_stock'])*df['cogs']
-                st.dataframe(df['primary_vendor_name','value_total'])
+                st.dataframe(df[['primary_vendor_name','value_total']])
                 # Group by vendor and sum EOQ + safety stock
                 vendor_totals = df.groupby(['primary_vendor_name','location_id'])['value_total'].sum().reset_index()
                 vendor_totals = pd.merge(vendor_totals, df_mov, on=['primary_vendor_name','location_id'], how='left')
