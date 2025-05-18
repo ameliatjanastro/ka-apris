@@ -154,18 +154,24 @@ if uploaded_demand and uploaded_holding:
                 st.subheader("📊 Vendor Totals vs MOV")
                 st.dataframe(vendor_totals)
         
-                # Merge shortfall % back to main df
-                df = pd.merge(df, vendor_totals[['location_id', 'primary_vendor_name', 'shortfall_pct', 'remark']], on=['primary_vendor_name','location_id'], how='left')
+                df = pd.merge(
+                    df,
+                    vendor_totals[['primary_vendor_name', 'location_id', 'shortfall_ratio', 'shortfall_pct', 'remark']],
+                    on=['primary_vendor_name', 'location_id'],
+                    how='left'
+                )
         
-                # Apply shortfall as additional qty only if below MOV
-                df['add_qty'] = ((df["EOQ_final"]+df['safety_stock'])*(1+df['shortfall_pct']))
-                df['eoq_adjusted'] = (df["EOQ_final"]+df['safety_stock']) + df['add_qty']
+                # Apply adjustment
+                df['add_qty'] = (df['EOQ_final'] + df['safety_stock']) * df['shortfall_ratio']
+                df['eoq_adjusted'] = df['EOQ_final'] + df['safety_stock'] + df['add_qty']
         
-                # Recalculate DOI_final3
+                # Final DOI
                 df['DOI_final3'] = df['eoq_adjusted'] / df['daily_demand']
                 df['DOI_final3'] = df['DOI_final3'].round(2)
                 df['add_qty'] = df['add_qty'].fillna(0).round(2)
-                df['shortfall_pct'] = df['shortfall_pct']*100
+                df['shortfall_pct'] = df['shortfall_pct'].fillna(0).round(2)
+        
+                # Display results
                 st.subheader("📦 MOV Adjustment Table")
                 st.dataframe(df[['location_id', 'primary_vendor_name', 'eoq_adjusted', 'shortfall_pct', 'add_qty', 'DOI_final3', 'remark']])
         
