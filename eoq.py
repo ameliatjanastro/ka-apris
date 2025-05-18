@@ -148,7 +148,7 @@ if uploaded_demand and uploaded_holding:
                 )
         
                 vendor_totals['remark'] = np.where(vendor_totals['shortfall_ratio'] > 0, '⚠️ Below MOV', '✅ Safe')
-                vendor_totals['shortfall_pct'] = vendor_totals['shortfall_ratio'] * 100
+
         
                 # Display vendor totals
                 st.subheader("📊 Vendor Totals vs MOV")
@@ -173,7 +173,7 @@ if uploaded_demand and uploaded_holding:
         
                 # Display results
                 st.subheader("📦 MOV Adjustment Table")
-                st.dataframe(df[['location_id', 'primary_vendor_name', 'eoq_adjusted', 'shortfall_pct', 'add_qty', 'DOI_final3', 'remark']])
+                st.dataframe(df[['product_id', 'location_id', 'primary_vendor_name', 'eoq_adjusted', 'shortfall_ratio', 'add_qty', 'DOI_final3', 'remark']])
         
             except Exception as e:
                 st.error(f"❌ Error processing MOV CSV: {e}")
