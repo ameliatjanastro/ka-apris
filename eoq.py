@@ -158,7 +158,7 @@ if uploaded_demand and uploaded_holding:
                 df['add_qty'] = df['add_qty'].fillna(0).round(2)
         
                 st.subheader("📦 MOV Adjustment Table")
-                st.dataframe(df[['product_id', 'location_id', 'primary_vendor_name', 'EOQ_final', 'safety_stock', 'add_qty', 'DOI_final3', 'remark']])
+                st.dataframe(df[['product_id', 'location_id', 'primary_vendor_name', 'eoq_adjusted', 'shortfall_pct', 'add_qty', 'DOI_final3', 'remark']])
         
             except Exception as e:
                 st.error(f"❌ Error processing MOV CSV: {e}")
