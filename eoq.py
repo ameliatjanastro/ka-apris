@@ -196,22 +196,24 @@ if uploaded_demand and uploaded_holding:
             df['EOQ_rounded'] = np.ceil(df['EOQ + SS'] / df['pcs_per_carton']) * df['pcs_per_carton']
 
             st.subheader("🎚️ Adjust EOQ Multiplier and See COGS Impact")
-            multiplier = st.slider("EOQ Multiplier (simulate volume discount)", min_value=0.95, max_value=1.1, value=1.0, step=0.05)
+            multiplier = st.slider("EOQ if COGS changes", min_value=0.95, max_value=1.1, value=1.0, step=0.05)
 
-            # Adjust EOQ with multiplier and round again
-            df['EOQ_adj'] = np.ceil(df['EOQ_rounded'] * multiplier / df['pcs_per_carton']) * df['pcs_per_carton']
-
-            # Adjust COGS assuming linear discount: x% EOQ increase = x% COGS decrease, minimum COGS 0
             def adjust_cogs(row):
                 if pd.isna(row['cogs']) or row['EOQ_rounded'] == 0:
                     return row['cogs']
-                increase_ratio = (row['EOQ_adj'] - row['EOQ_rounded']) / row['EOQ_rounded']
+                
+                # Calculate adjusted EOQ and ratio
+                eoq_adj = row['EOQ_rounded'] * multiplier
+                increase_ratio = (eoq_adj - row['EOQ_rounded']) / row['EOQ_rounded']
+                
+                # Adjust COGS based on ratio (allows increase if EOQ decreases)
                 adjusted = row['cogs'] * (1 - increase_ratio)
-                return adjusted
-
-
+                
+                return round(adjusted, 2)
+            
+            # Apply the function
+            df['EOQ_adj'] = df['EOQ_rounded'] * multiplier
             df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
-
             st.success("✅ EOQ Multiplier & COGS Adjusted")
             st.dataframe(df[['product_id', 'location_id', 'EOQ + SS', 'EOQ_rounded', 'EOQ_adj', 'cogs', 'cogs_adj']])
 
