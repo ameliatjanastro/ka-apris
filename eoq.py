@@ -131,17 +131,17 @@ if uploaded_demand and uploaded_holding:
                 df = pd.merge(df, df_mov[['primary_vendor_name','location_id', 'MOV']], on=['primary_vendor_name','location_id'], how='left')
         
                 # Compute EOQ + safety stock
-                df['eoq_total'] = (df['EOQ_final'] + df['safety_stock'])*df['cogs']
+                df['value_total'] = (df['EOQ_final'] + df['safety_stock'])*df['cogs']
         
                 # Group by vendor and sum EOQ + safety stock
-                vendor_totals = df.groupby(['primary_vendor_name','location_id'])['eoq_total'].sum().reset_index()
+                vendor_totals = df.groupby(['primary_vendor_name','location_id'])['value_total'].sum().reset_index()
                 vendor_totals = pd.merge(vendor_totals, df_mov, on=['primary_vendor_name','location_id'], how='left')
         
                 # Determine if total meets MOV
                 vendor_totals['remark'] = np.where(vendor_totals['eoq_total'] >= vendor_totals['MOV'], '✅ Safe', '⚠️ Below MOV')
                 vendor_totals['shortfall_pct'] = np.where(
-                    vendor_totals['eoq_total'] < vendor_totals['MOV'],
-                    (vendor_totals['MOV'] - vendor_totals['eoq_total']) / vendor_totals['eoq_total'],
+                    vendor_totals['value_total'] < vendor_totals['MOV'],
+                    (vendor_totals['MOV'] - vendor_totals['value_total']) / vendor_totals['value_total'],
                     0
                 )
         
@@ -149,8 +149,8 @@ if uploaded_demand and uploaded_holding:
                 df = pd.merge(df, vendor_totals[['location_id', 'primary_vendor_name', 'shortfall_pct', 'remark']], on=['primary_vendor_name','location_id'], how='left')
         
                 # Apply shortfall as additional qty only if below MOV
-                df['add_qty'] = df['eoq_total'] * df['shortfall_pct']
-                df['eoq_adjusted'] = df['eoq_total'] + df['add_qty']
+                df['add_qty'] = df['eoq_total'] * (1+df['shortfall_pct'])
+                df['eoq_adjusted'] = (df["EOQ_final"]+df['safety_stock']) + df['add_qty']
         
                 # Recalculate DOI_final3
                 df['DOI_final3'] = df['eoq_adjusted'] / df['daily_demand']
