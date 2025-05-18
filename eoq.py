@@ -26,7 +26,7 @@ safety_factor = st.number_input("🛡️ Safety Factor (Z)", value=1.65)
 default_lead_time = st.number_input("📦 Internal Lead Time (SC+comful)", value=2)
 
 
-cost_per_minute = monthly_salary / (22 * 8 * 60)  # 22 workdays × 8 hours/day × 60 min
+#cost_per_minute = monthly_salary / (22 * 8 * 60)  # 22 workdays × 8 hours/day × 60 min
 
 # File Uploads
 uploaded_demand = st.file_uploader("📄 Upload Demand & Order Time CSV", type=["csv"])
