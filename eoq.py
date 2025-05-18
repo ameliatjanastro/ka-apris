@@ -128,6 +128,7 @@ if uploaded_demand and uploaded_holding:
                 
                 # Merge with EOQ dataframe
                 df['primary_vendor_name'] = df['primary_vendor_name'].astype(str).str.strip()
+                df['location_id'] = df['location_id'].astype(str).str.strip()
                 df = pd.merge(df, df_mov[['primary_vendor_name','location_id', 'MOV']], on=['primary_vendor_name','location_id'], how='left')
                 
                 # Compute EOQ + safety stock
