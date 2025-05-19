@@ -45,9 +45,13 @@ if uploaded_demand and uploaded_holding:
         # Clean holding cost (remove 'Rp', commas, etc)
         df_holding['holding_cost'] = df_holding['holding_cost'].astype(float)
 
-        st.write("Assumptions: EOQ is calculated based on monthly demand and cost due to rapid growth rate")
-        st.write("Holding Cost is based on 5% of COGS")
-        st.write("Ordering Cost is based on Revenue by WH/Count SKUs * (COGS contribution vs Total)")
+        st.markdown("""
+            ### 📌 Assumptions:
+            - EOQ is calculated based on **monthly demand and cost**, due to the **rapid growth rate**.
+            - **Holding Cost** is estimated at **5% of COGS**.
+            - **Ordering Cost** is derived from:  
+              **(Total Revenue by WH / Count of SKUs) × (Product COGS contribution ÷ Total COGS)**.
+            """)
         #st.write("Demand File:")
         #st.dataframe(df_demand.head(5000))
         #st.write("Holding Cost File:")
@@ -116,10 +120,6 @@ if uploaded_demand and uploaded_holding:
         st.subheader("Ideal DOI Step 2")
         st.dataframe(df[['product_id', 'location_id', 'EOQ_final', 'safety_stock', 'DOI_final2']])
 
-
-        # Download EOQ results
-        #st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
-
         uploaded_mov = st.file_uploader("🏷️ Upload MOV CSV (by primary_vendor_name)", type=["csv"])
         
         if uploaded_mov:
@@ -181,6 +181,9 @@ if uploaded_demand and uploaded_holding:
             except Exception as e:
                 st.error(f"❌ Error processing MOV CSV: {e}")
 
+        # Download EOQ results
+        st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
+
         # --- Additional: Upload Pcs per Carton & COGS ---
         uploaded_cogs = st.file_uploader("📦 Upload Pcs per Carton & COGS CSV", type=["csv"])
 
@@ -188,8 +191,8 @@ if uploaded_demand and uploaded_holding:
             df_cogs = pd.read_csv(uploaded_cogs)
             df_cogs['product_id'] = df_cogs['product_id'].apply(clean_id)
 
-            st.write("COGS File:")
-            st.dataframe(df_cogs.head())
+            #st.write("COGS File:")
+            #st.dataframe(df_cogs.head())
 
             # Merge with main dataframe
             df = pd.merge(df, df_cogs[['product_id', 'pcs_per_carton', 'cogs']], on=['product_id','cogs'], how='left')
