@@ -73,7 +73,7 @@ if uploaded_demand and uploaded_holding:
             #axis=1
         #)
 
-        df["opt_freq_capped"] = df["opt_freq"].apply(lambda x: min(x, 12))
+        df["optimal_order_freq"] = df["opt_freq"].apply(lambda x: min(x, 12))
 
         # Calculate frequency reduction ratio where opt_freq > 12
         df["freq_reduction_pct"] = np.where(
@@ -110,14 +110,15 @@ if uploaded_demand and uploaded_holding:
         df = df.dropna()
 
         st.success("✅ EOQ Calculated")
-        st.dataframe(df[['product_id', 'location_id', 'EOQ', 'EOQ_final', 'opt_freq_capped', 'DOI_final']])
+        st.subheader("Ideal DOI Step 1")
+        st.dataframe(df[['product_id', 'location_id', 'EOQ_final', 'optimal_order_freq', 'DOI_final']])
 
-        st.subheader("📍 Reorder Metrics")
-        st.dataframe(df[['product_id', 'location_id', 'daily_demand', 'safety_stock', 'DOI_final2']])
+        st.subheader("Ideal DOI Step 2")
+        st.dataframe(df[['product_id', 'location_id', 'EOQ_final', 'safety_stock', 'DOI_final2']])
 
 
         # Download EOQ results
-        st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
+        #st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
 
         uploaded_mov = st.file_uploader("🏷️ Upload MOV CSV (by primary_vendor_name)", type=["csv"])
         
@@ -165,7 +166,7 @@ if uploaded_demand and uploaded_holding:
         
                 # Apply adjustment
                 df['add_qty'] = (df['EOQ_final'] + df['safety_stock']) * df['shortfall_ratio']
-                df['eoq_adjusted'] = df['EOQ_final'] + df['safety_stock'] + df['add_qty']
+                df['EOQ_adjusted'] = df['EOQ_final'] + df['safety_stock'] + df['add_qty']
         
                 # Final DOI
                 df['DOI_final3'] = df['eoq_adjusted'] / df['daily_demand']
@@ -174,8 +175,8 @@ if uploaded_demand and uploaded_holding:
                 df['shortfall_ratio'] = df['shortfall_ratio'].fillna(0).round(2)
         
                 # Display results
-                st.subheader("📦 MOV Adjustment Table")
-                st.dataframe(df[['product_id', 'location_id', 'primary_vendor_name', 'eoq_adjusted', 'shortfall_ratio', 'add_qty', 'DOI_final3', 'remark']])
+                st.subheader("Ideal DOI Step 3")
+                st.dataframe(df[['product_id', 'location_id', 'primary_vendor_name', 'EOQ_adjusted', 'remark', 'add_qty', 'DOI_final3']])
         
             except Exception as e:
                 st.error(f"❌ Error processing MOV CSV: {e}")
@@ -197,7 +198,7 @@ if uploaded_demand and uploaded_holding:
             df['EOQ + SS'] = (df["EOQ_final"]+df['safety_stock'])
             df['EOQ_rounded'] = np.ceil(df['EOQ + SS'] / df['pcs_per_carton']) * df['pcs_per_carton']
 
-            st.subheader("🎚️ Adjust EOQ Multiplier and See COGS Impact")
+            st.subheader("🎚️ Adjust COGS and see Impact")
             multiplier = st.slider("EOQ if COGS changes", min_value=0.95, max_value=1.1, value=1.0, step=0.05)
 
             def adjust_cogs(row):
@@ -216,9 +217,9 @@ if uploaded_demand and uploaded_holding:
             # Apply the function
             df['EOQ_adj'] = df['EOQ + SS'] * multiplier
             df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
-            df['EOQ_rounded'] = np.ceil(df['EOQ_adj'] / df['pcs_per_carton']) * df['pcs_per_carton']
-            st.success("✅ EOQ Multiplier & COGS Adjusted")
-            st.dataframe(df[['product_id', 'location_id', 'EOQ + SS', 'EOQ_adj', 'EOQ_rounded', 'cogs', 'cogs_adj']])
+            df['EOQ_rounded_multiplier'] = np.ceil(df['EOQ_adj'] / df['pcs_per_carton']) * df['pcs_per_carton']
+            st.success("EOQ Multiplier & COGS Adjusted")
+            st.dataframe(df[['product_id', 'location_id', 'EOQ + SS', 'EOQ_adj', 'EOQ_rounded_multiplier', 'cogs', 'cogs_adj']])
 
             # Download adjusted results
             st.download_button("📥 Download Adjusted EOQ & COGS", df.to_csv(index=False), file_name="eoq_cogs_adjusted.csv")
