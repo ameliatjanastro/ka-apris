@@ -18,7 +18,7 @@ def clean_id(val):
     return val.replace(".0", "") if val.endswith(".0") else val
 
 
-st.title("📦 EOQ Calculator with Dual & Triple CSV Upload")
+st.title("📦 EOQ 3 Step DOIs")
 
 # User Inputs
 # monthly_salary = st.number_input("💰 Monthly Salary (IDR)", value=8000000)
