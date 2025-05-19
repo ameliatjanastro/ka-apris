@@ -184,51 +184,51 @@ if uploaded_demand and uploaded_holding:
         # Download EOQ results
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
 
-        # --- Additional: Upload Pcs per Carton & COGS ---
-        uploaded_cogs = st.file_uploader("📦 Upload Pcs per Carton & COGS CSV", type=["csv"])
-
-        if uploaded_cogs:
-            df_cogs = pd.read_csv(uploaded_cogs)
-            df_cogs['product_id'] = df_cogs['product_id'].apply(clean_id)
-
-            #st.write("COGS File:")
-            #st.dataframe(df_cogs.head())
-
-            # Merge with main dataframe
-            df = pd.merge(df, df_cogs[['product_id', 'pcs_per_carton', 'cogs']], on=['product_id','cogs'], how='left')
-
-            # Round EOQ up to nearest carton size
-            df['EOQ + SS'] = (df["EOQ_final"]+df['safety_stock'])
-            df['EOQ_rounded'] = np.ceil(df['EOQ + SS'] / df['pcs_per_carton']) * df['pcs_per_carton']
-
-            st.subheader("🎚️ Adjust COGS and see Impact")
-            multiplier = st.slider("EOQ if COGS changes", min_value=0.95, max_value=1.1, value=1.0, step=0.05)
-
-            def adjust_cogs(row):
-                if pd.isna(row['cogs']) or row['EOQ_rounded'] == 0:
-                    return row['cogs']
+            # --- Additional: Upload Pcs per Carton & COGS ---
+            uploaded_cogs = st.file_uploader("📦 Upload Pcs per Carton & COGS CSV", type=["csv"])
+    
+            if uploaded_cogs:
+                df_cogs = pd.read_csv(uploaded_cogs)
+                df_cogs['product_id'] = df_cogs['product_id'].apply(clean_id)
+    
+                #st.write("COGS File:")
+                #st.dataframe(df_cogs.head())
+    
+                # Merge with main dataframe
+                df = pd.merge(df, df_cogs[['product_id', 'pcs_per_carton', 'cogs']], on=['product_id','cogs'], how='left')
+    
+                # Round EOQ up to nearest carton size
+                df['EOQ Vendor Constraint'] = df['EOQ_adjusted']
+                df['EOQ_rounded'] = np.ceil(df['EOQ Vendor Constraint'] / df['pcs_per_carton']) * df['pcs_per_carton']
+    
+                st.subheader("🎚️ Adjust COGS and see Impact")
+                multiplier = st.slider("EOQ if COGS changes", min_value=0.95, max_value=1.1, value=1.0, step=0.05)
+    
+                def adjust_cogs(row):
+                    if pd.isna(row['cogs']) or row['EOQ_rounded'] == 0:
+                        return row['cogs']
+                    
+                    # Calculate adjusted EOQ and ratio
+                    eoq_adj = row['EOQ Vendor Constraint'] * multiplier
+                    increase_ratio = (eoq_adj - row['EOQ Vendor Constraint']) / row['EOQ Vendor Constraint']
+                    
+                    # Adjust COGS based on ratio (allows increase if EOQ decreases)
+                    adjusted = row['cogs'] * (1 - increase_ratio)
+                    
+                    return round(adjusted, 2)
                 
-                # Calculate adjusted EOQ and ratio
-                eoq_adj = row['EOQ + SS'] * multiplier
-                increase_ratio = (eoq_adj - row['EOQ + SS']) / row['EOQ + SS']
-                
-                # Adjust COGS based on ratio (allows increase if EOQ decreases)
-                adjusted = row['cogs'] * (1 - increase_ratio)
-                
-                return round(adjusted, 2)
-            
-            # Apply the function
-            df['EOQ_adj'] = df['EOQ + SS'] * multiplier
-            df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
-            df['EOQ_rounded_multiplier'] = np.ceil(df['EOQ_adj'] / df['pcs_per_carton']) * df['pcs_per_carton']
-            st.success("EOQ Multiplier & COGS Adjusted")
-            st.dataframe(df[['product_id', 'location_id', 'EOQ + SS', 'EOQ_adj', 'EOQ_rounded_multiplier', 'cogs', 'cogs_adj']])
-
-            # Download adjusted results
-            st.download_button("📥 Download Adjusted EOQ & COGS", df.to_csv(index=False), file_name="eoq_cogs_adjusted.csv")
-
-        else:
-            st.info("Upload Pcs per Carton & COGS CSV to continue.")
+                # Apply the function
+                df['EOQ_adj'] = df['EOQ Vendor Constraint'] * multiplier
+                df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
+                df['EOQ_rounded_multiplier'] = np.ceil(df['EOQ_adj'] / df['pcs_per_carton']) * df['pcs_per_carton']
+                st.success("EOQ Multiplier & COGS Adjusted")
+                st.dataframe(df[['product_id', 'location_id', 'EOQ Vendor Constraint', 'EOQ_adj', 'EOQ_rounded_multiplier', 'cogs', 'cogs_adj']])
+    
+                # Download adjusted results
+                st.download_button("📥 Download Adjusted EOQ & COGS", df.to_csv(index=False), file_name="eoq_cogs_adjusted.csv")
+    
+            else:
+                st.info("Upload Pcs per Carton & COGS CSV to continue.")
 
     except Exception as e:
         st.error(f"❌ Error processing files: {e}")
