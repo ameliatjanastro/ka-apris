@@ -129,7 +129,7 @@ if uploaded_demand and uploaded_holding:
                 df_mov['primary_vendor_name'] = df_mov['primary_vendor_name'].astype(str).str.strip()
                 df_mov['location_id'] = df_mov['location_id'].astype(str).str.strip()
                 df_mov['MOV'] = pd.to_numeric(df_mov['MOV'], errors='coerce')
-                st.dataframe(df_mov)
+                #st.dataframe(df_mov)
                 # Clean df
                 df['primary_vendor_name'] = df['primary_vendor_name'].astype(str).str.strip()
                 df['location_id'] = df['location_id'].astype(str).str.strip()
