@@ -307,7 +307,7 @@ with tab2:
                 elif code == "Small / Large":
                     return "⚠️ EOQ wants batching. Group RL or increase order freq."
                 elif code == "Large / Small":
-                    return "🚨 RL too high: Risk of overstock. Review RL qty vs forecasat."
+                    return "🚨 RL too high: Risk of overstock. Review RL qty vs forecast."
                 elif code == "Large / Large":
                     return "⚠️ Both values large: Check vendor constraints or cost setup."
                 else:
