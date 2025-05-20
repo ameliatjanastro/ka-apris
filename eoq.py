@@ -305,7 +305,7 @@ with tab2:
                 if code == "Normal / Normal":
                     return "✔ Balanced: RL Qty and EOQ are aligned."
                 elif code == "Small / Large":
-                    return "⚠️ EOQ wants batching. Group RL or increase order freq."
+                    return "⚠️ EOQ wants batching. Group RL or adjust order freq."
                 elif code == "Large / Small":
                     return "🚨 RL too high: Risk of overstock. Review RL qty vs forecast."
                 elif code == "Large / Large":
