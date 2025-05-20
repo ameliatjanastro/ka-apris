@@ -263,8 +263,12 @@ with tab1:
 with tab2:
     st.title("📦 RL Qty vs EOQ Diagnostic Matrix")
     st.markdown("""
-    Identify mismatches that can lead to overstock, batching inefficiencies, or cost assumptions that need review.
-    EOQ is used as a cost-efficiency reference — to set minimum order quantities (flooring) or bundle RL orders more efficiently.
+                ### 📌 How to Use:
+                - Identify mismatches that can lead to overstock, batching inefficiencies, or cost assumptions that need review.
+                - EOQ is used as a cost-efficiency reference — to set minimum order quantities (flooring) or bundle RL orders more efficiently.
+                """)
+    st.markdown("""
+    
     """)
 
     uploaded_file = st.file_uploader("Upload your RL + EOQ dataset (CSV)", type=["csv"], key="rl_eoq")
