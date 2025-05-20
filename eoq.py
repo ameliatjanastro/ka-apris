@@ -271,7 +271,7 @@ elif page == "RL vs EOQ Diagnostic Matrix":
 
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
-        df = df[df['original_rl_qty'] != 0]
+        
 
         required_cols = ['product_id', 'location_id', 'original_rl_qty', 'EOQ']
         if not all(col in df.columns for col in required_cols):
@@ -279,6 +279,7 @@ elif page == "RL vs EOQ Diagnostic Matrix":
         else:
             st.success("✅ File uploaded and columns validated.")
 
+            df = df[df['original_rl_qty'] != 0]
             df['rl_qty_vs_eoq_ratio'] = df['EOQ'] / (df['original_rl_qty'] + 1e-6)
             df['flag_rl_high'] = df['original_rl_qty'] > 1.5 * df['EOQ']
             df['flag_eoq_high'] = df['EOQ'] > 1.5 * df['original_rl_qty']
