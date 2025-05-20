@@ -252,7 +252,7 @@ elif page == "RL vs EOQ Diagnostic Matrix":
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
 
-        required_cols = ['product_id', 'location_id', 'rl_qty_final', 'EOQ_adjusted']
+        required_cols = ['product_id', 'location_id', 'rl_qty_final', 'EOQ_final']
         if not all(col in df.columns for col in required_cols):
             st.error(f"Missing required columns. Make sure your file includes: {required_cols}")
         else:
