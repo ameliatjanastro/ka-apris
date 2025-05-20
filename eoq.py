@@ -331,7 +331,7 @@ with tab2:
                 {
                     "RL Qty": "Small",
                     "EOQ": "Large",
-                    "What It Means": "EOQ wants batching / low holding cost",
+                    "What It Means": "EOQ suggests batching / low holding cost",
                     "What We Can Do": "Batch RL into EOQ cycles if possible"
                 },
                 {
