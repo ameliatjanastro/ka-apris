@@ -221,6 +221,7 @@ if uploaded_demand and uploaded_holding:
                 df['EOQ_adj'] = df['EOQ Vendor Constraint'] * multiplier
                 df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
                 df['EOQ_rounded_multiplier'] = np.ceil(df['EOQ_adj'] / df['pcs_per_carton']) * df['pcs_per_carton']
+                df['original_doi'] = df['original_rl_qty']/df['daily_demand']
                 st.success("EOQ Multiplier & COGS Adjusted")
                 st.dataframe(df[['product_id', 'location_id', 'EOQ Vendor Constraint', 'EOQ_adj', 'EOQ_rounded_multiplier', 'cogs', 'cogs_adj']])
     
