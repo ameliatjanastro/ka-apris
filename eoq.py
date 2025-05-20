@@ -4,6 +4,26 @@ import numpy as np
 import math
 import altair as alt
 
+st.markdown(
+    """
+    <style>
+    /* Decrease font size for most text */
+    html, body, .css-1d391kg, .css-1v3fvcr {
+        font-size: 10px;  /* adjust this value as needed */
+    }
+    /* You can target specific elements too */
+    /* For example, headers: */
+    h1, h2, h3, h4, h5, h6 {
+        font-size: smaller;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+
+
 
 def calculate_clipped_doi(eoq, daily_demand, vendor_freq):
     if daily_demand <= 0 or eoq <= 0:
@@ -251,6 +271,7 @@ elif page == "RL vs EOQ Diagnostic Matrix":
 
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
+        df = df[df['original_rl_qty'] != 0]
 
         required_cols = ['product_id', 'location_id', 'original_rl_qty', 'EOQ']
         if not all(col in df.columns for col in required_cols):
@@ -278,9 +299,9 @@ elif page == "RL vs EOQ Diagnostic Matrix":
                 if code == "✅ Normal / ✅ Normal":
                     return "✔ Balanced: RL Qty and EOQ are aligned."
                 elif code == "✅ Small / ❗️ Large":
-                    return "⚠️ EOQ suggests batching or lower holding cost. Consider grouping RL orders."
+                    return "⚠️ EOQ wants batching. Group RL or increase order freq."
                 elif code == "❗️ Large / ✅ Small":
-                    return "🚨 RL too high: Risk of overstock. Review RL qty vs demand/shelf life."
+                    return "🚨 RL too high: Risk of overstock. Review RL qty vs forecasat."
                 elif code == "❗️ Large / ❗️ Large":
                     return "⚠️ Both values large: Check vendor constraints or cost setup."
                 else:
@@ -299,25 +320,25 @@ elif page == "RL vs EOQ Diagnostic Matrix":
                     "RL Qty": "✅ Normal",
                     "EOQ": "✅ Normal",
                     "What It Means": "Everything fine",
-                    "What You Can Do": "Use EOQ as check"
+                    "What We Can Do": "Use EOQ as check"
                 },
                 {
                     "RL Qty": "✅ Small",
                     "EOQ": "❗️ Large",
                     "What It Means": "EOQ wants batching / low holding cost",
-                    "What You Can Do": "Batch RL orders into EOQ cycles if possible"
+                    "What We Can Do": "Batch RL into EOQ cycles if possible"
                 },
                 {
                     "RL Qty": "❗️ Large",
                     "EOQ": "✅ Small",
-                    "What It Means": "High risk of overstock (low demand + big RL)",
-                    "What You Can Do": "Cap RL by shelf life / DOI / space"
+                    "What It Means": "High risk of overstock (low demand + large RL)",
+                    "What We Can Do": "Cap RL by shelf life / DOI / inv. space"
                 },
                 {
                     "RL Qty": "❗️ Large",
                     "EOQ": "❗️ Large",
                     "What It Means": "Potential big inefficiency",
-                    "What You Can Do": "Revisit cost assumptions & vendor constraints"
+                    "What wE Can Do": "Revisit cost & vendor constraints"
                 }
             ])
             st.dataframe(diagnosis_table, use_container_width=True)
