@@ -185,7 +185,7 @@ if uploaded_demand and uploaded_holding:
         st.download_button("📥 Download EOQ Results", df.to_csv(index=False), file_name="eoq_results.csv")
 
             # --- Additional: Upload Pcs per Carton & COGS ---
-            uploaded_cogs = st.file_uploader("📦 Upload Pcs per Carton & COGS CSV", type=["csv"])
+        uploaded_cogs = st.file_uploader("📦 Upload Pcs per Carton & COGS CSV", type=["csv"])
     
             if uploaded_cogs:
                 df_cogs = pd.read_csv(uploaded_cogs)
