@@ -266,6 +266,7 @@ with tab2:
                 ### 📌 How to Use:
                 - Identify mismatches that can lead to overstock, batching inefficiencies, or cost assumptions that need review.
                 - EOQ is used as a cost-efficiency reference — to set minimum order quantities (flooring) or bundle RL orders more efficiently.
+                EXCLUDE RL QTY 0
                 """)
     st.markdown("""
     
@@ -290,65 +291,65 @@ with tab2:
 
             def classify_rl_eoq(row):
                 if not row['flag_rl_high'] and not row['flag_eoq_high']:
-                    return "✅ Normal / ✅ Normal"
+                    return "Normal / Normal"
                 elif not row['flag_rl_high'] and row['flag_eoq_high']:
-                    return "✅ Small / ❗️ Large"
+                    return "Small / Large"
                 elif row['flag_rl_high'] and not row['flag_eoq_high']:
-                    return "❗️ Large / ✅ Small"
+                    return "Large / Small"
                 else:
-                    return "❗️ Large / ❗️ Large"
+                    return "Large / Large"
 
             df['rl_eoq_diagnosis'] = df.apply(classify_rl_eoq, axis=1)
 
             def generate_diagnosis_msg(code):
-                if code == "✅ Normal / ✅ Normal":
+                if code == "Normal / Normal":
                     return "✔ Balanced: RL Qty and EOQ are aligned."
-                elif code == "✅ Small / ❗️ Large":
+                elif code == "Small / Large":
                     return "⚠️ EOQ wants batching. Group RL or increase order freq."
-                elif code == "❗️ Large / ✅ Small":
+                elif code == "Large / Small":
                     return "🚨 RL too high: Risk of overstock. Review RL qty vs forecasat."
-                elif code == "❗️ Large / ❗️ Large":
+                elif code == "Large / Large":
                     return "⚠️ Both values large: Check vendor constraints or cost setup."
                 else:
                     return "❓ Unknown condition."
 
             df['diagnosis'] = df['rl_eoq_diagnosis'].apply(generate_diagnosis_msg)
 
-            st.subheader("🔢 RL/EOQ Category Summary")
+            st.subheader("Regular RL vs EOQ Qty Summary")
             summary_counts = df['rl_eoq_diagnosis'].value_counts().reset_index()
             summary_counts.columns = ['RL/EOQ Diagnosis', 'Product Count']
             st.dataframe(summary_counts, use_container_width=True)
 
-            st.subheader("📘 What It Means & What You Can Do")
+            st.subheader("What It Means & What We Can Do")
             diagnosis_table = pd.DataFrame([
                 {
-                    "RL Qty": "✅ Normal",
-                    "EOQ": "✅ Normal",
+                    "RL Qty": "Normal",
+                    "EOQ": "Normal",
                     "What It Means": "Everything fine",
                     "What We Can Do": "Use EOQ as check"
                 },
                 {
-                    "RL Qty": "✅ Small",
-                    "EOQ": "❗️ Large",
+                    "RL Qty": "Small",
+                    "EOQ": "Large",
                     "What It Means": "EOQ wants batching / low holding cost",
                     "What We Can Do": "Batch RL into EOQ cycles if possible"
                 },
                 {
-                    "RL Qty": "❗️ Large",
-                    "EOQ": "✅ Small",
+                    "RL Qty": "Large",
+                    "EOQ": "Small",
                     "What It Means": "High risk of overstock (low demand + large RL)",
                     "What We Can Do": "Cap RL by shelf life / DOI / inv. space"
                 },
                 {
-                    "RL Qty": "❗️ Large",
-                    "EOQ": "❗️ Large",
+                    "RL Qty": "Large",
+                    "EOQ": "Large",
                     "What It Means": "Potential big inefficiency",
                     "What We Can Do": "Revisit cost & vendor constraints"
                 }
             ])
             st.dataframe(diagnosis_table, use_container_width=True)
 
-            st.subheader("📋 Product-Level Diagnostics")
+            st.subheader("Product-Level Diagnostics")
             st.dataframe(df[['product_id', 'location_id', 'original_rl_qty', 'EOQ_rounded', 'rl_eoq_diagnosis', 'diagnosis']], use_container_width=True)
 
             st.download_button("📥 Download Diagnosed CSV", data=df.to_csv(index=False), file_name="diagnosed_rl_vs_eoq.csv")
