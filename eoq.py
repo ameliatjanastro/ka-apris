@@ -9,7 +9,7 @@ st.markdown(
     <style>
     /* Decrease font size for most text */
     html, body, .css-1d391kg, .css-1v3fvcr {
-        font-size: 10px;  /* adjust this value as needed */
+        font-size: 11px;  /* adjust this value as needed */
     }
     /* You can target specific elements too */
     /* For example, headers: */
@@ -37,8 +37,8 @@ def clean_id(val):
     val = str(val).strip()
     return val.replace(".0", "") if val.endswith(".0") else val
 
-page = st.sidebar.radio("Choose a tool:", ["EOQ 3 Step DOIs", "RL vs EOQ Diagnostic Matrix"])
-if page == "EOQ 3 Step DOIs":
+tab1, tab2 = st.tabs(["EOQ 3 Step DOIs", "RL vs EOQ Diagnostic Matrix"])
+with tab1:
     st.title("📦 EOQ 3 Step DOIs")
     
     # User Inputs
@@ -260,11 +260,11 @@ if page == "EOQ 3 Step DOIs":
     else:
         st.info("Upload both Demand & Holding Cost CSV files to proceed.")
 
-elif page == "RL vs EOQ Diagnostic Matrix":
+with tab2:
     st.title("📦 RL Qty vs EOQ Diagnostic Matrix")
     st.markdown("""
-    Use this tool to analyze alignment between Replenishment (RL) Quantity and Economic Order Quantity (EOQ).
-    It helps identify mismatches that can lead to overstock, batching inefficiencies, or cost assumptions that need review.
+    Identify mismatches that can lead to overstock, batching inefficiencies, or cost assumptions that need review.
+    EOQ is used as a cost-efficiency reference — to set minimum order quantities (flooring) or bundle RL orders more efficiently.
     """)
 
     uploaded_file = st.file_uploader("Upload your RL + EOQ dataset (CSV)", type=["csv"], key="rl_eoq")
@@ -273,16 +273,16 @@ elif page == "RL vs EOQ Diagnostic Matrix":
         df = pd.read_csv(uploaded_file)
         
 
-        required_cols = ['product_id', 'location_id', 'original_rl_qty', 'EOQ']
+        required_cols = ['product_id', 'location_id', 'original_rl_qty', 'EOQ_rounded']
         if not all(col in df.columns for col in required_cols):
             st.error(f"Missing required columns. Make sure your file includes: {required_cols}")
         else:
             st.success("✅ File uploaded and columns validated.")
 
             df = df[df['original_rl_qty'] != 0]
-            df['rl_qty_vs_eoq_ratio'] = df['EOQ'] / (df['original_rl_qty'] + 1e-6)
-            df['flag_rl_high'] = df['original_rl_qty'] > 1.5 * df['EOQ']
-            df['flag_eoq_high'] = df['EOQ'] > 1.5 * df['original_rl_qty']
+            df['rl_qty_vs_eoq_ratio'] = df['EOQ_rounded'] / (df['original_rl_qty'] + 1e-6)
+            df['flag_rl_high'] = df['original_rl_qty'] > 1.5 * df['EOQ_rounded']
+            df['flag_eoq_high'] = df['EOQ_rounded'] > 1.5 * df['original_rl_qty']
 
             def classify_rl_eoq(row):
                 if not row['flag_rl_high'] and not row['flag_eoq_high']:
@@ -339,13 +339,13 @@ elif page == "RL vs EOQ Diagnostic Matrix":
                     "RL Qty": "❗️ Large",
                     "EOQ": "❗️ Large",
                     "What It Means": "Potential big inefficiency",
-                    "What wE Can Do": "Revisit cost & vendor constraints"
+                    "What We Can Do": "Revisit cost & vendor constraints"
                 }
             ])
             st.dataframe(diagnosis_table, use_container_width=True)
 
             st.subheader("📋 Product-Level Diagnostics")
-            st.dataframe(df[['product_id', 'location_id', 'original_rl_qty', 'EOQ', 'rl_eoq_diagnosis', 'diagnosis']], use_container_width=True)
+            st.dataframe(df[['product_id', 'location_id', 'original_rl_qty', 'EOQ_rounded', 'rl_eoq_diagnosis', 'diagnosis']], use_container_width=True)
 
             st.download_button("📥 Download Diagnosed CSV", data=df.to_csv(index=False), file_name="diagnosed_rl_vs_eoq.csv")
 
