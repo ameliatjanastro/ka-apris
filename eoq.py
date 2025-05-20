@@ -239,3 +239,30 @@ if uploaded_demand and uploaded_holding:
 else:
     st.info("Upload both Demand & Holding Cost CSV files to proceed.")
 
+df['flag_below_eoq'] = df['EOQ_adjusted'] < df['EOQ']
+df['flag_mov_adjusted'] = df['add_qty'] > 0
+
+# Create flag summary table
+flag_summary = pd.DataFrame({
+    "Condition": [
+        "📉 Below EOQ (underefficient order)",
+        "⚠️ Adjusted for MOV Shortfall"
+    ],
+    "Product Count": [
+        df['flag_below_eoq'].sum(),
+        df['flag_mov_adjusted'].sum()
+    ]
+})
+
+# Optionally show affected product IDs
+flagged_ids = df[df['flag_below_eoq'] | df['flag_mov_adjusted']][
+    ['product_id', 'location_id', 'flag_below_eoq', 'flag_mov_adjusted']
+]
+
+# Display summary
+st.subheader("🔍 EOQ Efficiency Summary")
+st.dataframe(flag_summary)
+
+st.subheader("📋 Products with EOQ or MOV Flags")
+st.dataframe(flagged_ids)
+
