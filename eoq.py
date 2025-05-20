@@ -221,7 +221,7 @@ if uploaded_demand and uploaded_holding:
             df['EOQ_adj'] = df['EOQ Vendor Constraint'] * multiplier
             df['cogs_adj'] = df.apply(adjust_cogs, axis=1)
             df['EOQ_rounded_multiplier'] = np.ceil(df['EOQ_adj'] / df['pcs_per_carton']) * df['pcs_per_carton']
-            eoq_order_needed = max((df['EOQ_final'] + df['safety_stock']) - df["pipeline'], 0)
+            df['eoq_needed'] = (df['EOQ_final'] + df['safety_stock'] - df['pipeline']).clip(lower=0)
             df['eoq_gap_vs_rl'] = df['eoq_needed'] - df['original_rl_qty']
             df['gap_doi'] = df['eoq_gap_vs_rl']/df['avg_sales_final']
             st.success("EOQ Multiplier & COGS Adjusted")
