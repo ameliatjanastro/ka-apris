@@ -258,9 +258,9 @@ elif page == "RL vs EOQ Diagnostic Matrix":
         else:
             st.success("✅ File uploaded and columns validated.")
 
-            df['rl_qty_vs_eoq_ratio'] = df['EOQ_adjusted'] / (df['rl_qty_final'] + 1e-6)
-            df['flag_rl_high'] = df['rl_qty_final'] > 1.5 * df['EOQ_adjusted']
-            df['flag_eoq_high'] = df['EOQ_adjusted'] > 1.5 * df['rl_qty_final']
+            df['rl_qty_vs_eoq_ratio'] = df['EOQ_final'] / (df['rl_qty_final'] + 1e-6)
+            df['flag_rl_high'] = df['rl_qty_final'] > 1.5 * df['EOQ_final']
+            df['flag_eoq_high'] = df['EOQ_final'] > 1.5 * df['rl_qty_final']
 
             def classify_rl_eoq(row):
                 if not row['flag_rl_high'] and not row['flag_eoq_high']:
@@ -323,7 +323,7 @@ elif page == "RL vs EOQ Diagnostic Matrix":
             st.dataframe(diagnosis_table, use_container_width=True)
 
             st.subheader("📋 Product-Level Diagnostics")
-            st.dataframe(df[['product_id', 'location_id', 'rl_qty_final', 'EOQ_adjusted', 'rl_eoq_diagnosis', 'diagnosis']], use_container_width=True)
+            st.dataframe(df[['product_id', 'location_id', 'rl_qty_final', 'EOQ_final', 'rl_eoq_diagnosis', 'diagnosis']], use_container_width=True)
 
             st.download_button("📥 Download Diagnosed CSV", data=df.to_csv(index=False), file_name="diagnosed_rl_vs_eoq.csv")
 
