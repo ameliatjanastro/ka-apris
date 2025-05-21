@@ -13,7 +13,7 @@ date_range = pd.date_range(start=start_date, end=end_date, freq='D')
 date_columns = [d.strftime('%-d %b') for d in date_range]
 
 # Step 2: Create product × location_id matrix
-unique_products = df_sheet4[['product_id', 'primary_vendor_name']].drop_duplicates()
+unique_products = df_sheet4[['product_id', 'primary_vendor_name', 'location_id']].drop_duplicates()
 vendor_locations = df_sheet2[['primary_vendor_name', 'location_id']].drop_duplicates()
 unique_products = unique_products.merge(vendor_locations, on='primary_vendor_name', how='left')
 
