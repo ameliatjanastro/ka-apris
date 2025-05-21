@@ -80,13 +80,19 @@ for index, row in merged_df.iterrows():
 # Ensure product_id is integer for final output
 result_df['product_id'] = result_df['product_id'].astype(int)
 
-# Save the DataFrame to a CSV file
-output_filename = "daily_qty_order_june_august.csv"
-result_df.to_csv(output_filename, index=False)
+# Save the first DataFrame to CSV
+output_filename_1 = "daily_qty_order_june_august.csv"
+result_df.to_csv(output_filename_1, index=False)
 
-print(f"CSV file '{output_filename}' generated successfully.")
-output_df = pd.DataFrame(output_data, columns=output_columns)
-output_df = output_df.sort_values(['product_id', 'location_id'])
+# Show success message
+st.success(f"CSV file '{output_filename_1}' generated successfully.")
 
-# Save to CSV
-output_df.to_csv('product_inbound_schedule_june_august_2025.csv', index=False)
+# Download button for the first file
+with open(output_filename_1, 'rb') as f:
+    st.download_button(
+        label="📥 Download Daily Quantity Order CSV",
+        data=f,
+        file_name=output_filename_1,
+        mime="text/csv"
+    )
+
