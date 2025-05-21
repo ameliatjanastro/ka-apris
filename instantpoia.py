@@ -41,7 +41,7 @@ st.write("Available columns:", merged_df.columns.tolist())
 #unique_product_locations = merged_df[identifying_cols].drop_duplicates()
 
 # DEBUG: Print columns of unique_product_locations
-print("Columns of unique_product_locations:", unique_product_locations.columns)
+#print("Columns of unique_product_locations:", unique_product_locations.columns)
 
 # Create the result DataFrame with identifying columns and date columns initialized to 0
 result_df = pd.DataFrame(0, index=pd.MultiIndex.from_frame(unique_product_locations), columns=date_range)
