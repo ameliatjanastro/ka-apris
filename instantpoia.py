@@ -2,85 +2,77 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 
-# Load your input files
-df_sheet4 = pd.read_csv("RL AUTO_[WIP] RL Fresh Final by WH_Table - Sheet4.csv")
-df_sheet2 = pd.read_csv("RL AUTO_[WIP] RL Fresh Final by WH_Table - Sheet2.csv")
+# Load data from files
+df_schedule = pd.read_csv('RL AUTO_[WIP] RL Fresh Final by WH_Table - Sheet2.csv')
+df_orders = pd.read_csv('RL AUTO_[WIP] RL Fresh Final by WH_Table - Sheet4.csv')
 
-# Step 1: Generate date columns
+# Create date range from June 1 to August 31, 2025
 start_date = datetime(2025, 6, 1)
 end_date = datetime(2025, 8, 31)
-date_range = pd.date_range(start=start_date, end=end_date, freq='D')
-date_columns = [d.strftime('%-d %b') for d in date_range]
+date_range = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
 
-# Step 2: Create product × location_id matrix
-unique_products = df_sheet4[['product_id', 'primary_vendor_name', 'location_id']].drop_duplicates()
-vendor_locations = df_sheet2[['primary_vendor_name', 'location_id']].drop_duplicates()
-unique_products = unique_products.merge(vendor_locations, on='primary_vendor_name', how='left')
+# Create a dictionary to map (product_id, location_id) to vendor and quantity
+order_map = {}
+for _, row in df_orders.iterrows():
+    if pd.notna(row['product_id']) and row['product_id'] != '':
+        key = (int(row['product_id']), int(row['location_id']))
+        order_map[key] = {
+            'primary_vendor_name': row['primary_vendor_name'],
+            'qty_order': int(row['qty_order']) if pd.notna(row['qty_order']) else 0
+        }
 
-# Initialize the matrix
-final_matrix = unique_products.copy()
-for col in date_columns:
-    final_matrix[col] = 0
+# Create a dictionary to map (vendor_name, location_id) to inbound days
+schedule_map = {}
+for _, row in df_schedule.iterrows():
+    key = (row['primary_vendor_name'], int(row['location_id']))
+    if key not in schedule_map:
+        schedule_map[key] = set()
+    schedule_map[key].add(row['inbound_day'])
 
-# Step 3: Weekday mapping
-weekday_map = {
-    'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6
-}
-inbound_dates_by_day = {i: [] for i in range(7)}
-for d in date_range:
-    inbound_dates_by_day[d.weekday()].append(d.strftime('%-d %b'))
+# Create a list of all unique product_ids and location_ids
+product_ids = sorted(set([key[0] for key in order_map.keys()]))
+location_ids = sorted(set([key[1] for key in order_map.keys()]))
 
-# Step 4: Merge and distribute quantities
-# Melt the date columns into long format: one row per product/date/qty
-df_sheet4.columns = df_sheet4.columns.str.strip()
-df_sheet2.columns = df_sheet2.columns.str.strip()
-st.write("Sheet4 columns:", df_sheet4.columns.tolist())
-#df_sheet4['qty_order'] = df_sheet4['qty_order'].astype(int)
-date_cols = [col for col in df_sheet4.columns if '-' in col]  # e.g., '02-May-2025'
-df_long = df_sheet4.melt(
-    id_vars=['product_id', 'primary_vendor_name'],
-    value_vars=date_cols,
-    var_name='order_date',
-    value_name='qty_order'
-)
+# Create the output DataFrame
+columns = ['product_id', 'product_name', 'location_id', 'primary_vendor_name'] + [date.strftime('%d-%b-%Y') for date in date_range]
+output_df = pd.DataFrame(columns=columns)
 
-# Convert to datetime
-df_long['order_date'] = pd.to_datetime(df_long['order_date'], dayfirst=True)
-df_long = df_long[df_long['qty_order'] > 0]  # remove 0 orders
+# Populate the DataFrame
+for (product_id, location_id), data in order_map.items():
+    vendor_name = data['primary_vendor_name']
+    qty = data['qty_order']
+    
+    # Get inbound days for this vendor and location
+    inbound_days = schedule_map.get((vendor_name, location_id), set())
+    
+    # Create a row with all dates initially 0
+    row_data = {
+        'product_id': product_id,
+        'product_name': '',  # Placeholder as product_name isn't in provided files
+        'location_id': location_id,
+        'primary_vendor_name': vendor_name
+    }
+    
+    # Initialize all dates to 0
+    for date in date_range:
+        row_data[date.strftime('%d-%b-%Y')] = 0
+    
+    # Distribute quantity to inbound days
+    day_mapping = {
+        'Mon': 0, 'Tue': 1, 'Wed': 2, 
+        'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6
+    }
+    
+    for day in inbound_days:
+        # Find all dates that match this day of week
+        for date in date_range:
+            if date.weekday() == day_mapping[day]:
+                row_data[date.strftime('%d-%b-%Y')] = qty
+    
+    output_df = pd.concat([output_df, pd.DataFrame([row_data])], ignore_index=True)
 
-# Merge with inbound days & locations
-merged_orders = df_long.merge(
-    df_sheet2[['primary_vendor_name', 'location_id', 'inbound_day']],
-    on='primary_vendor_name',
-    how='left'
-)
+# Sort by product_id and location_id
+output_df = output_df.sort_values(['product_id', 'location_id'])
 
-merged_orders = merged_orders.dropna(subset=['inbound_day', 'location_id'])
-
-
-for _, row in merged_orders.iterrows():
-    product_id = row['product_id']
-    vendor = row['primary_vendor_name']
-    location_id = row['location_id']
-    qty_order = row['qty_order']
-    inbound_day = row['inbound_day']
-    weekday_num = weekday_map.get(inbound_day)
-
-    if weekday_num is not None:
-        matching_dates = inbound_dates_by_day[weekday_num]
-        if matching_dates:
-            qty_per_date = qty_order // len(matching_dates)
-            remainder = qty_order % len(matching_dates)
-
-            for i, date in enumerate(matching_dates):
-                qty = qty_per_date + (1 if i < remainder else 0)
-                mask = (
-                    (final_matrix['product_id'] == product_id) &
-                    (final_matrix['primary_vendor_name'] == vendor) &
-                    (final_matrix['location_id'] == location_id)
-                )
-                final_matrix.loc[mask, date] += qty
-
-# Step 5: Export to CSV
-final_matrix.to_csv("daily_order_matrix.csv", index=False)
-print("✅ Exported to 'daily_order_matrix.csv'")
+# Save to CSV
+output_df.to_csv('product_inbound_schedule_jun_aug_2025.csv', index=False)
