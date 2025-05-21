@@ -24,7 +24,7 @@ df_sheet4_filtered['product_id'] = df_sheet4_filtered['product_id'].astype('Int6
 
 # 3. Merge Data
 # Merge df_sheet4_filtered with df_sheet2 on 'location_id'
-merged_df = pd.merge(df_sheet4_filtered, df_sheet2, on='location_id', how='left')
+merged_df = pd.merge(df_sheet4_filtered, df_sheet2, on=['location_id','primary_vendor_name'], how='left')
 
 # Convert inbound_day string to weekday number
 weekday_mapping = {
