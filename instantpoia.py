@@ -33,6 +33,8 @@ for d in date_range:
 # Melt the date columns into long format: one row per product/date/qty
 df_sheet4.columns = df_sheet4.columns.str.strip()
 df_sheet2.columns = df_sheet2.columns.str.strip()
+st.write("Sheet4 columns:", df_sheet4.columns.tolist())
+
 date_cols = [col for col in df_sheet4.columns if '-' in col]  # e.g., '02-May-2025'
 df_long = df_sheet4.melt(
     id_vars=['product_id', 'primary_vendor_name'],
