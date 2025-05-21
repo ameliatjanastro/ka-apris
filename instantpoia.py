@@ -48,7 +48,7 @@ result_df = pd.DataFrame(0, index=pd.MultiIndex.from_frame(unique_product_locati
 result_df = result_df.reset_index() # Convert multi-index back to columns
 
 # DEBUG: Print columns of result_df after reset_index
-print("Columns of result_df after reset_index:", result_df.columns)
+#print("Columns of result_df after reset_index:", result_df.columns)
 
 
 # 5. Populate Quantities
