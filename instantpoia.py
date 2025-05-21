@@ -34,6 +34,8 @@ merged_df['inbound_day_num'] = merged_df['inbound_day'].map(weekday_mapping)
 
 # 4. Create Result DataFrame
 # Identify key columns for the output
+print("Available columns:", merged_df.columns.tolist())
+print("Requested columns:", identifying_cols)
 identifying_cols = ['product_id', 'location_id', 'primary_vendor_name']
 unique_product_locations = merged_df[identifying_cols].drop_duplicates()
 
