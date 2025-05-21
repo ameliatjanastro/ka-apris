@@ -1,66 +1,87 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 
-# Load the data from the provided files
-schedule_df = pd.read_csv('RL AUTO_[WIP] RL Fresh Final by WH_Table - Sheet2.csv')
-orders_df = pd.read_csv('RL AUTO_[WIP] RL Fresh Final by WH_Table - Sheet4.csv')
+# Read the CSV files
+df_sheet2 = pd.read_csv("RL AUTO_[WIP] RL Fresh Final by WH_Table - Sheet2.csv")
+df_sheet4 = pd.read_csv("RL AUTO_[WIP] RL Fresh Final by WH_Table - Sheet4.csv")
 
-# Create date range from June 1 to August 31, 2025
-start_date = datetime(2025, 6, 1)
-end_date = datetime(2025, 8, 31)
-date_columns = [(start_date + timedelta(days=x)).strftime('%d-%b-%Y') for x in range((end_date - start_date).days + 1)]
+# 1. Generate Dates
+start_date = date(2025, 6, 1)
+end_date = date(2025, 8, 31)
+delta = end_date - start_date
 
-# Create a mapping of (vendor_name, location_id) to inbound days
-vendor_schedule = {}
-for _, row in schedule_df.iterrows():
-    key = (row['primary_vendor_name'], row['location_id'])
-    if key not in vendor_schedule:
-        vendor_schedule[key] = set()
-    vendor_schedule[key].add(row['inbound_day'])
+date_range = []
+for i in range(delta.days + 1):
+    current_date = start_date + timedelta(days=i)
+    # Format as 'D Mon' (e.g., '1 Jun') - remove leading zero for day
+    date_range.append(current_date.strftime('%#d %b')) # Using %#d for Windows, for Linux/macOS use %-d
 
-# Create day of week mapping (Mon=0, Tue=1, etc.)
-day_map = {'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6}
+# 2. Filter df_sheet4 and convert product_id to Int64
+df_sheet4_filtered = df_sheet4[df_sheet4['location_id'].isin([796, 160])].copy()
+# Convert product_id to nullable integer
+df_sheet4_filtered['product_id'] = df_sheet4_filtered['product_id'].astype('Int64')
 
-# Prepare the output DataFrame
-output_columns = ['product_id', 'product_name', 'location_id', 'primary_vendor_name'] + date_columns
-output_data = []
+# 3. Merge Data
+# Merge df_sheet4_filtered with df_sheet2 on 'location_id'
+merged_df = pd.merge(df_sheet4_filtered, df_sheet2, on='location_id', how='left')
 
-# Process each product order
-for _, row in orders_df.iterrows():
-    if pd.isna(row['product_id']) or row['product_id'] == '':
+# Convert inbound_day string to weekday number
+weekday_mapping = {
+    'Mon': 0, 'Tue': 1, 'Wed': 2, 'Thu': 3, 'Fri': 4, 'Sat': 5, 'Sun': 6
+}
+merged_df['inbound_day_num'] = merged_df['inbound_day'].map(weekday_mapping)
+
+# 4. Create Result DataFrame
+# Identify key columns for the output
+identifying_cols = ['product_id', 'location_id', 'primary_vendor_name']
+unique_product_locations = merged_df[identifying_cols].drop_duplicates()
+
+# DEBUG: Print columns of unique_product_locations
+print("Columns of unique_product_locations:", unique_product_locations.columns)
+
+# Create the result DataFrame with identifying columns and date columns initialized to 0
+result_df = pd.DataFrame(0, index=pd.MultiIndex.from_frame(unique_product_locations), columns=date_range)
+result_df = result_df.reset_index() # Convert multi-index back to columns
+
+# DEBUG: Print columns of result_df after reset_index
+print("Columns of result_df after reset_index:", result_df.columns)
+
+
+# 5. Populate Quantities
+# Iterate through each row of the merged DataFrame to populate the result_df
+for index, row in merged_df.iterrows():
+    product_id = row['product_id']
+    location_id = row['location_id']
+    primary_vendor_name = row['primary_vendor_name']
+    qty_order = row['qty_order']
+    inbound_day_num = row['inbound_day_num']
+
+    if pd.isna(inbound_day_num) or pd.isna(qty_order): # Skip if inbound day or qty is missing
         continue
-        
-    product_id = int(row['product_id'])
-    location_id = int(row['location_id'])
-    vendor = row['primary_vendor_name']
-    qty = int(row['qty_order']) if not pd.isna(row['qty_order']) else 0
-    
-    # Initialize a row with all dates set to 0
-    new_row = {
-        'product_id': product_id,
-        'product_name': '',  # Placeholder - product names not in provided files
-        'location_id': location_id,
-        'primary_vendor_name': vendor
-    }
-    for date in date_columns:
-        new_row[date] = 0
-    
-    # Get the inbound days for this vendor/location
-    inbound_days = vendor_schedule.get((vendor, location_id), set())
-    
-    # Set quantities for inbound days
-    for day_abbr in inbound_days:
-        day_num = day_map[day_abbr]
-        # Find all dates that match this day of week
-        for i, date_str in enumerate(date_columns):
-            date = datetime.strptime(date_str, '%d-%b-%Y')
-            if date.weekday() == day_num:
-                new_row[date_str] = qty
-    
-    output_data.append(new_row)
 
-# Create DataFrame and sort by product_id and location_id
+    # Find the corresponding row(s) in result_df based on identifying columns
+    # and update quantities for matching dates
+    mask = (result_df['product_id'] == product_id) & \
+           (result_df['location_id'] == location_id) & \
+           (result_df['primary_vendor_name'] == primary_vendor_name)
+
+    if not result_df.loc[mask].empty: # Ensure the row exists before attempting to update
+        for i, current_date_str in enumerate(date_range):
+            current_date_dt = start_date + timedelta(days=i)
+            # Check if the weekday of the current date matches the inbound day
+            if current_date_dt.weekday() == inbound_day_num:
+                # Add qty_order to the specific date column for the matched row
+                result_df.loc[mask, current_date_str] += qty_order
+
+# Ensure product_id is integer for final output
+result_df['product_id'] = result_df['product_id'].astype(int)
+
+# Save the DataFrame to a CSV file
+output_filename = "daily_qty_order_june_august.csv"
+result_df.to_csv(output_filename, index=False)
+
+print(f"CSV file '{output_filename}' generated successfully.")
 output_df = pd.DataFrame(output_data, columns=output_columns)
 output_df = output_df.sort_values(['product_id', 'location_id'])
 
