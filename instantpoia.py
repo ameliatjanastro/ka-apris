@@ -30,10 +30,28 @@ for d in date_range:
     inbound_dates_by_day[d.weekday()].append(d.strftime('%-d %b'))
 
 # Step 4: Merge and distribute quantities
-df_sheet4 = df_sheet4.reset_index().rename(columns={"index": "order_idx"})
-merged_orders = df_sheet4.merge(df_sheet2[['primary_vendor_name', 'location_id', 'inbound_day']],
-                                on='primary_vendor_name', how='left')
-merged_orders = merged_orders.dropna(subset=['qty_order', 'inbound_day', 'location_id'])
+# Melt the date columns into long format: one row per product/date/qty
+date_cols = [col for col in df_sheet4.columns if '-' in col]  # e.g., '02-May-2025'
+df_long = df_sheet4.melt(
+    id_vars=['product_id', 'primary_vendor_name'],
+    value_vars=date_cols,
+    var_name='order_date',
+    value_name='qty_order'
+)
+
+# Convert to datetime
+df_long['order_date'] = pd.to_datetime(df_long['order_date'], dayfirst=True)
+df_long = df_long[df_long['qty_order'] > 0]  # remove 0 orders
+
+# Merge with inbound days & locations
+merged_orders = df_long.merge(
+    df_sheet2[['primary_vendor_name', 'location_id', 'inbound_day']],
+    on='primary_vendor_name',
+    how='left'
+)
+
+merged_orders = merged_orders.dropna(subset=['inbound_day', 'location_id'])
+
 
 for _, row in merged_orders.iterrows():
     product_id = row['product_id']
